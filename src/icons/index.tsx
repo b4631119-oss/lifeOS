@@ -31,6 +31,7 @@ export { default as EsFlagIcon } from "./flag-es.svg";
 export { default as SaFlagIcon } from "./flag-sa.svg";
 export { default as UsFlagIcon } from "./flag-us.svg";
 export { default as FolderIcon } from "./folder.svg";
+export { default as GoogleIcon } from "./google.svg";
 export { default as GridIcon } from "./grid.svg";
 export { default as GroupIcon } from "./group.svg";
 export { default as HorizontaLDots } from "./horizontal-dots.svg";
