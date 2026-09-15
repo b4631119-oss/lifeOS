@@ -7,6 +7,7 @@
     "saveChanges": "Save Changes",
     "viewMore": "View More",
     "delete": "Delete",
+    "retry": "Retry",
     "filter": "Filter",
     "seeAll": "See all"
   },
@@ -301,9 +302,12 @@
       "cta": "Go to Today"
     },
     "errors": {
-      "load": "We couldn't load your analytics.",
-      "retry": "Try again"
+      "load": "We couldn't load your analytics."
     }
+  },
+  "error": {
+    "title": "Something went wrong",
+    "message": "This page ran into an error. Your data is safe — try again."
   },
   "notFound": {
     "title": "Page Not Found",
@@ -1107,7 +1111,9 @@
     "decomposeAi": "Break down with AI",
     "decomposing": "AI is breaking down your goal…",
     "decomposeSuccess": "Added {count} subtasks from AI",
+    "decomposeSuccessTitle": "Subtasks added",
     "decomposeError": "Couldn't break down the goal. Please try again.",
+    "decomposeErrorTitle": "Couldn't break down the goal",
     "noSubtasks": "No subtasks yet",
     "errors": {
       "load": "We couldn't load your goals. Please refresh the page.",
