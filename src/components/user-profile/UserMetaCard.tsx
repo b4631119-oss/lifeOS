@@ -1,5 +1,6 @@
 "use client";
 import { PencilIcon } from "@/icons";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { useModal } from "../../hooks/useModal";
 import Input from "../form/input/InputField";
@@ -8,6 +9,8 @@ import Button from "../ui/button/Button";
 import { Modal } from "../ui/modal";
 
 export default function UserMetaCard() {
+  const t = useTranslations("profile");
+  const tCommon = useTranslations("common");
   const { isOpen, openModal, closeModal } = useModal();
   const handleSave = () => {
     // Handle save logic here
@@ -49,7 +52,7 @@ export default function UserMetaCard() {
             <div className="relative grid max-w-4xl grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4 xl:gap-x-11 xl:gap-y-7">
               <div className="w-full">
                 <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                  First Name
+                  {t("firstName")}
                 </p>
                 <p className="text-sm font-medium text-gray-800 dark:text-white/90">
                   Melibaev
@@ -57,7 +60,7 @@ export default function UserMetaCard() {
               </div>
               <div className="w-full">
                 <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                  Last Name
+                  {t("lastName")}
                 </p>
                 <p className="text-sm font-medium text-gray-800 dark:text-white/90">
                   Bilolidin
@@ -67,7 +70,7 @@ export default function UserMetaCard() {
               <div className="hidden xl:block"></div>
               <div>
                 <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                  Email address
+                  {t("emailAddress")}
                 </p>
                 <p className="text-sm font-medium text-gray-800 dark:text-white/90">
                   b4631119@gmail.com
@@ -75,7 +78,7 @@ export default function UserMetaCard() {
               </div>
               <div>
                 <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                  Phone
+                  {t("phone")}
                 </p>
                 <p className="text-sm font-medium text-gray-800 dark:text-white/90">
                   +996559679787
@@ -83,7 +86,7 @@ export default function UserMetaCard() {
               </div>
               <div>
                 <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                  Bio
+                  {t("bio")}
                 </p>
                 <p className="text-sm font-medium text-gray-800 dark:text-white/90">
                   Developer 
@@ -91,7 +94,7 @@ export default function UserMetaCard() {
               </div>
               <div>
                 <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                  Social Links
+                  {t("socialLinks")}
                 </p>
                 <div className="flex grow items-center gap-4">
                   <a
@@ -176,7 +179,7 @@ export default function UserMetaCard() {
               className="flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 lg:inline-flex lg:w-auto dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/3 dark:hover:text-gray-200"
             >
               <PencilIcon className="size-5" />
-              Edit
+              {tCommon("edit")}
             </button>
           </div>
         </div>
@@ -185,17 +188,17 @@ export default function UserMetaCard() {
         <div className="relative no-scrollbar w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 lg:p-11 dark:bg-gray-900">
           <div className="px-2 pe-14">
             <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
-              Edit Personal Information
+              {t("editPersonalInfo")}
             </h4>
             <p className="mb-6 text-sm text-gray-500 lg:mb-7 dark:text-gray-400">
-              Update your details to keep your profile up-to-date.
+              {t("editPersonalInfoHint")}
             </p>
           </div>
           <form className="flex flex-col">
             <div className="custom-scrollbar h-[450px] overflow-y-auto px-2 pb-3">
               <div>
                 <h4 className="mb-6 text-lg font-medium text-gray-800 dark:text-white/90">
-                  Change Profile Picture
+                  {t("changeProfilePicture")}
                 </h4>
                 <div className="mb-6 flex max-w-sm items-center gap-6 lg:pe-5">
                   <div className="relative size-20 shrink-0 rounded-full sm:size-25">
@@ -242,7 +245,7 @@ export default function UserMetaCard() {
                   </div>
                   <div>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                      Upload a square image (200×200 px) in JPEG or PNG format.
+                      {t("uploadHint")}
                     </p>
                   </div>
                 </div>
@@ -250,44 +253,44 @@ export default function UserMetaCard() {
 
               <div className="my-7">
                 <h5 className="mb-5 text-lg font-medium text-gray-800 lg:mb-6 dark:text-white/90">
-                  Personal Information
+                  {t("personalInformation")}
                 </h5>
 
                 <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
                   <div className="col-span-2 lg:col-span-1">
-                    <Label>First Name</Label>
+                    <Label>{t("firstName")}</Label>
                     <Input type="text" defaultValue="Bilolidin" />
                   </div>
 
                   <div className="col-span-2 lg:col-span-1">
-                    <Label>Last Name</Label>
+                    <Label>{t("lastName")}</Label>
                     <Input type="text" defaultValue="Melibaev" />
                   </div>
 
                   <div className="col-span-2 lg:col-span-1">
-                    <Label>Email Address</Label>
+                    <Label>{t("emailAddress")}</Label>
                     <Input type="text" defaultValue="b4631119@gmail.com" />
                   </div>
 
                   <div className="col-span-2 lg:col-span-1">
-                    <Label>Phone</Label>
+                    <Label>{t("phone")}</Label>
                     <Input type="text" defaultValue="+996559679787" />
                   </div>
 
                   <div className="col-span-2">
-                    <Label>Bio</Label>
+                    <Label>{t("bio")}</Label>
                     <Input type="text" defaultValue="Developer" />
                   </div>
                 </div>
               </div>
               <div>
                 <h5 className="mb-5 text-lg font-medium text-gray-800 lg:mb-6 dark:text-white/90">
-                  Social Links
+                  {t("socialLinks")}
                 </h5>
 
                 <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
                   <div>
-                    <Label>Facebook</Label>
+                    <Label>{t("facebook")}</Label>
                     <Input
                       type="text"
                       defaultValue="https://www.facebook.com/PimjoHQ"
@@ -295,12 +298,12 @@ export default function UserMetaCard() {
                   </div>
 
                   <div>
-                    <Label>X.com</Label>
+                    <Label>{t("xcom")}</Label>
                     <Input type="text" defaultValue="https://x.com/PimjoHQ" />
                   </div>
 
                   <div>
-                    <Label>Linkedin</Label>
+                    <Label>{t("linkedin")}</Label>
                     <Input
                       type="text"
                       defaultValue="https://www.linkedin.com/company/pimjo"
@@ -308,7 +311,7 @@ export default function UserMetaCard() {
                   </div>
 
                   <div>
-                    <Label>Instagram</Label>
+                    <Label>{t("instagram")}</Label>
                     <Input
                       type="text"
                       defaultValue="https://instagram.com/PimjoHQ"
@@ -319,10 +322,10 @@ export default function UserMetaCard() {
             </div>
             <div className="mt-6 flex items-center gap-3 px-2 lg:justify-end">
               <Button size="sm" variant="outline" onClick={closeModal}>
-                Close
+                {tCommon("close")}
               </Button>
               <Button size="sm" onClick={handleSave}>
-                Save Changes
+                {tCommon("saveChanges")}
               </Button>
             </div>
           </form>
