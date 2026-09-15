@@ -860,6 +860,49 @@
         "inProgress": "In Progress"
       }
     }
+  },
+  "today": {
+    "title": "Today",
+    "metaDescription": "Your daily overview — tasks, habits, and goals",
+    "greeting": "Let's make today count.",
+    "addTask": "Add task",
+    "newTask": "New task",
+    "editTask": "Edit task",
+    "taskTitle": "Title",
+    "taskTitlePlaceholder": "What do you want to get done?",
+    "startTime": "Start time",
+    "endTime": "End time",
+    "status": "Status",
+    "cancel": "Cancel",
+    "create": "Create task",
+    "update": "Save changes",
+    "edit": "Edit",
+    "delete": "Delete",
+    "deleteTitle": "Delete task",
+    "deleteMessage": "Delete \"{title}\"? This can't be undone.",
+    "markDone": "Mark as done",
+    "markTodo": "Mark as to do",
+    "loading": "Loading your tasks…",
+    "emptyTitle": "No tasks yet",
+    "emptyMessage": "Add your first task for today and start planning your day.",
+    "progressTitle": "Tasks completed",
+    "timeElapsed": "Time elapsed",
+    "ofTasks": "{done} of {total} tasks",
+    "statuses": {
+      "todo": "To do",
+      "in_progress": "In progress",
+      "done": "Done"
+    },
+    "validation": {
+      "titleRequired": "Give the task a title.",
+      "timeRequired": "Add a start and end time.",
+      "timeOrder": "The end time must be after the start time."
+    },
+    "errors": {
+      "load": "We couldn't load your tasks. Please refresh the page.",
+      "save": "We couldn't save the task. Please try again.",
+      "delete": "We couldn't delete the task. Please try again."
+    }
   }
 }
 
