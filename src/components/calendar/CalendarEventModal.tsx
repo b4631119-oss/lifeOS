@@ -3,7 +3,7 @@
 import { Modal } from "@/components/ui/modal";
 import { cn } from "@/utils";
 import { useTranslations } from "next-intl";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   CALENDAR_EVENT_LEVELS,
   type CalendarEvent,
@@ -19,7 +19,19 @@ export interface CalendarEventModalProps {
   onSave: (data: EventFormData) => void;
 }
 
-const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
+/** FullCalendar accepts a `string` or a `Date`; the inputs need `YYYY-MM-DD`. */
+function toDateInputValue(value: CalendarEvent["start"]): string {
+  if (typeof value === "string") return value.split("T")[0];
+  if (value instanceof Date) return value.toISOString().split("T")[0];
+  return "";
+}
+
+/**
+ * The fields are seeded from props on mount rather than patched afterwards by
+ * an effect: `CalendarEventModal` below mounts this component only while the
+ * modal is open, and re-keys it per target, so state never has to be re-synced.
+ */
+const EventFormFields: React.FC<CalendarEventModalProps> = ({
   isOpen,
   onClose,
   selectedEvent,
@@ -28,36 +40,23 @@ const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
   onSave,
 }) => {
   const t = useTranslations("calendar");
-  const [eventTitle, setEventTitle] = useState("");
-  const [eventStartDate, setEventStartDate] = useState("");
-  const [eventEndDate, setEventEndDate] = useState("");
-  const [eventLevel, setEventLevel] = useState("Primary");
 
-  useEffect(() => {
-    if (selectedEvent) {
-      setEventTitle((selectedEvent.title as string) || "");
-      const startStr =
-        typeof selectedEvent.start === "string"
-          ? selectedEvent.start.split("T")[0]
-          : selectedEvent.start instanceof Date
-            ? selectedEvent.start.toISOString().split("T")[0]
-            : "";
-      const endStr =
-        typeof selectedEvent.end === "string"
-          ? selectedEvent.end.split("T")[0]
-          : selectedEvent.end instanceof Date
-            ? selectedEvent.end.toISOString().split("T")[0]
-            : "";
-      setEventStartDate(startStr);
-      setEventEndDate(endStr || startStr);
-      setEventLevel(selectedEvent.extendedProps?.calendar || "Primary");
-    } else {
-      setEventTitle("");
-      setEventStartDate(initialStartDate);
-      setEventEndDate(initialEndDate || initialStartDate);
-      setEventLevel("Primary");
-    }
-  }, [selectedEvent, initialStartDate, initialEndDate, isOpen]);
+  const eventStart = selectedEvent
+    ? toDateInputValue(selectedEvent.start)
+    : initialStartDate;
+
+  const [eventTitle, setEventTitle] = useState(
+    selectedEvent ? ((selectedEvent.title as string) ?? "") : "",
+  );
+  const [eventStartDate, setEventStartDate] = useState(eventStart);
+  const [eventEndDate, setEventEndDate] = useState(
+    selectedEvent
+      ? toDateInputValue(selectedEvent.end) || eventStart
+      : initialEndDate || initialStartDate,
+  );
+  const [eventLevel, setEventLevel] = useState(
+    selectedEvent?.extendedProps?.calendar || "Primary",
+  );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -212,5 +211,23 @@ const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
     </Modal>
   );
 };
+
+/**
+ * Mounts the fields only while the modal is open, and re-keys them when the
+ * target changes: closing discards the draft, reopening rebuilds it from the
+ * current event — the behaviour the removed effect used to patch in.
+ */
+const CalendarEventModal: React.FC<CalendarEventModalProps> = (props) =>
+  props.isOpen ? (
+    <EventFormFields
+      key={`${props.selectedEvent?.id ?? "new"}-${props.initialStartDate ?? ""}-${props.initialEndDate ?? ""}`}
+      isOpen={props.isOpen}
+      onClose={props.onClose}
+      selectedEvent={props.selectedEvent}
+      initialStartDate={props.initialStartDate ?? ""}
+      initialEndDate={props.initialEndDate ?? ""}
+      onSave={props.onSave}
+    />
+  ) : null;
 
 export default CalendarEventModal;
