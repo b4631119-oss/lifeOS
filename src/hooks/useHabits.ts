@@ -31,6 +31,8 @@ type UseHabitsResult = {
   toggleHabit: (habitId: string) => Promise<void>;
   /** Permanently removes a habit together with all of its logs. */
   deleteHabit: (habitId: string) => Promise<void>;
+  /** Re-opens both subscriptions after they failed. */
+  reload: () => void;
 };
 
 /**
@@ -51,6 +53,8 @@ export function useHabits(uid: string | undefined): UseHabitsResult {
   const [habitsLoaded, setHabitsLoaded] = useState(false);
   const [logsLoaded, setLogsLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Bumping this re-runs both subscription effects below.
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     if (!uid) return;
@@ -67,7 +71,7 @@ export function useHabits(uid: string | undefined): UseHabitsResult {
         setHabitsLoaded(true);
       },
     );
-  }, [uid]);
+  }, [uid, attempt]);
 
   useEffect(() => {
     if (!uid) return;
@@ -85,7 +89,14 @@ export function useHabits(uid: string | undefined): UseHabitsResult {
         setLogsLoaded(true);
       },
     );
-  }, [uid, fromDate]);
+  }, [uid, fromDate, attempt]);
+
+  const reload = useCallback(() => {
+    setError(null);
+    setHabitsLoaded(false);
+    setLogsLoaded(false);
+    setAttempt((value) => value + 1);
+  }, []);
 
   const doneDatesByHabit = useMemo(() => indexDoneDates(logs), [logs]);
 
@@ -182,5 +193,6 @@ export function useHabits(uid: string | undefined): UseHabitsResult {
     setHabitActive,
     toggleHabit,
     deleteHabit,
+    reload,
   };
 }
