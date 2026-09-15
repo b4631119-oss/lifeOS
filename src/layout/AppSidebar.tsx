@@ -40,6 +40,30 @@ type NavItem = {
   }[];
 };
 
+/** Which menu a submenu belongs to, and where it sits in that menu. */
+type SubmenuTarget = {
+  type: "main" | "support" | "others";
+  index: number;
+};
+
+/** The menu of the submenu that owns `path`, or `null` for a top-level route. */
+function findRouteSubmenu(path: string): SubmenuTarget | null {
+  const menus: [SubmenuTarget["type"], NavItem[]][] = [
+    ["main", navItems],
+    ["others", othersItems],
+  ];
+
+  for (const [type, items] of menus) {
+    const index = items.findIndex((nav) =>
+      nav.subItems?.some((subItem) => subItem.path === path),
+    );
+
+    if (index !== -1) return { type, index };
+  }
+
+  return null;
+}
+
 const navItems: NavItem[] = [
   {
     icon: <GridIcon />,
@@ -286,10 +310,6 @@ const AppSidebar: React.FC = () => {
     </ul>
   );
 
-  const [openSubmenu, setOpenSubmenu] = useState<{
-    type: "main" | "support" | "others";
-    index: number;
-  } | null>(null);
   const [subMenuHeight, setSubMenuHeight] = useState<Record<string, number>>(
     {},
   );
@@ -299,31 +319,23 @@ const AppSidebar: React.FC = () => {
 
   const isActive = useCallback((path: string) => path === pathname, [pathname]);
 
-  useEffect(() => {
-    // Check if the current path matches any submenu item
-    let submenuMatched = false;
-    ["main", "support", "others"].forEach((menuType) => {
-      const items = menuType === "main" ? navItems : othersItems;
-      items.forEach((nav, index) => {
-        if (nav.subItems) {
-          nav.subItems.forEach((subItem) => {
-            if (isActive(subItem.path)) {
-              setOpenSubmenu({
-                type: menuType as "main" | "support" | "others",
-                index,
-              });
-              submenuMatched = true;
-            }
-          });
-        }
-      });
-    });
+  // The submenu the current route belongs to. Derived from `pathname` during
+  // render instead of being copied into state from an effect, so a navigation
+  // opens (or closes) it in the same pass — no extra render, no flicker.
+  const routeSubmenu = findRouteSubmenu(pathname);
 
-    // If no submenu item matches, close the open submenu
-    if (!submenuMatched) {
-      setOpenSubmenu(null);
-    }
-  }, [pathname, isActive]);
+  /**
+   * A manual toggle is remembered per route: navigating away drops it and the
+   * route's own submenu wins again, which is how the old pathname effect
+   * behaved.
+   */
+  const [toggledSubmenu, setToggledSubmenu] = useState<{
+    path: string;
+    submenu: SubmenuTarget | null;
+  } | null>(null);
+
+  const openSubmenu =
+    toggledSubmenu?.path === pathname ? toggledSubmenu.submenu : routeSubmenu;
 
   useEffect(() => {
     // Set the height of the submenu items when the submenu is opened
@@ -340,17 +352,13 @@ const AppSidebar: React.FC = () => {
 
   const handleSubmenuToggle = (
     index: number,
-    menuType: "main" | "support" | "others",
+    menuType: SubmenuTarget["type"],
   ) => {
-    setOpenSubmenu((prevOpenSubmenu) => {
-      if (
-        prevOpenSubmenu &&
-        prevOpenSubmenu.type === menuType &&
-        prevOpenSubmenu.index === index
-      ) {
-        return null;
-      }
-      return { type: menuType, index };
+    const isOpen = openSubmenu?.type === menuType && openSubmenu.index === index;
+
+    setToggledSubmenu({
+      path: pathname,
+      submenu: isOpen ? null : { type: menuType, index },
     });
   };
 
