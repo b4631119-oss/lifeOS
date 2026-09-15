@@ -21,6 +21,8 @@ type UseTodayTasksResult = {
   editTask: (taskId: string, data: Partial<TaskDraft>) => Promise<void>;
   removeTask: (taskId: string) => Promise<void>;
   toggleTaskDone: (task: LifeTask) => Promise<void>;
+  /** Re-opens the subscription after it failed, e.g. when the network came back. */
+  reload: () => void;
 };
 
 /**
@@ -33,6 +35,8 @@ export function useTodayTasks(uid: string | undefined): UseTodayTasksResult {
   const [tasks, setTasks] = useState<LifeTask[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Bumping this re-runs the subscription effect below.
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     if (!uid) return;
@@ -50,7 +54,13 @@ export function useTodayTasks(uid: string | undefined): UseTodayTasksResult {
         setLoading(false);
       },
     );
-  }, [uid, date]);
+  }, [uid, date, attempt]);
+
+  const reload = useCallback(() => {
+    setError(null);
+    setLoading(true);
+    setAttempt((value) => value + 1);
+  }, []);
 
   const run = useCallback(async (action: () => Promise<void>) => {
     try {
@@ -110,5 +120,6 @@ export function useTodayTasks(uid: string | undefined): UseTodayTasksResult {
     editTask,
     removeTask,
     toggleTaskDone,
+    reload,
   };
 }
