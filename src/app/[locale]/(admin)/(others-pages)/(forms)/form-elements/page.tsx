@@ -12,7 +12,7 @@ import ToggleSwitch from "@/components/form/form-elements/ToggleSwitch";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Form Elements | Admin Dashboard",
+  title: "Form Elements | LifeOS",
   description: "Form element components",
 };
 

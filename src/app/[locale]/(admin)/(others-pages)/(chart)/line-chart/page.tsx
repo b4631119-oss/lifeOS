@@ -5,7 +5,7 @@ import { Metadata } from "next";
 import React from "react";
 
 export const metadata: Metadata = {
-  title: "Line Chart | Admin Dashboard",
+  title: "Line Chart | LifeOS",
   description: "Line chart component",
 };
 export default function LineChart() {

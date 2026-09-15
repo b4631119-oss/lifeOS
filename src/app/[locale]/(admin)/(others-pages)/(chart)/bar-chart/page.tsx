@@ -5,7 +5,7 @@ import { Metadata } from "next";
 import React from "react";
 
 export const metadata: Metadata = {
-  title: "Bar Chart | Admin Dashboard",
+  title: "Bar Chart | LifeOS",
   description: "Bar chart component",
 };
 
