@@ -18,6 +18,7 @@ import {
   PieChartIcon,
   PlugInIcon,
   TableIcon,
+  TimeIcon,
   UserCircleIcon,
 } from "../icons/index";
 import SidebarWidget from "./SidebarWidget";
@@ -47,6 +48,11 @@ const navItems: NavItem[] = [
     icon: <CheckCircleIcon />,
     key: "habits",
     path: "/habits",
+  },
+  {
+    icon: <TimeIcon />,
+    key: "schedule",
+    path: "/schedule",
   },
   {
     icon: <CalenderIcon />,
