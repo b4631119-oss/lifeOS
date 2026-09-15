@@ -862,6 +862,36 @@
       }
     }
   },
+  "calendar": {
+    "title": "Calendar",
+    "metaDescription": "Schedule and manage your time",
+    "addEvent": "Add Event +",
+    "addEventAction": "Add Event",
+    "addEventTitle": "Add Event",
+    "editEventTitle": "Edit Event",
+    "modalSubtitle": "Plan your next big moment: schedule or edit an event to stay on track",
+    "eventTitle": "Event Title",
+    "eventColor": "Event Color",
+    "startDate": "Enter Start Date",
+    "endDate": "Enter End Date",
+    "updateChanges": "Update Changes",
+    "close": "Close",
+    "defaultEventTitle": "Event",
+    "defaultNewEventTitle": "New Event",
+    "more": "+{count} more",
+    "views": {
+      "year": "Year",
+      "month": "Month",
+      "week": "Week",
+      "day": "Day"
+    },
+    "levels": {
+      "danger": "Danger",
+      "success": "Success",
+      "primary": "Primary",
+      "warning": "Warning"
+    }
+  },
   "today": {
     "title": "Today",
     "metaDescription": "Your daily overview — tasks, habits, and goals",

@@ -804,6 +804,36 @@
       }
     }
   },
+  "calendar": {
+    "title": "Календарь",
+    "metaDescription": "Планируйте своё время и управляйте им",
+    "addEvent": "Добавить событие +",
+    "addEventAction": "Добавить событие",
+    "addEventTitle": "Добавить событие",
+    "editEventTitle": "Редактировать событие",
+    "modalSubtitle": "Спланируйте следующий важный момент: создайте или измените событие, чтобы всё было под контролем",
+    "eventTitle": "Название события",
+    "eventColor": "Цвет события",
+    "startDate": "Укажите дату начала",
+    "endDate": "Укажите дату окончания",
+    "updateChanges": "Сохранить изменения",
+    "close": "Закрыть",
+    "defaultEventTitle": "Событие",
+    "defaultNewEventTitle": "Новое событие",
+    "more": "ещё {count}",
+    "views": {
+      "year": "Год",
+      "month": "Месяц",
+      "week": "Неделя",
+      "day": "День"
+    },
+    "levels": {
+      "danger": "Опасность",
+      "success": "Успех",
+      "primary": "Основной",
+      "warning": "Предупреждение"
+    }
+  },
   "today": {
     "title": "Сегодня",
     "metaDescription": "Ваш обзор дня — задачи, привычки и цели",
