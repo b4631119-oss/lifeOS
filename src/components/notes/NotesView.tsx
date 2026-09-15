@@ -1,6 +1,8 @@
 "use client";
 
 import ComponentCard from "@/components/common/ComponentCard";
+import ConfirmModal from "@/components/common/ConfirmModal";
+import ErrorBanner from "@/components/common/ErrorBanner";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import { useAuth } from "@/context/AuthContext";
 import { useModal } from "@/hooks/useModal";
@@ -9,7 +11,6 @@ import { formatDayLabel, formatHistoryDate } from "@/lib/date";
 import type { Note } from "@/types/lifeos";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
-import DeleteNoteModal from "./DeleteNoteModal";
 import NoteEditor from "./NoteEditor";
 import NoteHistoryList from "./NoteHistoryList";
 import NoteSummaryCard from "./NoteSummaryCard";
@@ -32,7 +33,8 @@ export default function NotesView() {
     summaryError,
     requestSummary,
     removeNote,
-  } = useNotes(user?.uid);
+    reload,
+  } = useNotes(user);
 
   const deleteModal = useModal();
   const [noteToDelete, setNoteToDelete] = useState<Note | null>(null);
@@ -57,11 +59,7 @@ export default function NotesView() {
         {t("subtitle")}
       </p>
 
-      {error && (
-        <div className="mb-6 rounded-lg border border-error-500/30 bg-error-50 px-4 py-3 text-theme-sm text-error-600 dark:bg-error-500/10 dark:text-error-400">
-          {t("errors.load")}
-        </div>
-      )}
+      {error && <ErrorBanner message={t("errors.load")} onRetry={reload} />}
 
       {loading ? (
         <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
@@ -102,9 +100,13 @@ export default function NotesView() {
         </div>
       )}
 
-      <DeleteNoteModal
+      <ConfirmModal
         isOpen={deleteModal.isOpen}
-        noteDate={noteToDelete ? formatHistoryDate(noteToDelete.date, locale) : null}
+        namespace="notes"
+        subjectKey="date"
+        subject={
+          noteToDelete ? formatHistoryDate(noteToDelete.date, locale) : null
+        }
         onClose={deleteModal.closeModal}
         onConfirm={handleConfirmDelete}
       />
