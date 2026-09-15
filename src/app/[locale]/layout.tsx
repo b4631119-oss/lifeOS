@@ -6,12 +6,15 @@ import { isRtl } from "@/i18n/languages";
 import { type Locale, routing } from "@/i18n/routing";
 import "flatpickr/dist/flatpickr.css";
 import type { Metadata, Viewport } from "next";
+
 import { NextIntlClientProvider } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import { Inter, Outfit } from "next/font/google";
 import { notFound } from "next/navigation";
-import "simplebar-react/dist/simplebar.min.css";
-import "swiper/css/bundle";
+// No `swiper/css/bundle` or `simplebar-react` stylesheet here: no component
+// imports those libraries any more, and a global import shipped their CSS on
+// every route (only the demo carousel rules in globals.css remain, and those
+// are plain CSS with no dependency).
 import "../globals.css";
 
 const outfit = Outfit({
