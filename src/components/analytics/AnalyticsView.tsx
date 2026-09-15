@@ -1,6 +1,7 @@
 "use client";
 
 import ComponentCard from "@/components/common/ComponentCard";
+import ErrorBanner from "@/components/common/ErrorBanner";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import { useAuth } from "@/context/AuthContext";
 import { useAnalytics } from "@/hooks/useAnalytics";
@@ -76,18 +77,7 @@ export default function AnalyticsView() {
         {t("subtitle")}
       </p>
 
-      {error && (
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-error-500/30 bg-error-50 px-4 py-3 text-theme-sm text-error-600 dark:bg-error-500/10 dark:text-error-400">
-          <span>{t("errors.load")}</span>
-          <button
-            type="button"
-            onClick={reload}
-            className="font-medium underline underline-offset-2"
-          >
-            {t("errors.retry")}
-          </button>
-        </div>
-      )}
+      {error && <ErrorBanner message={t("errors.load")} onRetry={reload} />}
 
       {isLoading && (
         <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
