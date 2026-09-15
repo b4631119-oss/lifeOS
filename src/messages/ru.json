@@ -161,10 +161,8 @@
     "signUpTitle": "Регистрация",
     "signUpSubtitle": "Введите email и пароль, чтобы зарегистрироваться!",
     "signInWithGoogle": "Войти через Google",
-    "signInWithX": "Войти через X",
     "signingIn": "Выполняется вход…",
     "signUpWithGoogle": "Зарегистрироваться через Google",
-    "signUpWithX": "Зарегистрироваться через X",
     "or": "Или",
     "firstName": "Имя",
     "lastName": "Фамилия",
@@ -186,7 +184,12 @@
     "andOur": "а также с",
     "privacyPolicy": "Политикой конфиденциальности",
     "errors": {
-      "google": "Не удалось войти через Google. Попробуйте ещё раз."
+      "google": "Не удалось войти через Google. Попробуйте ещё раз.",
+      "unauthorizedDomain": "Домен {host} не добавлен в Firebase. Добавьте его в Authentication → Settings → Authorized domains и попробуйте снова.",
+      "popupBlocked": "Браузер заблокировал окно входа. Разрешите всплывающие окна для этого сайта и попробуйте снова.",
+      "popupCancelled": "Вход отменён — окно Google было закрыто.",
+      "network": "Не удалось связаться с Firebase. Проверьте соединение и попробуйте снова.",
+      "notEnabled": "Вход через Google не включён в этом проекте Firebase."
     }
   },
   "ecommerce": {

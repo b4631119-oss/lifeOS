@@ -161,10 +161,8 @@
     "signUpTitle": "Sign Up",
     "signUpSubtitle": "Enter your email and password to sign up!",
     "signInWithGoogle": "Sign in with Google",
-    "signInWithX": "Sign in with X",
     "signingIn": "Signing in…",
     "signUpWithGoogle": "Sign up with Google",
-    "signUpWithX": "Sign up with X",
     "or": "Or",
     "firstName": "First Name",
     "lastName": "Last Name",
@@ -186,7 +184,12 @@
     "andOur": "and our",
     "privacyPolicy": "Privacy Policy",
     "errors": {
-      "google": "Could not sign in with Google. Please try again."
+      "google": "Could not sign in with Google. Please try again.",
+      "unauthorizedDomain": "This domain ({host}) is not authorised in Firebase. Add it under Authentication → Settings → Authorized domains, then try again.",
+      "popupBlocked": "The browser blocked the sign-in window. Allow pop-ups for this site and try again.",
+      "popupCancelled": "Sign-in was cancelled — the Google window was closed.",
+      "network": "Could not reach Firebase. Check your connection and try again.",
+      "notEnabled": "Google sign-in is not enabled for this Firebase project."
     }
   },
   "ecommerce": {
