@@ -107,6 +107,7 @@ const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const pathname = usePathname();
   const t = useTranslations("sidebar");
+  const tCommon = useTranslations("common");
 
   const renderMenuItems = (
     navItems: NavItem[],
@@ -347,7 +348,7 @@ const AppSidebar: React.FC = () => {
               <Image
                 className="dark:hidden"
                 src="/images/logo/logo.svg"
-                alt="Logo"
+                alt={tCommon("logoAlt")}
                 width={150}
                 height={40}
                 priority
@@ -356,7 +357,7 @@ const AppSidebar: React.FC = () => {
               <Image
                 className="hidden dark:block"
                 src="/images/logo/logo-dark.svg"
-                alt="Logo"
+                alt={tCommon("logoAlt")}
                 width={150}
                 height={40}
                 priority
@@ -366,7 +367,7 @@ const AppSidebar: React.FC = () => {
           ) : (
             <Image
               src="/images/logo/logo-icon.svg"
-              alt="Logo"
+              alt={tCommon("logoAlt")}
               width={32}
               height={32}
               priority

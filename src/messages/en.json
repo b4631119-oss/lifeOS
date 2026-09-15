@@ -1,6 +1,7 @@
 {
   "common": {
     "home": "Home",
+    "logoAlt": "Logo",
     "edit": "Edit",
     "close": "Close",
     "saveChanges": "Save Changes",
@@ -123,8 +124,8 @@
       "inboxDetails": "Details"
     },
     "widget": {
-      "title": "Admin Dashboard",
-      "description": "A modern admin dashboard built with Next.js and Tailwind CSS.",
+      "title": "LifeOS",
+      "description": "Your personal life management system — plan your day, build habits, reach your goals.",
       "purchasePlan": "Get Started"
     }
   },
