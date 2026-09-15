@@ -1,5 +1,13 @@
 import { GoogleGenAI } from "@google/genai";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { isAdminConfigError, verifyIdToken } from "@/lib/firebase-admin";
+import { checkRateLimit } from "@/lib/rate-limit";
+
+// Node runtime (the default): `firebase-admin` verifies the ID token over
+// Google's HTTP API and is not supported on the Edge runtime.
+export const runtime = "nodejs";
+/** Gemini can take a few seconds; don't let the platform cut it off at 10s. */
+export const maxDuration = 30;
 
 const ai = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY,
@@ -29,7 +37,48 @@ Return only the JSON object with the subtasks array.
 Goal: {title}
 Description: {description}`;
 
-export async function POST(request: Request) {
+const RATE_LIMIT = { maxRequests: 10, windowMs: 60_000 };
+
+export async function POST(request: NextRequest) {
+  const authHeader = request.headers.get("authorization");
+  if (!authHeader?.startsWith("Bearer ")) {
+    return NextResponse.json(
+      { error: "Unauthorized: missing or invalid Authorization header" },
+      { status: 401 },
+    );
+  }
+
+  const idToken = authHeader.slice(7);
+  let uid: string;
+
+  try {
+    const decoded = await verifyIdToken(idToken);
+    uid = decoded.uid;
+  } catch (error) {
+    // A missing/unparsable service account makes *every* token look invalid.
+    // Reporting that as 401 sends the reader hunting for an auth bug, so it is
+    // surfaced as a configuration failure instead.
+    if (isAdminConfigError(error)) {
+      return NextResponse.json(
+        { error: "AI service not configured" },
+        { status: 503 },
+      );
+    }
+
+    return NextResponse.json(
+      { error: "Unauthorized: invalid or expired token" },
+      { status: 401 },
+    );
+  }
+
+  const rl = checkRateLimit(uid, RATE_LIMIT);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "Rate limit exceeded. Please try again later." },
+      { status: 429, headers: { "Retry-After": String(Math.ceil((rl.resetAt - Date.now()) / 1000)) } },
+    );
+  }
+
   try {
     const { title, description } = await request.json();
 
@@ -92,7 +141,12 @@ export async function POST(request: Request) {
       );
     }
 
-    return NextResponse.json({ subtasks });
+    return NextResponse.json({ subtasks }, {
+      headers: {
+        "X-RateLimit-Remaining": String(rl.remaining),
+        "X-RateLimit-Reset": String(Math.ceil(rl.resetAt / 1000)),
+      },
+    });
   } catch (error) {
     console.error("AI Decompose Error:", error);
 
