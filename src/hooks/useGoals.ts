@@ -16,12 +16,16 @@ type UseGoalsResult = {
   createGoal: (goal: Omit<NewGoal, "createdAt">) => Promise<void>;
   updateGoal: (goalId: string, data: Partial<NewGoal>) => Promise<void>;
   deleteGoal: (goalId: string) => Promise<void>;
+  /** Re-opens the subscription after it failed. */
+  reload: () => void;
 };
 
 export function useGoals(uid: string | undefined): UseGoalsResult {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [goalsLoaded, setGoalsLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Bumping this re-runs the subscription effect below.
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     if (!uid) return;
@@ -38,7 +42,13 @@ export function useGoals(uid: string | undefined): UseGoalsResult {
         setGoalsLoaded(true);
       },
     );
-  }, [uid]);
+  }, [uid, attempt]);
+
+  const reload = useCallback(() => {
+    setError(null);
+    setGoalsLoaded(false);
+    setAttempt((value) => value + 1);
+  }, []);
 
   const run = useCallback(async (action: () => Promise<void>) => {
     try {
@@ -86,5 +96,6 @@ export function useGoals(uid: string | undefined): UseGoalsResult {
     createGoal,
     updateGoal: updateGoalFn,
     deleteGoal: deleteGoalFn,
+    reload,
   };
 }
