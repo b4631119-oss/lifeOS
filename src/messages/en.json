@@ -967,6 +967,27 @@
     "linkedin": "Linkedin",
     "instagram": "Instagram"
   },
+  "schedule": {
+    "title": "Schedule",
+    "metaDescription": "Your day as an hour-by-hour timeline",
+    "subtitle": "Drag a task to reschedule it — its duration stays the same.",
+    "addTask": "Add task",
+    "now": "Now",
+    "loading": "Loading your schedule…",
+    "emptyTitle": "Nothing scheduled yet",
+    "emptyMessage": "Click any empty hour to plan a task, then drag it around to find the right slot.",
+    "taskCount": "{count, plural, one {# task} other {# tasks}}",
+    "dragHint": "Drag a block to move it — arrow keys work too.",
+    "blockLabel": "{title}, {range}",
+    "dragInstructions": "To move a task, press the space bar, use the arrow keys, then press the space bar again to drop it. Press escape to cancel.",
+    "dragging": "Moving {title}",
+    "dropped": "{title} moved to {range}",
+    "dragCancelled": "Moving {title} was cancelled",
+    "errors": {
+      "load": "We couldn't load your schedule. Please refresh the page.",
+      "move": "We couldn't move the task. Please try again."
+    }
+  },
   "today": {
     "title": "Today",
     "metaDescription": "Your daily overview — tasks, habits, and goals",
