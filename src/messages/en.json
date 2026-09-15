@@ -255,55 +255,50 @@
     }
   },
   "analytics": {
-    "metrics": {
-      "uniqueVisitors": "Unique Visitors",
-      "totalPageviews": "Total Pageviews",
-      "bounceRate": "Bounce Rate",
-      "visitDuration": "Visit Duration",
-      "vsLastMonth": "Vs last month"
+    "title": "Analytics",
+    "metaDescription": "Your productivity at a glance — task completion, focus hours, and habit streaks",
+    "subtitle": "How the last weeks actually went, based on the tasks and habits you logged.",
+    "rangeLabel": "Chart range",
+    "rangeLast7": "7 days",
+    "rangeLast30": "30 days",
+    "loading": "Crunching your numbers…",
+    "stats": {
+      "completionRate": "Completion rate",
+      "tasksDone": "Tasks done",
+      "ofTotal": "{done} of {total}",
+      "bestHour": "Most productive hour",
+      "noPeak": "Not enough data",
+      "activeHabits": "Active habits"
     },
-    "barChart": {
-      "title": "Analytics",
-      "subtitle": "Visitor analytics of last 30 days"
+    "taskChart": {
+      "title": "Task completion",
+      "subtitle": "Share of each day's tasks you finished",
+      "series": "Completed",
+      "empty": "No tasks in this range yet"
     },
-    "topChannels": {
-      "title": "Top Channels",
-      "source": "Source",
-      "visitors": "Visitors",
-      "channelsReport": "Channels Report"
+    "hoursChart": {
+      "title": "Productive hours",
+      "subtitle": "When you usually mark tasks as done",
+      "series": "Tasks completed",
+      "noDataTitle": "Not enough data yet",
+      "noDataMessage": "This chart fills in as you complete tasks — a task's completion time is only recorded from now on."
     },
-    "topPages": {
-      "title": "Top Pages",
-      "source": "Source",
-      "pageview": "Pageview",
-      "channelsReport": "Channels Report"
+    "habits": {
+      "title": "Habit streaks",
+      "subtitle": "Current and best run of every active habit",
+      "current": "Current",
+      "best": "Best",
+      "doneToday": "Done today",
+      "empty": "No active habits yet."
     },
-    "activeUsers": {
-      "title": "Active Users",
-      "liveVisitors": "Live visitors",
-      "avgDaily": "Avg, Daily",
-      "avgWeekly": "Avg, Weekly",
-      "avgMonthly": "Avg, Monthly"
+    "empty": {
+      "title": "Nothing to analyse yet",
+      "message": "Add a few tasks or habits and this page will start showing your trends.",
+      "cta": "Go to Today"
     },
-    "acquisitionChannels": {
-      "title": "Acquisition Channels"
-    },
-    "session": {
-      "title": "Sessions By Device"
-    },
-    "recentOrders": {
-      "title": "Recent Orders",
-      "products": "Products",
-      "category": "Category",
-      "country": "Country",
-      "cr": "CR",
-      "value": "Value",
-      "categories": {
-        "uiKits": "UI Kits",
-        "templates": "Templates",
-        "saas": "SaaS"
-      },
-      "crDashboard": "Dashboard"
+    "errors": {
+      "load": "We couldn't load your analytics.",
+      "retry": "Try again"
     }
   },
   "notFound": {
