@@ -1,5 +1,6 @@
 "use client";
 
+import ErrorBanner from "@/components/common/ErrorBanner";
 import type { TaskFormValues } from "@/components/today/TaskForm";
 import TaskFormModal from "@/components/today/TaskFormModal";
 import { useAuth } from "@/context/AuthContext";
@@ -65,7 +66,7 @@ export default function ScheduleView() {
   const t = useTranslations("schedule");
   const locale = useLocale();
   const { user } = useAuth();
-  const { tasks, loading, error, createTask, editTask } = useTodayTasks(
+  const { tasks, loading, error, createTask, editTask, reload } = useTodayTasks(
     user?.uid,
   );
 
@@ -236,11 +237,7 @@ export default function ScheduleView() {
         onAddTask={handleAddTask}
       />
 
-      {error && (
-        <div className="mb-6 rounded-lg border border-error-500/30 bg-error-50 px-4 py-3 text-theme-sm text-error-600 dark:bg-error-500/10 dark:text-error-400">
-          {t("errors.load")}
-        </div>
-      )}
+      {error && <ErrorBanner message={t("errors.load")} onRetry={reload} />}
 
       {moveError && (
         <div className="mb-6 rounded-lg border border-error-500/30 bg-error-50 px-4 py-3 text-theme-sm text-error-600 dark:bg-error-500/10 dark:text-error-400">
