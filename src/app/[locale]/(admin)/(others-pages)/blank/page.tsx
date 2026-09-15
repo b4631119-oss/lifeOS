@@ -2,7 +2,7 @@ import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Blank Page | Admin Dashboard",
+  title: "Blank Page | LifeOS",
   description: "Blank page template",
 };
 
