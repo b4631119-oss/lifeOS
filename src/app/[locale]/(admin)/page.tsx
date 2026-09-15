@@ -1,40 +1,29 @@
-import DemographicCard from "@/components/ecommerce/DemographicCard";
-import { EcommerceMetrics } from "@/components/ecommerce/EcommerceMetrics";
-import MonthlySalesChart from "@/components/ecommerce/MonthlySalesChart";
-import MonthlyTarget from "@/components/ecommerce/MonthlyTarget";
-import RecentOrders from "@/components/ecommerce/RecentOrders";
-import StatisticsChart from "@/components/ecommerce/StatisticsChart";
+import TodayView from "@/components/today/TodayView";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "Dashboard | Admin Dashboard",
-  description: "Admin dashboard overview",
+type TodayPageProps = {
+  params: Promise<{ locale: string }>;
 };
 
-export default function Ecommerce() {
-  return (
-    <div className="grid grid-cols-12 gap-4 md:gap-6">
-      <div className="col-span-12 space-y-6 xl:col-span-7">
-        <EcommerceMetrics />
+export async function generateMetadata({
+  params,
+}: TodayPageProps): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "today" });
 
-        <MonthlySalesChart />
-      </div>
+  return {
+    title: `${t("title")} | LifeOS`,
+    description: t("metaDescription"),
+  };
+}
 
-      <div className="col-span-12 xl:col-span-5">
-        <MonthlyTarget />
-      </div>
+export default async function Today({ params }: TodayPageProps) {
+  const { locale } = await params;
 
-      <div className="col-span-12">
-        <StatisticsChart />
-      </div>
+  // Opts the page into static rendering (the layout sets this too, but pages
+  // are rendered in isolation when prerendering).
+  setRequestLocale(locale);
 
-      <div className="col-span-12 xl:col-span-5">
-        <DemographicCard />
-      </div>
-
-      <div className="col-span-12 xl:col-span-7">
-        <RecentOrders />
-      </div>
-    </div>
-  );
+  return <TodayView />;
 }
