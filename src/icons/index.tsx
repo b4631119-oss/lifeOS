@@ -29,6 +29,7 @@ export { default as FileIcon } from "./file.svg";
 export { default as FlameIcon } from "./flame.svg";
 export { default as DeFlagIcon } from "./flag-de.svg";
 export { default as EsFlagIcon } from "./flag-es.svg";
+export { default as RuFlagIcon } from "./flag-ru.svg";
 export { default as SaFlagIcon } from "./flag-sa.svg";
 export { default as UsFlagIcon } from "./flag-us.svg";
 export { default as FolderIcon } from "./folder.svg";
