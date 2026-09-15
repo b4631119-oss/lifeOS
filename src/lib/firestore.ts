@@ -40,6 +40,7 @@ import { getFirestoreDb } from "./firebase";
 const TASKS = "tasks";
 const HABITS = "habits";
 const HABIT_LOGS = "habitLogs";
+const GOALS = "goals";
 function userCollection(uid: string, name: string) {
   return collection(getFirestoreDb(), "users", uid, name);
 }
@@ -83,6 +84,18 @@ function mapHabitLog(snap: Snap): HabitLog {
     habitId: (data.habitId as string) ?? "",
     date: (data.date as string) ?? "",
     done: Boolean(data.done),
+  };
+}
+
+function mapGoal(snap: Snap): Goal {
+  const data = snap.data();
+  return {
+    id: snap.id,
+    title: (data.title as string) ?? "",
+    description: (data.description as string) ?? "",
+    deadline: (data.deadline as string) ?? "",
+    subtasks: (data.subtasks as Goal["subtasks"]) ?? [],
+    createdAt: (data.createdAt as Timestamp | null) ?? null,
   };
 }
 
@@ -313,3 +326,43 @@ export function subscribeToHabitLogs(
 }
 
 /* ----------------------------------- goals ---------------------------------- */
+
+export async function getGoals(uid: string): Promise<Goal[]> {
+  const snapshot = await getDocs(userCollection(uid, GOALS));
+  return snapshot.docs.map(mapGoal);
+}
+
+export async function addGoal(uid: string, goal: NewGoal): Promise<string> {
+  const ref = await addDoc(userCollection(uid, GOALS), {
+    ...goal,
+    createdAt: serverTimestamp(),
+  });
+  return ref.id;
+}
+
+export async function updateGoal(
+  uid: string,
+  goalId: string,
+  data: Partial<NewGoal>,
+): Promise<void> {
+  await updateDoc(userDoc(uid, GOALS, goalId), data);
+}
+
+export async function deleteGoal(uid: string, goalId: string): Promise<void> {
+  await deleteDoc(userDoc(uid, GOALS, goalId));
+}
+
+/** Subscribes to all of the user's goals. */
+export function subscribeToGoals(
+  uid: string,
+  onNext: (goals: Goal[]) => void,
+  onError?: (error: Error) => void,
+): Unsubscribe {
+  return onSnapshot(
+    userCollection(uid, GOALS),
+    (snapshot) => onNext(snapshot.docs.map(mapGoal)),
+    (error) => onError?.(error),
+  );
+}
+
+/* ----------------------------------- notes ---------------------------------- */
