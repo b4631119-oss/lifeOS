@@ -17,10 +17,11 @@ import type {
 import FullCalendar, { CalendarRef } from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/react/daygrid";
 import interactionPlugin from "@fullcalendar/react/interaction";
+import ruLocale from "@fullcalendar/react/locales/ru";
 import multiMonthPlugin from "@fullcalendar/react/multimonth";
 import themePlugin from "@fullcalendar/react/themes/classic";
 import timeGridPlugin from "@fullcalendar/react/timegrid";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import React, { useEffect, useRef, useState } from "react";
 import CalendarEventItem from "./CalendarEventItem";
 import CalendarEventModal from "./CalendarEventModal";
@@ -56,8 +57,12 @@ const INITIAL_EVENTS: CalendarEvent[] = [
 ];
 
 const Calendar: React.FC = () => {
+  const t = useTranslations("calendar");
   const locale = useLocale();
   const isRtlLayout = isRtl(locale as Locale);
+  // FullCalendar ships its own locale data; pair it with the active next-intl
+  // locale so the toolbar title and popover dates are localized too.
+  const calendarLocale = locale === "ru" ? ruLocale : "en";
   const { theme } = useTheme();
 
   const [events, setEvents] = useState<CalendarEvent[]>(INITIAL_EVENTS);
@@ -131,7 +136,8 @@ const Calendar: React.FC = () => {
 
   const handleSaveEvent = (formData: EventFormData) => {
     const titleVal =
-      formData.title.trim() || (selectedEvent ? "Event" : "New Event");
+      formData.title.trim() ||
+      (selectedEvent ? t("defaultEventTitle") : t("defaultNewEventTitle"));
     const startDateVal = formData.start;
     const endDateVal = formData.end || startDateVal;
     const levelVal = formData.level || "Primary";
@@ -199,6 +205,7 @@ const Calendar: React.FC = () => {
           key={isRtlLayout ? "rtl" : "ltr"}
           ref={calendarRef}
           className="gap-0!"
+          locale={calendarLocale}
           plugins={[
             themePlugin,
             dayGridPlugin,
@@ -245,7 +252,7 @@ const Calendar: React.FC = () => {
                 "flex size-9! sm:size-10! p-0! items-center justify-center! rounded-lg! border! bg-transparent! border-gray-200! text-gray-700 hover:border-gray-200 hover:bg-gray-50! focus:shadow-none active:border-gray-200! active:bg-transparent! active:shadow-none! dark:border-gray-800! dark:text-gray-400 dark:hover:border-gray-800 dark:hover:bg-gray-900! dark:active:border-gray-800!",
             },
             addEventButton: {
-              text: "Add Event +",
+              text: t("addEvent"),
               click: () => handleOpenAddModal(),
               className:
                 "rounded-lg! border-0! bg-brand-500! px-3! sm:px-4! py-2! sm:py-2.5! text-xs! sm:text-sm! font-medium! text-white hover:bg-brand-600! focus:shadow-none! w-auto!",
@@ -346,7 +353,7 @@ const Calendar: React.FC = () => {
                 }
                 return (
                   <span className="fc-more-link-badge inline-flex items-center rounded-sm bg-brand-50 px-1 py-0.5 text-[10px] font-medium text-brand-600 transition-colors hover:bg-brand-100 sm:px-1.5 sm:text-xs dark:bg-brand-500/15 dark:text-brand-400 dark:hover:bg-brand-500/25">
-                    +{args.num} more
+                    {t("more", { count: args.num })}
                   </span>
                 );
               },
