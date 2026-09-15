@@ -36,23 +36,10 @@ const eslintConfig = defineConfig([
       ],
     },
   },
-  {
-    // TODO(lint-debt): pre-existing template violations, baselined so the
-    // `prebuild` lint gate can block *new* problems without freezing the build.
-    // The two rules are downgraded for these files only — never project-wide —
-    // so this list *is* the debt. Drop a file from it once its issue is fixed.
-    files: [
-      "jsvectormap.d.ts",
-      "src/context/ThemeContext.tsx",
-      "src/context/SidebarContext.tsx",
-      "src/layout/AppSidebar.tsx",
-      "src/components/calendar/CalendarEventModal.tsx",
-    ],
-    rules: {
-      "react-hooks/set-state-in-effect": "warn",
-      "@typescript-eslint/no-explicit-any": "warn",
-    },
-  },
+  // No baselined exceptions: the lint debt that used to be downgraded here
+  // (theme/sidebar state in effects, an `any` module shim) has been fixed, so
+  // the `prebuild` gate now runs the config as written — every rule below is an
+  // error for every file.
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:
