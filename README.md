@@ -1,6 +1,6 @@
-# Admin Dashboard
+# LifeOS
 
-A modern admin dashboard built with **Next.js 16**, **React 19**, **TypeScript**, and **Tailwind CSS v4**.
+Personal life management system — daily planning, habit tracking, goals, AI-powered day planning.
 
 ## Features
 
@@ -47,7 +47,7 @@ src/
 │   ├── common/              # Shared components
 │   ├── header/              # Header dropdowns
 │   └── <feature>/           # Feature-specific components
-├── layout/                  # Admin shell (sidebar, header)
+├── layout/                  # App shell (sidebar, header)
 ├── context/                 # React contexts (Sidebar, Theme)
 ├── hooks/                   # Custom hooks
 ├── icons/                   # SVG icons (SVGR)
