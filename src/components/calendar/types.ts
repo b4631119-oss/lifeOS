@@ -10,7 +10,8 @@ export interface CalendarEvent extends EventInput {
 
 export interface CalendarViewOption {
   key: string;
-  label: string;
+  /** Translation key under the `calendar.views` namespace. */
+  labelKey: string;
 }
 
 export interface EventFormData {
@@ -28,8 +29,8 @@ export const CALENDAR_EVENT_LEVELS: Record<CalendarEventLevel, string> = {
 };
 
 export const CALENDAR_VIEW_OPTIONS: CalendarViewOption[] = [
-  { key: "multiMonthYear", label: "Year" },
-  { key: "dayGridMonth", label: "Month" },
-  { key: "timeGridWeek", label: "Week" },
-  { key: "timeGridDay", label: "Day" },
+  { key: "multiMonthYear", labelKey: "views.year" },
+  { key: "dayGridMonth", labelKey: "views.month" },
+  { key: "timeGridWeek", labelKey: "views.week" },
+  { key: "timeGridDay", labelKey: "views.day" },
 ];

@@ -2,9 +2,10 @@
 
 import { useClickOutside } from "@/hooks/useClickOutside";
 import { cn } from "@/utils";
+import { useTranslations } from "next-intl";
 import React, { useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { CALENDAR_VIEW_OPTIONS } from "./types";
+import { CALENDAR_VIEW_OPTIONS, type CalendarViewOption } from "./types";
 
 export interface CalendarViewSelectProps {
   currentView: string;
@@ -17,10 +18,13 @@ const CalendarViewSelect: React.FC<CalendarViewSelectProps> = ({
   onViewChange,
   portalNode,
 }) => {
+  const t = useTranslations("calendar");
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useClickOutside(dropdownRef, () => setIsOpen(false));
+
+  const viewLabel = (view: CalendarViewOption) => t(view.labelKey);
 
   const activeOption =
     CALENDAR_VIEW_OPTIONS.find((v) => v.key === currentView) ||
@@ -43,7 +47,7 @@ const CalendarViewSelect: React.FC<CalendarViewSelectProps> = ({
         aria-expanded={isOpen}
         aria-haspopup="listbox"
       >
-        <span className="calendar-view-label">{activeOption.label}</span>
+        <span className="calendar-view-label">{viewLabel(activeOption)}</span>
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="16"
@@ -80,7 +84,7 @@ const CalendarViewSelect: React.FC<CalendarViewSelectProps> = ({
                   : "font-normal",
               )}
             >
-              {view.label}
+              {viewLabel(view)}
             </button>
           ))}
         </div>
