@@ -11,10 +11,7 @@ service cloud.firestore {
       // Any subcollection under users/{uid}: tasks, habits, habitLogs, goals, notes, ...
       match /{collection}/{docId} {
         allow read, write: if request.auth != null && request.auth.uid == uid;
-      } 
+      }
     }
   }
 }
-
-￼
-Вход через аккаунт Google
