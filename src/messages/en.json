@@ -1111,6 +1111,50 @@
       "delete": "We couldn't delete the goal. Please try again.",
       "decompose": "AI decomposition failed. Please try again later."
     }
+  },
+  "notes": {
+    "title": "Notes",
+    "metaDescription": "Write a note about your day and get a short AI reflection",
+    "subtitle": "A few lines about today — everything saves as you type.",
+    "todayTitle": "Today's note",
+    "placeholder": "How did today go?",
+    "summarize": "Make a summary",
+    "summarizing": "Summarizing…",
+    "summarizeHint": "Write a few words first — a summary needs something to work with.",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "deleteTitle": "Delete note",
+    "deleteMessage": "Delete the note from {date}? This can't be undone.",
+    "loading": "Loading your notes…",
+    "status": {
+      "idle": "Changes save automatically",
+      "saving": "Saving…",
+      "saved": "Saved at {time}",
+      "error": "We couldn't save your note"
+    },
+    "summary": {
+      "title": "AI summary",
+      "empty": "No summary yet. Write a few lines and let the AI reflect on your day.",
+      "loading": "Reading your day…",
+      "retry": "Try again"
+    },
+    "history": {
+      "title": "Earlier notes",
+      "count": "{count, plural, =0 {No notes yet} one {# note} other {# notes}}",
+      "empty": "Your earlier notes will show up here.",
+      "noText": "Empty note",
+      "summaryLabel": "AI summary",
+      "deleteNote": "Delete the note from {date}"
+    },
+    "errors": {
+      "load": "We couldn't load your notes. Please refresh the page.",
+      "save": "We couldn't save the note. Please try again.",
+      "delete": "We couldn't delete the note. Please try again.",
+      "rateLimit": "The AI is rate limited right now. Please try again in a minute.",
+      "notConfigured": "AI is not configured for this app.",
+      "summary": "We couldn't build a summary. Please try again."
+    }
   }
 }
 
