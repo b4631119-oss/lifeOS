@@ -1,4 +1,4 @@
-import { UsFlagIcon } from "@/icons";
+import { RuFlagIcon, UsFlagIcon } from "@/icons";
 
 import type { Locale } from "./routing";
 
@@ -18,6 +18,13 @@ export const languages: Language[] = [
     shortName: "English",
     dir: "ltr",
     FlagIcon: UsFlagIcon,
+  },
+  {
+    id: "ru",
+    name: "Русский",
+    shortName: "Русский",
+    dir: "ltr",
+    FlagIcon: RuFlagIcon,
   },
   // Add languages according to requirement
   // {
