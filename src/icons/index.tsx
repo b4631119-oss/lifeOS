@@ -26,6 +26,7 @@ export { default as EnvelopeIcon } from "./envelope.svg";
 export { default as EyeCloseIcon } from "./eye-close.svg";
 export { default as EyeIcon } from "./eye.svg";
 export { default as FileIcon } from "./file.svg";
+export { default as FlameIcon } from "./flame.svg";
 export { default as DeFlagIcon } from "./flag-de.svg";
 export { default as EsFlagIcon } from "./flag-es.svg";
 export { default as SaFlagIcon } from "./flag-sa.svg";
