@@ -5,7 +5,7 @@ import { BoxIcon } from "@/icons";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Buttons | Admin Dashboard",
+  title: "Buttons | LifeOS",
   description: "Button components",
 };
 

@@ -4,8 +4,8 @@ import { PlusIcon } from "@/icons";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Badges | Admin Dashboard",
-  description: "Badge components",
+  title: "Badges | LifeOS",
+  description: "Badge component examples",
 };
 
 export default function BadgePage() {

@@ -7,7 +7,7 @@ import { Metadata } from "next";
 import React from "react";
 
 export const metadata: Metadata = {
-  title: "Images | Admin Dashboard",
+  title: "Images | LifeOS",
   description: "Image components",
 };
 

@@ -4,7 +4,7 @@ import { Metadata } from "next";
 import React from "react";
 
 export const metadata: Metadata = {
-  title: "Videos | Admin Dashboard",
+  title: "Videos | LifeOS",
   description: "Video components",
 };
 

@@ -4,8 +4,8 @@ import Avatar from "@/components/ui/avatar/Avatar";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Avatars | Admin Dashboard",
-  description: "Avatar components",
+  title: "Avatars | LifeOS",
+  description: "Avatar component examples",
 };
 
 export default function AvatarPage() {

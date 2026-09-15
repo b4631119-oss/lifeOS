@@ -7,7 +7,7 @@ import VerticallyCenteredModal from "@/components/example/ModalExample/Verticall
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Modals | Admin Dashboard",
+  title: "Modals | LifeOS",
   description: "Modal components",
 };
 

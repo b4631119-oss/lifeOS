@@ -5,8 +5,8 @@ import { Metadata } from "next";
 import React from "react";
 
 export const metadata: Metadata = {
-  title: "Alerts | Admin Dashboard",
-  description: "Alert components",
+  title: "Alerts | LifeOS",
+  description: "Alert component examples",
 };
 
 export default function Alerts() {
