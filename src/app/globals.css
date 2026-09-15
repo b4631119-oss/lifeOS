@@ -4,7 +4,9 @@
 
 @theme {
   --font-*: initial;
-  --font-outfit: Outfit, sans-serif;
+  /* Outfit has no Cyrillic glyphs; Inter supplies them (Cyrillic only, since
+     Outfit covers the Latin range first) instead of falling back to Arial. */
+  --font-outfit: Outfit, Inter, sans-serif;
 
   --breakpoint-*: initial;
   --breakpoint-2xsm: 375px;
