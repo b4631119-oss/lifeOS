@@ -1,17 +1,23 @@
+"use client";
+
+import { useTranslations } from "next-intl";
+
 export default function DangerZone() {
+  const t = useTranslations("profile");
+
   return (
     <div className="mb-6 rounded-2xl border border-gray-200 bg-white p-5 lg:p-6 dark:border-gray-800 dark:bg-white/3">
       <h4 className="mb-4 text-lg font-semibold text-gray-800 lg:mb-6 dark:text-white/90">
-        Danger Zone
+        {t("dangerZone")}
       </h4>
       <div>
         <div className="flex flex-col justify-between gap-4 border-b border-gray-200 py-4 first:pt-0 last:border-b-0 last:pb-0 sm:flex-row sm:items-end dark:border-gray-800">
           <div>
             <span className="mb-1 block text-base font-medium text-gray-800 dark:text-white/90">
-              Logout all devices
+              {t("logoutAllDevices")}
             </span>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Sign out from every active session.
+              {t("logoutAllDevicesHint")}
             </p>
           </div>
           <div>
@@ -32,18 +38,17 @@ export default function DangerZone() {
                   strokeLinejoin="round"
                 />
               </svg>
-              Logout
+              {t("logout")}
             </button>
           </div>
         </div>
         <div className="flex flex-col justify-between gap-4 border-b border-gray-200 py-4 first:pt-0 last:border-b-0 last:pb-0 sm:flex-row sm:items-end dark:border-gray-800">
           <div>
             <span className="mb-1 block text-base font-medium text-gray-800 dark:text-white/90">
-              Delete account
+              {t("deleteAccount")}
             </span>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Once you delete your account, there is no going back. Please be
-              certain.
+              {t("deleteAccountHint")}
             </p>
           </div>
           <div>
@@ -63,7 +68,7 @@ export default function DangerZone() {
                   strokeLinejoin="round"
                 />
               </svg>
-              Delete account
+              {t("deleteAccount")}
             </button>
           </div>
         </div>
