@@ -43,7 +43,19 @@ type UseNotesResult = {
   summaryError: SummaryErrorCode | null;
   requestSummary: () => Promise<void>;
   removeNote: (noteId: string) => Promise<void>;
+  /** Repeats the initial read after it failed. */
+  reload: () => void;
 };
+
+/**
+ * The slice of the Firebase `User` this hook needs: an id to key the note and
+ * a token to authenticate the AI route. Accepting this shape (and `null`) lets
+ * callers pass the context user straight through, without narrowing first.
+ */
+export type NotesUser =
+  | { uid: string; getIdToken: () => Promise<string> }
+  | null
+  | undefined;
 
 /**
  * One note per day, keyed by date.
@@ -54,7 +66,8 @@ type UseNotesResult = {
  * the user's cursor. The same reasoning as `useAnalytics`: nothing else writes
  * notes, so there is no second writer to stay in sync with.
  */
-export function useNotes(uid: string | undefined): UseNotesResult {
+export function useNotes(user: NotesUser): UseNotesResult {
+  const uid = user?.uid;
   const today = useMemo(() => todayKey(), []);
 
   const [content, setContentState] = useState("");
@@ -68,6 +81,8 @@ export function useNotes(uid: string | undefined): UseNotesResult {
   const [summaryError, setSummaryError] = useState<SummaryErrorCode | null>(
     null,
   );
+  // Bumping this repeats the one-shot read below.
+  const [attempt, setAttempt] = useState(0);
 
   const latestContentRef = useRef("");
   const lastSavedRef = useRef("");
@@ -113,7 +128,13 @@ export function useNotes(uid: string | undefined): UseNotesResult {
     return () => {
       cancelled = true;
     };
-  }, [uid, today]);
+  }, [uid, today, attempt]);
+
+  const reload = useCallback(() => {
+    setError(null);
+    setLoaded(false);
+    setAttempt((value) => value + 1);
+  }, []);
 
   /** Writes one revision; resolves to whether it reached Firestore. */
   const persist = useCallback(
@@ -191,7 +212,9 @@ export function useNotes(uid: string | undefined): UseNotesResult {
 
   const requestSummary = useCallback(async () => {
     const text = latestContentRef.current.trim();
-    if (!uid || !text || summarizing) return;
+    // Both are checked because `uid` is what the summary is written under:
+    // without it there is no document to attach the result to.
+    if (!user || !uid || !text || summarizing) return;
 
     setSummarizing(true);
     setSummaryError(null);
@@ -201,9 +224,14 @@ export function useNotes(uid: string | undefined): UseNotesResult {
       // saved first — a note that has never been saved has no document yet.
       if (!(await writeContents(latestContentRef.current))) return;
 
+      const idToken = await user.getIdToken();
+
       const response = await fetch("/api/ai/summarize", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${idToken}`,
+        },
         body: JSON.stringify({ content: text }),
       });
 
@@ -234,7 +262,7 @@ export function useNotes(uid: string | undefined): UseNotesResult {
     } finally {
       setSummarizing(false);
     }
-  }, [uid, today, summarizing, writeContents]);
+  }, [user, uid, today, summarizing, writeContents]);
 
   /** Rejects on failure so the confirmation modal can report it. */
   const removeNote = useCallback(
@@ -261,5 +289,6 @@ export function useNotes(uid: string | undefined): UseNotesResult {
     summaryError,
     requestSummary,
     removeNote,
+    reload,
   };
 }
