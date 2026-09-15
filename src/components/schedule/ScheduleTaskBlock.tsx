@@ -1,0 +1,96 @@
+"use client";
+
+import { useDraggable } from "@dnd-kit/core";
+import { formatTimeRange } from "@/lib/date";
+import type { LifeTask } from "@/types/lifeos";
+import { cn } from "@/utils";
+import { useLocale, useTranslations } from "next-intl";
+import { minutesToOffset, PX_PER_MINUTE, type PositionedTask } from "./timeGrid";
+
+/** Very short tasks (15 min ≈ 14px) would be unreadable — and undraggable. */
+const MIN_BLOCK_HEIGHT = 24;
+/** Below this the time range is dropped and only the title fits. */
+const COMPACT_BLOCK_HEIGHT = 44;
+/** Gap between neighbouring columns / the track edge. */
+const CARD_GAP_PX = 4;
+
+const STATUS_STYLES: Record<LifeTask["status"], string> = {
+  todo: "border-brand-200 bg-brand-50 text-brand-700 hover:bg-brand-100 dark:border-brand-500/30 dark:bg-brand-500/15 dark:text-brand-300 dark:hover:bg-brand-500/25",
+  in_progress:
+    "border-warning-200 bg-warning-50 text-warning-700 hover:bg-warning-100 dark:border-warning-500/30 dark:bg-warning-500/15 dark:text-orange-400 dark:hover:bg-warning-500/25",
+  done: "border-success-200 bg-success-50 text-success-700 hover:bg-success-100 dark:border-success-500/30 dark:bg-success-500/15 dark:text-success-500 dark:hover:bg-success-500/25",
+};
+
+interface ScheduleTaskBlockProps {
+  row: PositionedTask;
+  onEdit: (task: LifeTask) => void;
+}
+
+/**
+ * One draggable task on the timeline.
+ *
+ * The outermost element keeps the block's real geometry and is itself the drag
+ * node, so the `restrictToParentElement` modifier (configured on the context)
+ * measures against the whole 24h track rather than a tight wrapper. A click
+ * opens the edit modal — the drag only starts after a few pixels of movement
+ * (see the sensor's activation constraint), so a click is never a drag.
+ */
+export default function ScheduleTaskBlock({
+  row,
+  onEdit,
+}: ScheduleTaskBlockProps) {
+  const t = useTranslations("schedule");
+  const locale = useLocale();
+  const { task } = row;
+
+  const { attributes, listeners, setNodeRef, transform, isDragging } =
+    useDraggable({ id: task.id });
+
+  const blockHeight = Math.max(
+    (row.endMinutes - row.startMinutes) * PX_PER_MINUTE,
+    MIN_BLOCK_HEIGHT,
+  );
+  const compact = blockHeight < COMPACT_BLOCK_HEIGHT;
+  const timeRange = formatTimeRange(task.startTime, task.endTime, locale);
+
+  return (
+    <div
+      ref={setNodeRef}
+      {...listeners}
+      {...attributes}
+      onClick={(event) => {
+        // Keep the click from reaching the track, which would open the
+        // create-task form for the slot underneath this block.
+        event.stopPropagation();
+        onEdit(task);
+      }}
+      aria-label={t("blockLabel", { title: task.title, range: timeRange })}
+      style={{
+        top: minutesToOffset(row.startMinutes),
+        height: blockHeight,
+        insetInlineStart: `${(row.column / row.columnCount) * 100}%`,
+        // Shave the column gap off the inline size instead of using padding, so
+        // neighbouring cards keep a visible gutter without touching borders.
+        inlineSize: `calc(${100 / row.columnCount}% - ${CARD_GAP_PX}px)`,
+        transform: transform ? `translate3d(0, ${transform.y}px, 0)` : undefined,
+      }}
+      className={cn(
+        "absolute z-10 cursor-grab touch-none rounded-lg border px-2 py-1 text-start transition-colors select-none focus:ring-3 focus:ring-brand-500/20 focus:outline-hidden active:cursor-grabbing",
+        "flex flex-col justify-center overflow-hidden",
+        STATUS_STYLES[task.status],
+        task.status === "done" && "opacity-70",
+        isDragging && "z-30 cursor-grabbing shadow-theme-lg opacity-95",
+      )}
+    >
+      <p
+        className={cn(
+          "truncate text-xs font-medium",
+          task.status === "done" && "line-through",
+        )}
+      >
+        {task.title}
+      </p>
+      {!compact && <p className="truncate text-[11px] opacity-80">{timeRange}</p>}
+    </div>
+  );
+}
