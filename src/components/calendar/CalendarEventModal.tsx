@@ -2,6 +2,7 @@
 
 import { Modal } from "@/components/ui/modal";
 import { cn } from "@/utils";
+import { useTranslations } from "next-intl";
 import React, { useEffect, useState } from "react";
 import {
   CALENDAR_EVENT_LEVELS,
@@ -26,6 +27,7 @@ const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
   initialEndDate = "",
   onSave,
 }) => {
+  const t = useTranslations("calendar");
   const [eventTitle, setEventTitle] = useState("");
   const [eventStartDate, setEventStartDate] = useState("");
   const [eventEndDate, setEventEndDate] = useState("");
@@ -60,7 +62,8 @@ const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const titleVal =
-      eventTitle.trim() || (selectedEvent ? "Event" : "New Event");
+      eventTitle.trim() ||
+      (selectedEvent ? t("defaultEventTitle") : t("defaultNewEventTitle"));
     const startDateVal = eventStartDate;
     const endDateVal = eventEndDate || startDateVal;
     const levelVal = eventLevel || "Primary";
@@ -85,11 +88,10 @@ const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
       >
         <div>
           <h5 className="modal-title mb-2 text-theme-xl font-semibold text-gray-800 lg:text-2xl dark:text-white/90">
-            {selectedEvent ? "Edit Event" : "Add Event"}
+            {selectedEvent ? t("editEventTitle") : t("addEventTitle")}
           </h5>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Plan your next big moment: schedule or edit an event to stay on
-            track
+            {t("modalSubtitle")}
           </p>
         </div>
 
@@ -99,7 +101,7 @@ const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
               htmlFor="event-title"
               className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400"
             >
-              Event Title
+              {t("eventTitle")}
             </label>
             <input
               id="event-title"
@@ -112,7 +114,7 @@ const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
 
           <div>
             <label className="mb-4 block text-sm font-medium text-gray-700 dark:text-gray-400">
-              Event Color
+              {t("eventColor")}
             </label>
             <div className="flex flex-wrap items-center gap-3 sm:gap-4">
               {Object.entries(CALENDAR_EVENT_LEVELS).map(([key, value]) => (
@@ -143,7 +145,7 @@ const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
                           />
                         </span>
                       </span>
-                      {key}
+                      {t(`levels.${key.toLowerCase()}`)}
                     </label>
                   </div>
                 </div>
@@ -156,7 +158,7 @@ const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
               htmlFor="event-start-date"
               className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400"
             >
-              Enter Start Date
+              {t("startDate")}
             </label>
             <div className="relative">
               <input
@@ -174,7 +176,7 @@ const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
               htmlFor="event-end-date"
               className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400"
             >
-              Enter End Date
+              {t("endDate")}
             </label>
             <div className="relative">
               <input
@@ -194,7 +196,7 @@ const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
             type="button"
             className="modal-close-btn flex w-full justify-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 sm:w-auto dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/3"
           >
-            Close
+            {t("close")}
           </button>
           <button
             type="submit"
@@ -203,7 +205,7 @@ const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
               selectedEvent ? "btn-update-event" : "btn-add-event",
             )}
           >
-            {selectedEvent ? "Update Changes" : "Add Event"}
+            {selectedEvent ? t("updateChanges") : t("addEventAction")}
           </button>
         </div>
       </form>
