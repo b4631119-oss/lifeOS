@@ -1,5 +1,7 @@
 "use client";
 
+import ConfirmModal from "@/components/common/ConfirmModal";
+import ErrorBanner from "@/components/common/ErrorBanner";
 import { useAuth } from "@/context/AuthContext";
 import { useModal } from "@/hooks/useModal";
 import { useTodayTasks, type TaskDraft } from "@/hooks/useTodayTasks";
@@ -7,7 +9,6 @@ import type { LifeTask } from "@/types/lifeos";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import DayProgress from "./DayProgress";
-import DeleteTaskModal from "./DeleteTaskModal";
 import TaskFormModal from "./TaskFormModal";
 import TaskList from "./TaskList";
 import TodayHeader from "./TodayHeader";
@@ -23,6 +24,7 @@ export default function TodayView() {
     editTask,
     removeTask,
     toggleTaskDone,
+    reload,
   } = useTodayTasks(user?.uid);
 
   const formModal = useModal();
@@ -65,11 +67,7 @@ export default function TodayView() {
     <div>
       <TodayHeader onAddTask={handleCreate} />
 
-      {error && (
-        <div className="mb-6 rounded-lg border border-error-500/30 bg-error-50 px-4 py-3 text-theme-sm text-error-600 dark:bg-error-500/10 dark:text-error-400">
-          {t("errors.load")}
-        </div>
-      )}
+      {error && <ErrorBanner message={t("errors.load")} onRetry={reload} />}
 
       <div className="mb-6">
         <DayProgress tasks={tasks} />
@@ -90,9 +88,11 @@ export default function TodayView() {
         onSubmit={handleSubmit}
       />
 
-      <DeleteTaskModal
+      <ConfirmModal
         isOpen={deleteModal.isOpen}
-        taskTitle={taskToDelete?.title ?? null}
+        namespace="today"
+        subjectKey="title"
+        subject={taskToDelete?.title ?? null}
         onClose={deleteModal.closeModal}
         onConfirm={handleConfirmDelete}
       />
