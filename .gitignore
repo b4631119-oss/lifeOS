@@ -27,7 +27,11 @@ yarn-debug.log*
 yarn-error.log*
 
 # local env files
+.env
 .env*.local
+
+# editor/tooling metadata
+.freebuff/
 
 # vercel
 .vercel
