@@ -1,17 +1,19 @@
 {
-  "name": "admin-dashboard",
+  "name": "lifeos",
   "version": "1.0.0",
   "private": true,
-  "description": "Admin dashboard built with Next.js, TypeScript, and Tailwind CSS",
+  "description": "Personal life management system — daily planning, habit tracking, goals, AI-powered day planning",
   "author": "",
   "repository": "",
   "homepage": "",
   "bugs": "",
   "scripts": {
     "dev": "next dev",
+    "prebuild": "eslint .",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test": "node --test \"src/**/*.test.ts\""
   },
   "dependencies": {
     "@fullcalendar/react": "^7.1.0",
