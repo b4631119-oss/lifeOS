@@ -41,6 +41,8 @@ const TASKS = "tasks";
 const HABITS = "habits";
 const HABIT_LOGS = "habitLogs";
 const GOALS = "goals";
+const NOTES = "notes";
+
 function userCollection(uid: string, name: string) {
   return collection(getFirestoreDb(), "users", uid, name);
 }
@@ -99,6 +101,20 @@ function mapGoal(snap: Snap): Goal {
   };
 }
 
+function mapNote(snap: Snap): Note {
+  const data = snap.data();
+  return {
+    id: snap.id,
+    date: (data.date as string) ?? "",
+    content: (data.content as string) ?? "",
+    aiSummary: (data.aiSummary as string | null) ?? null,
+    createdAt: (data.createdAt as Timestamp | null) ?? null,
+  };
+}
+
+/* ------------------------------- user profile ------------------------------- */
+
+/** Creates `users/{uid}` on first sign-in and refreshes the public fields afterwards. */
 export async function ensureUserProfile(
   uid: string,
   profile: NewUserProfile,
@@ -366,3 +382,54 @@ export function subscribeToGoals(
 }
 
 /* ----------------------------------- notes ---------------------------------- */
+
+export async function getNotes(uid: string, date?: string): Promise<Note[]> {
+  const source = date
+    ? query(userCollection(uid, NOTES), where("date", "==", date))
+    : userCollection(uid, NOTES);
+
+  const snapshot = await getDocs(source);
+  return snapshot.docs.map(mapNote);
+}
+
+/**
+ * Creates or updates the note for `date`.
+ *
+ * The document id *is* the date (`users/{uid}/notes/2026-09-15`), so there can
+ * only ever be one note per day: a save can never race a second document into
+ * existence, and today's note needs no query to be found — its id is known.
+ *
+ * `merge: true` keeps the write additive — it never clobbers a field it does not
+ * carry (the AI summary, say), which also means a save stays harmless if the
+ * initial read failed and left us unsure whether the note already exists.
+ * Pass `isNew` only when that note is known to be absent, so it gets its
+ * creation time; later saves must not restamp it.
+ */
+export async function saveNote(
+  uid: string,
+  date: string,
+  content: string,
+  isNew = false,
+): Promise<void> {
+  await setDoc(
+    userDoc(uid, NOTES, date),
+    {
+      date,
+      content,
+      ...(isNew ? { aiSummary: null, createdAt: serverTimestamp() } : {}),
+    },
+    { merge: true },
+  );
+}
+
+export async function updateNote(
+  uid: string,
+  noteId: string,
+  data: Partial<NewNote>,
+): Promise<void> {
+  await updateDoc(userDoc(uid, NOTES, noteId), data);
+}
+
+export async function deleteNote(uid: string, noteId: string): Promise<void> {
+  await deleteDoc(userDoc(uid, NOTES, noteId));
+}
