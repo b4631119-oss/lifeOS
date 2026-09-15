@@ -35,10 +35,13 @@ export default async function AuthLayout({
               <GridShape />
               <div className="flex flex-col items-center max-w-xs">
                 <Link href="/" className="block mb-4">
+                  {/* An absolute `/images/...`, not `./images/...`: the auth
+                      routes live under a locale prefix, so the relative path
+                      resolved to /ru/images/... and the logo 404ed there. */}
                   <Image
                     width={231}
                     height={48}
-                    src="./images/logo/auth-logo.svg"
+                    src="/images/logo/auth-logo.svg"
                     alt={tCommon("logoAlt")}
                   />
                 </Link>
