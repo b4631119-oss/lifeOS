@@ -30,23 +30,25 @@ export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [isExpanded, setIsExpanded] = useState(true);
-  const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [activeItem, setActiveItem] = useState<string | null>(null);
   const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
+  /**
+   * The route the mobile drawer was opened on, rather than a boolean: a
+   * navigation changes `pathname`, which closes the drawer by itself. That is
+   * what the old "close on route change" effect did, without the extra render.
+   */
+  const [mobileOpenAtPath, setMobileOpenAtPath] = useState<string | null>(null);
   const pathname = usePathname();
-  // Close sidebar on route change (for mobile)
-  useEffect(() => {
-    setIsMobileOpen(false);
-  }, [pathname]);
+  const isMobileOpen = mobileOpenAtPath === pathname;
 
   useEffect(() => {
     const handleResize = () => {
       const mobile = window.innerWidth < 768;
       setIsMobile(mobile);
       if (!mobile) {
-        setIsMobileOpen(false);
+        setMobileOpenAtPath(null);
       }
     };
 
@@ -63,7 +65,7 @@ export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const toggleMobileSidebar = () => {
-    setIsMobileOpen((prev) => !prev);
+    setMobileOpenAtPath((prev) => (prev === pathname ? null : pathname));
   };
 
   const toggleSubmenu = (item: string) => {
