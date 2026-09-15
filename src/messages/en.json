@@ -903,6 +903,42 @@
       "save": "We couldn't save the task. Please try again.",
       "delete": "We couldn't delete the task. Please try again."
     }
+  },
+  "habits": {
+    "title": "Habits",
+    "metaDescription": "Track your daily habits and keep your streaks alive",
+    "subtitle": "Build consistency, one day at a time.",
+    "addHabit": "Add habit",
+    "habitName": "Habit name",
+    "habitNamePlaceholder": "e.g. Sport, Reading",
+    "nameRequired": "Give the habit a name.",
+    "today": "Today",
+    "currentStreak": "Current streak",
+    "bestStreak": "Best streak",
+    "days": "{count, plural, one {# day} other {# days}}",
+    "activityTitle": "Last {weeks} weeks",
+    "legendDone": "Done",
+    "legendMissed": "Missed",
+    "archive": "Archive",
+    "archived": "Archived",
+    "archivedHint": "Inactive habits. Your history is kept and can be restored any time.",
+    "reactivate": "Reactivate",
+    "rename": "Rename",
+    "renameTitle": "Rename habit",
+    "moreOptions": "More options",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "deleteTitle": "Delete habit",
+    "deleteMessage": "Delete \"{name}\"? All of its history will be removed too. This can't be undone.",
+    "loading": "Loading your habits…",
+    "emptyTitle": "No habits yet",
+    "emptyMessage": "Add your first habit and start building a streak.",
+    "errors": {
+      "load": "We couldn't load your habits. Please refresh the page.",
+      "save": "We couldn't save the habit. Please try again.",
+      "delete": "We couldn't delete the habit. Please try again."
+    }
   }
 }
 
