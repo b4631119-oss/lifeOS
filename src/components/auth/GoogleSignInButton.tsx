@@ -3,6 +3,7 @@
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "@/i18n/navigation";
 import { GoogleIcon } from "@/icons";
+import { authErrorKey, currentHost, firebaseAuthCode } from "@/lib/authErrors";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
@@ -16,11 +17,17 @@ export default function GoogleSignInButton() {
   const handleSignIn = async () => {
     setIsLoading(true);
     setError(null);
+
     try {
       await loginWithGoogle();
       router.replace("/");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : t("errors.google"));
+    } catch (cause) {
+      // Firebase's own message is English and cryptic
+      // (`Firebase: Error (auth/unauthorized-domain)`), so it is mapped to a
+      // translated one; the domain case also names the host to allow-list,
+      // which is the only way to act on it without reading Firebase docs.
+      console.error("Google sign-in failed:", firebaseAuthCode(cause) ?? cause);
+      setError(t(`errors.${authErrorKey(cause)}`, { host: currentHost() }));
     } finally {
       setIsLoading(false);
     }
