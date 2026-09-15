@@ -11,6 +11,7 @@ import {
   CalenderIcon,
   CheckCircleIcon,
   ChevronDownIcon,
+  DocsIcon,
   GridIcon,
   HorizontaLDots,
   ListIcon,
@@ -64,6 +65,11 @@ const navItems: NavItem[] = [
     icon: <PieChartIcon />,
     key: "analytics",
     path: "/analytics",
+  },
+  {
+    icon: <DocsIcon />,
+    key: "notes",
+    path: "/notes",
   },
   {
     icon: <CalenderIcon />,
