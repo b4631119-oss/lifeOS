@@ -9,6 +9,7 @@ import { useSidebar } from "../context/SidebarContext";
 import {
   BoxCubeIcon,
   CalenderIcon,
+  CheckCircleIcon,
   ChevronDownIcon,
   GridIcon,
   HorizontaLDots,
@@ -41,6 +42,11 @@ const navItems: NavItem[] = [
     icon: <GridIcon />,
     key: "dashboard",
     subItems: [{ key: "ecommerceHome", path: "/" }],
+  },
+  {
+    icon: <CheckCircleIcon />,
+    key: "habits",
+    path: "/habits",
   },
   {
     icon: <CalenderIcon />,
