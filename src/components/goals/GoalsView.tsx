@@ -1,5 +1,8 @@
 "use client";
 
+import ConfirmModal from "@/components/common/ConfirmModal";
+import ErrorBanner from "@/components/common/ErrorBanner";
+import NoticeModal from "@/components/common/NoticeModal";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import { useAuth } from "@/context/AuthContext";
 import { useGoals } from "@/hooks/useGoals";
@@ -9,7 +12,6 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 import GoalCard from "./GoalCard";
 import GoalForm from "./GoalForm";
-import DeleteGoalModal from "./DeleteGoalModal";
 import GoalEmptyState from "./GoalEmptyState";
 
 export default function GoalsView() {
@@ -22,12 +24,19 @@ export default function GoalsView() {
     createGoal,
     updateGoal,
     deleteGoal,
+    reload,
   } = useGoals(user?.uid);
 
   const deleteModal = useModal();
   const [goalToDelete, setGoalToDelete] = useState<Goal | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
+  /** Result of an AI breakdown, shown in a dialog instead of `alert()`. */
+  const [notice, setNotice] = useState<{
+    tone: "success" | "error";
+    title: string;
+    message: string;
+  } | null>(null);
 
   const handleDeleteRequest = (goal: Goal) => {
     setGoalToDelete(goal);
@@ -61,9 +70,15 @@ export default function GoalsView() {
 
   const handleDecompose = async (goal: Goal) => {
     try {
+      const idToken = await user?.getIdToken();
+      if (!idToken) throw new Error("Not authenticated");
+
       const response = await fetch("/api/ai/decompose", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${idToken}`,
+        },
         body: JSON.stringify({ title: goal.title, description: goal.description }),
       });
 
@@ -83,10 +98,17 @@ export default function GoalsView() {
         subtasks: [...goal.subtasks, ...newSubtasks],
       });
 
-      // Show success toast or notification
-      alert(t("decomposeSuccess", { count: newSubtasks.length }));
+      setNotice({
+        tone: "success",
+        title: t("decomposeSuccessTitle"),
+        message: t("decomposeSuccess", { count: newSubtasks.length }),
+      });
     } catch {
-      alert(t("decomposeError"));
+      setNotice({
+        tone: "error",
+        title: t("decomposeErrorTitle"),
+        message: t("errors.decompose"),
+      });
     }
   };
 
@@ -115,11 +137,7 @@ export default function GoalsView() {
         {t("subtitle")}
       </p>
 
-      {error && (
-        <div className="mb-6 rounded-lg border border-error-500/30 bg-error-50 px-4 py-3 text-theme-sm text-error-600 dark:bg-error-500/10 dark:text-error-400">
-          {t("errors.load")}
-        </div>
-      )}
+      {error && <ErrorBanner message={t("errors.load")} onRetry={reload} />}
 
       {showForm && (
         <div className="mb-6">
@@ -181,11 +199,21 @@ export default function GoalsView() {
         </ul>
       )}
 
-      <DeleteGoalModal
+      <ConfirmModal
         isOpen={deleteModal.isOpen}
-        goalTitle={goalToDelete?.title ?? null}
+        namespace="goals"
+        subjectKey="title"
+        subject={goalToDelete?.title ?? null}
         onClose={deleteModal.closeModal}
         onConfirm={handleConfirmDelete}
+      />
+
+      <NoticeModal
+        isOpen={notice !== null}
+        tone={notice?.tone}
+        title={notice?.title ?? ""}
+        message={notice?.message ?? ""}
+        onClose={() => setNotice(null)}
       />
     </div>
   );
