@@ -148,6 +148,42 @@
     "language": "Language",
     "signOut": "Sign out"
   },
+  "auth": {
+    "tagline": "Your personal life management system — plan your day, build habits, reach your goals.",
+    "backToDashboard": "Back to dashboard",
+    "signInTitle": "Sign In",
+    "signInSubtitle": "Enter your email and password to sign in!",
+    "signUpTitle": "Sign Up",
+    "signUpSubtitle": "Enter your email and password to sign up!",
+    "signInWithGoogle": "Sign in with Google",
+    "signInWithX": "Sign in with X",
+    "signingIn": "Signing in…",
+    "signUpWithGoogle": "Sign up with Google",
+    "signUpWithX": "Sign up with X",
+    "or": "Or",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "email": "Email",
+    "password": "Password",
+    "firstNamePlaceholder": "Enter your first name",
+    "lastNamePlaceholder": "Enter your last name",
+    "emailPlaceholder": "info@gmail.com",
+    "signUpEmailPlaceholder": "Enter your email",
+    "passwordPlaceholder": "Enter your password",
+    "keepLoggedIn": "Keep me logged in",
+    "forgotPassword": "Forgot password?",
+    "signIn": "Sign in",
+    "signUp": "Sign Up",
+    "noAccount": "Don't have an account?",
+    "alreadyHaveAccount": "Already have an account?",
+    "termsPrefix": "By creating an account means you agree to the",
+    "terms": "Terms and Conditions,",
+    "andOur": "and our",
+    "privacyPolicy": "Privacy Policy",
+    "errors": {
+      "google": "Could not sign in with Google. Please try again."
+    }
+  },
   "ecommerce": {
     "title": "E-commerce Dashboard",
     "metrics": {

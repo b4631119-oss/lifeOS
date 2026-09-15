@@ -147,6 +147,42 @@
     "language": "Язык",
     "signOut": "Выйти"
   },
+  "auth": {
+    "tagline": "Ваша личная система управления жизнью — планируйте день, формируйте привычки и достигайте целей.",
+    "backToDashboard": "Вернуться на главную",
+    "signInTitle": "Вход",
+    "signInSubtitle": "Введите email и пароль, чтобы войти!",
+    "signUpTitle": "Регистрация",
+    "signUpSubtitle": "Введите email и пароль, чтобы зарегистрироваться!",
+    "signInWithGoogle": "Войти через Google",
+    "signInWithX": "Войти через X",
+    "signingIn": "Выполняется вход…",
+    "signUpWithGoogle": "Зарегистрироваться через Google",
+    "signUpWithX": "Зарегистрироваться через X",
+    "or": "Или",
+    "firstName": "Имя",
+    "lastName": "Фамилия",
+    "email": "Email",
+    "password": "Пароль",
+    "firstNamePlaceholder": "Введите имя",
+    "lastNamePlaceholder": "Введите фамилию",
+    "emailPlaceholder": "info@gmail.com",
+    "signUpEmailPlaceholder": "Введите email",
+    "passwordPlaceholder": "Введите пароль",
+    "keepLoggedIn": "Не выходить из аккаунта",
+    "forgotPassword": "Забыли пароль?",
+    "signIn": "Войти",
+    "signUp": "Зарегистрироваться",
+    "noAccount": "Нет аккаунта?",
+    "alreadyHaveAccount": "Уже есть аккаунт?",
+    "termsPrefix": "Создавая аккаунт, вы соглашаетесь с",
+    "terms": "Условиями и положениями,",
+    "andOur": "а также с",
+    "privacyPolicy": "Политикой конфиденциальности",
+    "errors": {
+      "google": "Не удалось войти через Google. Попробуйте ещё раз."
+    }
+  },
   "ecommerce": {
     "title": "Панель интернет-магазина",
     "metrics": {

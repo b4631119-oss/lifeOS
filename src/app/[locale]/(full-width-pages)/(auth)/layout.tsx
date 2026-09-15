@@ -2,15 +2,28 @@ import GridShape from "@/components/common/GridShape";
 import ThemeTogglerTwo from "@/components/common/ThemeTogglerTwo";
 
 import { ThemeProvider } from "@/context/ThemeContext";
+import { Link } from "@/i18n/navigation";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import Image from "next/image";
-import Link from "next/link";
 import React from "react";
 
-export default function AuthLayout({
-  children,
-}: {
+type AuthLayoutProps = {
   children: React.ReactNode;
-}) {
+  params: Promise<{ locale: string }>;
+};
+
+export default async function AuthLayout({
+  children,
+  params,
+}: AuthLayoutProps) {
+  const { locale } = await params;
+
+  // Opts the layout into static rendering (the root layout sets this too, but
+  // layouts are rendered in isolation when prerendering).
+  setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: "auth" });
+  const tCommon = await getTranslations({ locale, namespace: "common" });
+
   return (
     <div className="relative p-6 bg-white z-1 dark:bg-gray-900 sm:p-0">
       <ThemeProvider>
@@ -26,16 +39,16 @@ export default function AuthLayout({
                     width={231}
                     height={48}
                     src="./images/logo/auth-logo.svg"
-                    alt="Logo"
+                    alt={tCommon("logoAlt")}
                   />
                 </Link>
                 <p className="text-center text-gray-400 dark:text-white/60">
-                  Free and Open-Source Tailwind CSS Admin Dashboard Template
+                  {t("tagline")}
                 </p>
               </div>
             </div>
           </div>
-          <div className="fixed bottom-6 right-6 z-50 hidden sm:block">
+          <div className="fixed bottom-6 end-6 z-50 hidden sm:block">
             <ThemeTogglerTwo />
           </div>
         </div>
