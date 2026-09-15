@@ -1,6 +1,7 @@
 "use client";
 
 import { ThemeToggleButton } from "@/components/common/ThemeToggleButton";
+import LanguageSwitcher from "@/components/header/LanguageSwitcher";
 import NotificationDropdown from "@/components/header/NotificationDropdown";
 import UserDropdown from "@/components/header/UserDropdown";
 import { useSidebar } from "@/context/SidebarContext";
@@ -12,6 +13,7 @@ import { useEffect, useRef, useState } from "react";
 
 const AppHeader: React.FC = () => {
   const t = useTranslations("header");
+  const tCommon = useTranslations("common");
   const inputRef = useRef<HTMLInputElement>(null);
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
 
@@ -96,14 +98,14 @@ const AppHeader: React.FC = () => {
               height={32}
               className="dark:hidden"
               src="/images/logo/logo.svg"
-              alt="Logo"
+              alt={tCommon("logoAlt")}
             />
             <Image
               width={154}
               height={32}
               className="hidden dark:block"
               src="/images/logo/logo-dark.svg"
-              alt="Logo"
+              alt={tCommon("logoAlt")}
             />
           </Link>
 
@@ -168,6 +170,9 @@ const AppHeader: React.FC = () => {
           )}
         >
           <div className="flex items-center gap-2 2xsm:gap-3">
+            {/* <!-- Language Switcher --> */}
+            <LanguageSwitcher />
+
             {/* <!-- Dark Mode Toggler --> */}
             <ThemeToggleButton />
             {/* <!-- Dark Mode Toggler --> */}
