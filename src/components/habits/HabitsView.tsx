@@ -1,5 +1,7 @@
 "use client";
 
+import ConfirmModal from "@/components/common/ConfirmModal";
+import ErrorBanner from "@/components/common/ErrorBanner";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import { useAuth } from "@/context/AuthContext";
 import { useHabits } from "@/hooks/useHabits";
@@ -11,7 +13,6 @@ import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
 import ArchivedHabits from "./ArchivedHabits";
 import HabitForm from "./HabitForm";
-import DeleteHabitModal from "./DeleteHabitModal";
 import HabitList from "./HabitList";
 import HabitRenameModal from "./HabitRenameModal";
 
@@ -30,6 +31,7 @@ export default function HabitsView() {
     setHabitActive,
     toggleHabit,
     deleteHabit,
+    reload,
   } = useHabits(user?.uid);
 
   const renameModal = useModal();
@@ -85,11 +87,7 @@ export default function HabitsView() {
         <HabitForm onSubmit={createHabit} />
       </div>
 
-      {error && (
-        <div className="mb-6 rounded-lg border border-error-500/30 bg-error-50 px-4 py-3 text-theme-sm text-error-600 dark:bg-error-500/10 dark:text-error-400">
-          {t("errors.load")}
-        </div>
-      )}
+      {error && <ErrorBanner message={t("errors.load")} onRetry={reload} />}
 
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <span className="text-theme-xs text-gray-500 dark:text-gray-400">
@@ -129,9 +127,11 @@ export default function HabitsView() {
         onSubmit={handleRename}
       />
 
-      <DeleteHabitModal
+      <ConfirmModal
         isOpen={deleteModal.isOpen}
-        habitName={habitToDelete?.name ?? null}
+        namespace="habits"
+        subjectKey="name"
+        subject={habitToDelete?.name ?? null}
         onClose={deleteModal.closeModal}
         onConfirm={handleConfirmDelete}
       />
