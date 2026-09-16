@@ -45,7 +45,7 @@ export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({
 
   useEffect(() => {
     const handleResize = () => {
-      const mobile = window.innerWidth < 768;
+      const mobile = window.innerWidth < 1280;
       setIsMobile(mobile);
       if (!mobile) {
         setMobileOpenAtPath(null);
@@ -66,7 +66,15 @@ export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const toggleMobileSidebar = () => {
     setMobileOpenAtPath((prev) => (prev === pathname ? null : pathname));
-  };
+  }
+
+  // Lock body scroll when the mobile drawer is open.
+  useEffect(() => {
+    if (!isMobileOpen) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = previous || ""; };
+  }, [isMobileOpen]);
 
   const toggleSubmenu = (item: string) => {
     setOpenSubmenu((prev) => (prev === item ? null : item));
