@@ -8,6 +8,7 @@ import Image from "next/image";
 import { useCallback } from "react";
 import { useSidebar } from "../context/SidebarContext";
 import {
+  CalenderIcon,
   CheckCircleIcon,
   DocsIcon,
   GridIcon,
@@ -25,7 +26,7 @@ type NavItem = {
 };
 
 const AppSidebar: React.FC = () => {
-  const { isExpanded, isMobile, isMobileOpen, isHovered, setIsHovered } =
+  const { isExpanded, isMobile, isMobileOpen, isHovered, closeMobileSidebar } =
     useSidebar();
   const pathname = usePathname();
   const t = useTranslations();
@@ -36,9 +37,12 @@ const AppSidebar: React.FC = () => {
   // Every label is the module's own title (the same string the page metadata
   // uses), so the nav can never drift from the page it points at.
   const navItems: NavItem[] = [
-    { icon: <GridIcon />, label: t("today.title"), path: "/" },
-    { icon: <CheckCircleIcon />, label: t("habits.title"), path: "/habits" },
+    { icon: <GridIcon />, label: t("today.title"), path: "/today" },
+    // The week sits next to the day it is made of: plan and review here, then
+    // execute the day in Today.
+    { icon: <CalenderIcon />, label: t("week.title"), path: "/week" },
     { icon: <TimeIcon />, label: t("schedule.title"), path: "/schedule" },
+    { icon: <CheckCircleIcon />, label: t("habits.title"), path: "/habits" },
     { icon: <ShootingStarIcon />, label: t("goals.title"), path: "/goals" },
     { icon: <PieChartIcon />, label: t("analytics.title"), path: "/analytics" },
     { icon: <DocsIcon />, label: t("notes.title"), path: "/notes" },
@@ -53,6 +57,10 @@ const AppSidebar: React.FC = () => {
         <li key={nav.path}>
           <Link
             href={nav.path}
+            // The active item is marked for assistive technology too, not only
+            // by its colour: a screen reader gets "current page" like it would
+            // from a server-rendered menu.
+            aria-current={isActive(nav.path) ? "page" : undefined}
             className={cn(
               "group menu-item",
               isActive(nav.path) ? "menu-item-active" : "menu-item-inactive",
@@ -80,8 +88,11 @@ const AppSidebar: React.FC = () => {
           desktop the sidebar is always visible and has no close affordance. */}
       {isMobileOpen && (
         <button
-          onClick={() => setIsHovered(false)}
-          className="fixed top-4 right-4 z-[51] flex h-11 w-11 items-center justify-center rounded-full bg-white text-gray-500 shadow-md xl:hidden dark:bg-gray-900 dark:text-gray-400"
+          // Closes the drawer itself. It used to clear the hover state
+          // instead, which left the drawer open with no way out but the
+          // backdrop.
+          onClick={closeMobileSidebar}
+          className="fixed top-4 end-4 z-[51] flex h-11 w-11 items-center justify-center rounded-full bg-white text-gray-500 shadow-md xl:hidden dark:bg-gray-900 dark:text-gray-400"
           aria-label={tCommon("close")}
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -106,7 +117,7 @@ const AppSidebar: React.FC = () => {
             !isExpanded && !isHovered ? "xl:justify-center" : "justify-start",
           )}
         >
-          <Link href="/">
+          <Link href="/today">
             {isExpanded || isHovered || isMobileOpen ? (
               <>
                 <Image
