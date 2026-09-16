@@ -1,11 +1,11 @@
 "use client";
 
-import type { LifeTask } from "@/types/lifeos";
+import type { Goal, LifeTask } from "@/types/lifeos";
 import { useEffect, useRef } from "react";
 import NowIndicator from "./NowIndicator";
 import ScheduleTaskBlock from "./ScheduleTaskBlock";
 import TimeAxis from "./TimeAxis";
-import { minutesOfDay, useNowMs } from "./useNowMs";
+import { minutesOfDay, useNowMs } from "@/hooks/useNowMs";
 import {
   DAY_HEIGHT,
   DEFAULT_DURATION_MINUTES,
@@ -20,6 +20,8 @@ import {
 
 interface ScheduleGridProps {
   rows: PositionedTask[];
+  /** The user's goals by id, for the goal context on a block. */
+  goalsById: Record<string, Goal>;
   /** Opens the create form with the clicked slot's times. */
   onCreateAt: (startTime: string, endTime: string) => void;
   onEdit: (task: LifeTask) => void;
@@ -29,6 +31,7 @@ interface ScheduleGridProps {
 
 export default function ScheduleGrid({
   rows,
+  goalsById,
   onCreateAt,
   onEdit,
   isClickSuppressed,
@@ -100,7 +103,12 @@ export default function ScheduleGrid({
             />
 
             {rows.map((row) => (
-              <ScheduleTaskBlock key={row.task.id} row={row} onEdit={onEdit} />
+              <ScheduleTaskBlock
+                key={row.task.id}
+                row={row}
+                goal={row.task.goalId ? goalsById[row.task.goalId] : undefined}
+                onEdit={onEdit}
+              />
             ))}
 
             {nowMs !== null && <NowIndicator minutes={minutesOfDay(nowMs)} />}
