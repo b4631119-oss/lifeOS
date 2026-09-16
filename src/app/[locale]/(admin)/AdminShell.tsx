@@ -1,29 +1,28 @@
 "use client";
 
 import { AuthProvider, useAuth } from "@/context/AuthContext";
+import { DayProvider } from "@/context/DayContext";
 import { useSidebar } from "@/context/SidebarContext";
-import { usePathname, useRouter } from "@/i18n/navigation";
+import { useRouter } from "@/i18n/navigation";
 import AppHeader from "@/layout/AppHeader";
 import AppSidebar from "@/layout/AppSidebar";
 import Backdrop from "@/layout/Backdrop";
-import dynamic from "next/dynamic";
 import React, { useEffect } from "react";
 
 /**
- * Loaded only by signed-out visitors on the home route, so it stays out of the
- * chunk every other (admin) page ships.
+ * The authenticated shell.
+ *
+ * Every route in this group requires a signed-in user, so a guest is sent to
+ * the sign-in form. The public landing page is *not* part of this group any
+ * more (it lives at `[locale]/page.tsx` as a Server Component): keeping it here
+ * meant the landing was rendered by this client-side guard, which is why the
+ * document a crawler received was a spinner and why the Firestore SDK was part
+ * of the public page's bundle.
  */
-const LandingView = dynamic(() => import("@/components/landing/LandingView"));
-
 function AdminGuard({ children }: { children: React.ReactNode }) {
   const { isExpanded, isHovered, isMobileOpen } = useSidebar();
   const { user, loading } = useAuth();
   const router = useRouter();
-  const pathname = usePathname();
-
-  // A signed-out visitor on the home route gets the landing page instead of the
-  // dashboard; every other route keeps bouncing to the sign-in form.
-  const isHome = pathname === "/";
 
   const mainContentMargin = isMobileOpen
     ? "ml-0"
@@ -32,10 +31,10 @@ function AdminGuard({ children }: { children: React.ReactNode }) {
       : "xl:ml-[90px]";
 
   useEffect(() => {
-    if (!loading && !user && !isHome) {
+    if (!loading && !user) {
       router.replace("/signin");
     }
-  }, [loading, user, isHome, router]);
+  }, [loading, user, router]);
 
   if (loading) {
     return (
@@ -46,7 +45,7 @@ function AdminGuard({ children }: { children: React.ReactNode }) {
   }
 
   if (!user) {
-    return isHome ? <LandingView /> : null;
+    return null;
   }
 
   return (
@@ -66,7 +65,11 @@ function AdminGuard({ children }: { children: React.ReactNode }) {
 export default function AdminShell({ children }: { children: React.ReactNode }) {
   return (
     <AuthProvider>
-      <AdminGuard>{children}</AdminGuard>
+      {/* The selected day is shared by Today and Schedule, so switching views
+          cannot silently move the user to a different date. */}
+      <DayProvider>
+        <AdminGuard>{children}</AdminGuard>
+      </DayProvider>
     </AuthProvider>
   );
 }
