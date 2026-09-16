@@ -2,15 +2,28 @@
   "common": {
     "home": "Home",
     "logoAlt": "Logo",
-    "edit": "Edit",
     "close": "Close",
-    "saveChanges": "Save Changes",
-    "viewMore": "View More",
-    "delete": "Delete",
     "retry": "Retry",
-    "filter": "Filter",
-    "seeAll": "See all",
-    "toggleTheme": "Toggle theme"
+    "toggleTheme": "Toggle theme",
+    "accountNameFallback": "Your account",
+    "emailMissing": "Email unavailable",
+    "priorities": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High"
+    },
+    "goalStatuses": {
+      "active": "Active",
+      "completed": "Completed",
+      "archived": "Archived"
+    },
+    "goalRemoved": "Goal removed",
+    "openGoal": "Open goal “{title}”"
+  },
+  "dayNav": {
+    "previousDay": "Previous day",
+    "nextDay": "Next day",
+    "backToToday": "Today"
   },
   "sidebar": {
     "groups": {
@@ -18,16 +31,7 @@
     }
   },
   "header": {
-    "searchPlaceholder": "Search or type command...",
-    "toggleSidebar": "Toggle Sidebar",
-    "notifications": {
-      "title": "Notification",
-      "requestsPermission": "requests permission to change",
-      "project": "Project",
-      "minAgo": "{count} min ago",
-      "hrAgo": "{count} hr ago",
-      "viewAll": "View All Notifications"
-    }
+    "toggleSidebar": "Toggle Sidebar"
   },
   "userDropdown": {
     "editProfile": "Edit profile",
@@ -38,7 +42,7 @@
   },
   "auth": {
     "tagline": "Your personal life management system — plan your day, build habits, reach your goals.",
-    "backToDashboard": "Back to dashboard",
+    "backToHome": "Back to home",
     "signInTitle": "Sign In",
     "signInSubtitle": "Sign in with your Google account to continue.",
     "signUpTitle": "Sign Up",
@@ -46,8 +50,6 @@
     "signInWithGoogle": "Sign in with Google",
     "signingIn": "Signing in…",
     "signUpWithGoogle": "Sign up with Google",
-    "email": "Email",
-    "emailPlaceholder": "info@gmail.com",
     "signIn": "Sign in",
     "signUp": "Sign Up",
     "noAccount": "Don't have an account?",
@@ -60,27 +62,25 @@
       "network": "Could not reach Firebase. Check your connection and try again.",
       "notEnabled": "Google sign-in is not enabled for this Firebase project."
     },
-    "backToSignIn": "Back to sign in",
-    "resetPasswordTitle": "Reset password",
-    "resetPasswordSubtitle": "Enter your email and we will send you a link to set a new password.",
-    "sendResetLink": "Send reset link",
-    "sendingResetLink": "Sending…",
-    "resetLinkSentTitle": "Check your inbox",
-    "resetLinkSentBody": "We sent a password reset link to {email}.",
-    "resetPasswordMetaDescription": "Reset your LifeOS password — we send a link to your email.",
     "signInMetaDescription": "Sign in to LifeOS with your Google account — daily plan, habits, goals and analytics in one place.",
     "signUpMetaDescription": "Create your LifeOS account with Google — daily plan, habits, goals and analytics in one place."
   },
   "landing": {
+    "metaTitle": "LifeOS — personal life management system",
+    "metaDescription": "Plan the day hour by hour, keep habit streaks, break goals into steps and see what actually gets done — all behind one Google sign-in.",
     "title": "Plan the day, keep the habits, reach the goals",
-    "subtitle": "LifeOS is a personal life management system: one place for the daily schedule, habit streaks, goals and the numbers that show what is actually working.",
+    "subtitle": "LifeOS is a personal life management system: one place for the day and week plan, habit streaks, goals and the numbers that show what is actually working.",
     "modules": {
       "tasks": "Plan the day hour by hour and tick tasks off as they happen.",
-      "habits": "Track streaks on a month grid and see which habits hold up.",
-      "goals": "Break a goal into subtasks and watch the progress bar move.",
-      "analytics": "Completion rate, productive hours and a habit overview on one screen."
+      "week": "See the whole week, review what actually happened and plan the next one.",
+      "schedule": "The selected day as an hour-by-hour timeline: drag a task to another hour, or click an empty slot to plan one.",
+      "habits": "Track streaks on a 12-week grid and see which habits hold up.",
+      "goals": "Connect a goal to the tasks that move it forward and see how many are done.",
+      "analytics": "Completion rate, productive hours and a habit overview on one screen.",
+      "notes": "A daily note that saves as you type, with a dated history you can scroll back through."
     },
     "privacyNote": "Google sign-in only — everything stays under your own account.",
+    "openApp": "Open the dashboard",
     "signInPrompt": "Already have an account?",
     "signInLink": "Sign in"
   },
@@ -111,6 +111,38 @@
     "progressTitle": "Tasks completed",
     "timeElapsed": "Time elapsed",
     "ofTasks": "{done} of {total} tasks",
+    "plannedTime": "Planned time",
+    "durationHours": "{hours}h",
+    "durationHoursMinutes": "{hours}h {minutes}m",
+    "durationMinutes": "{minutes} min",
+    "withoutTime": "{count, plural, one {# task without a time} other {# tasks without a time}}",
+    "allScheduled": "Every task has a time",
+    "unscheduled": "No time set",
+    "current": "Now",
+    "next": "Next",
+    "quickAdd": "Add",
+    "quickAddPlaceholder": "Add a task…",
+    "quickAddHint": "Type a title and press Enter — no time needed.",
+    "timeAdd": "Add a time",
+    "timeRemove": "Remove the time",
+    "timeOptionalLabel": "Time (optional)",
+    "timeOptionalHint": "Optional — without a time the task simply has no slot in the day.",
+    "emptyMessageOtherDay": "Nothing was planned for this day. Add a task if you want to.",
+    "recovery": {
+      "title": "Unfinished from earlier days",
+      "hint": "Nothing moves forward by itself: carry a task to tomorrow, give it a new date, or take it off the plan.",
+      "carry": "Carry to tomorrow",
+      "reschedule": "Reschedule",
+      "drop": "Drop from plan",
+      "dropped": "Dropped",
+      "restore": "Back on the plan",
+      "hiddenCount": "{count, plural, one {# more unfinished task} other {# more unfinished tasks}}",
+      "olderHint": "Older days are still there — open one with the day arrows.",
+      "rescheduleTitle": "Reschedule task",
+      "rescheduleDate": "New date",
+      "rescheduleDateRequired": "Choose a valid date.",
+      "rescheduleSubmit": "Move task"
+    },
     "statuses": {
       "todo": "To do",
       "in_progress": "In progress",
@@ -118,14 +150,19 @@
     },
     "validation": {
       "titleRequired": "Give the task a title.",
-      "timeRequired": "Add a start and end time.",
+      "timeIncomplete": "Add both a start and an end time, or leave both empty.",
       "timeOrder": "The end time must be after the start time."
     },
     "errors": {
       "load": "We couldn't load your tasks. Please refresh the page.",
       "save": "We couldn't save the task. Please try again.",
       "delete": "We couldn't delete the task. Please try again."
-    }
+    },
+    "goal": "Goal",
+    "noGoal": "No goal",
+    "goalHint": "Optional — link the task to a goal if it moves one forward.",
+    "goalMissing": "Goal no longer exists",
+    "priority": "Priority"
   },
   "habits": {
     "title": "Habits",
@@ -165,8 +202,8 @@
   },
   "goals": {
     "title": "Goals",
-    "metaDescription": "Set long-term goals, break them into subtasks and track the progress.",
-    "subtitle": "Break down big goals into achievable steps",
+    "metaDescription": "Long-term goals tied to your daily tasks: task progress, the next action, and all the work done for a goal.",
+    "subtitle": "Goals are moved by tasks — link them and the work shows up in Today",
     "addGoal": "Add goal",
     "goalTitle": "Goal title",
     "goalTitlePlaceholder": "e.g. Learn a new language, Run a marathon",
@@ -181,34 +218,49 @@
     "edit": "Edit",
     "delete": "Delete",
     "deleteTitle": "Delete goal",
-    "deleteMessage": "Delete \"{title}\"? All of its subtasks will be removed too. This can't be undone.",
+    "deleteMessage": "Delete \"{title}\"? The tasks linked to it are not deleted — they stay in their days. This can't be undone.",
     "moreOptions": "More options",
-    "rename": "Rename",
-    "renameTitle": "Rename goal",
-    "archive": "Archive",
-    "archived": "Archived",
-    "archivedHint": "Completed or paused goals. Your progress is kept and can be restored any time.",
-    "reactivate": "Reactivate",
     "loading": "Loading your goals…",
     "emptyTitle": "No goals yet",
-    "emptyMessage": "Add your first goal and start making progress.",
-    "progress": "Progress",
-    "subtasks": "Subtasks",
-    "addSubtask": "Add subtask",
-    "subtaskTitle": "Subtask title",
-    "subtaskTitlePlaceholder": "What needs to be done?",
-    "subtaskRequired": "Give the subtask a title.",
-    "done": "Done",
-    "markDone": "Mark as done",
-    "markTodo": "Mark as to do",
-    "noSubtasks": "No subtasks yet",
+    "emptyMessage": "Add your first goal and connect it to the work that moves it.",
+    "taskProgress": "Task progress",
+    "tasksCompleted": "{done} of {total} tasks completed",
+    "droppedCount": "{count, plural, one {# dropped task} other {# dropped tasks}}",
+    "noLinkedTasks": "No linked tasks yet",
+    "noLinkedTasksHint": "No linked tasks yet — add the first one below and it shows up in Today like any other task.",
+    "nextAction": "Next action",
+    "noTimeSet": "No time set",
+    "addTask": "Add a task for this goal",
+    "openTasks": "Linked tasks",
+    "completedTasks": "Completed",
+    "noOpenTasks": "Nothing is open for this goal right now.",
+    "markComplete": "Mark complete",
+    "archive": "Archive",
+    "reopen": "Reopen",
+    "restore": "Restore",
+    "open": "Open",
+    "openGoal": "Open goal “{title}”",
+    "backToList": "All goals",
+    "notFoundTitle": "This goal no longer exists",
+    "notFoundMessage": "It was deleted. The tasks that were linked to it are still in your days — simply without a goal.",
+    "deadlineLabel": "Deadline:",
+    "markTaskDone": "Mark the task as done",
+    "markTaskTodo": "Mark the task as to do",
+    "deleteTask": "Delete task",
+    "legacyTitle": "Old checklist",
+    "legacyNote": "This goal still carries {open, plural, one {# step} other {# steps}} from the old checklist, plus {done, plural, one {# completed step} other {# completed steps}} kept as history. Moving the open ones turns them into tasks you can do and plan.",
+    "legacyMove": "Move open steps to tasks",
+    "legacyNoOpen": "Every step is already completed — nothing left to move.",
+    "legacyMoved": "{count, plural, one {Moved # step to a task.} other {Moved # steps to tasks.}}",
+    "legacySteps": "{count, plural, one {# step from the old checklist} other {# steps from the old checklist}}",
+    "legacyStepsAction": "review it on the goal page",
+    "finishedSection": "Completed and archived",
+    "finishedSectionHint": "They keep all of their work and stay reachable — they are just no longer offered for new tasks.",
     "errors": {
       "load": "We couldn't load your goals. Please refresh the page.",
       "save": "We couldn't save the goal. Please try again.",
       "delete": "We couldn't delete the goal. Please try again."
     },
-    "save": "Save",
-    "viewMore": "{count, plural, one {Show # more subtask} other {Show # more subtasks}}",
     "saving": "Saving…"
   },
   "schedule": {
@@ -227,10 +279,15 @@
     "dragging": "Moving {title}",
     "dropped": "{title} moved to {range}",
     "dragCancelled": "Moving {title} was cancelled",
+    "unscheduledTitle": "Without a time",
+    "unscheduledHint": "These tasks have no slot in the day yet. Open one to give it a time.",
+    "unscheduledOpen": "Open “{title}” to give it a time",
     "errors": {
       "load": "We couldn't load your schedule. Please refresh the page.",
-      "move": "We couldn't move the task. Please try again."
-    }
+      "move": "We couldn't move the task. Please try again.",
+      "save": "We couldn't save the task. Please try again."
+    },
+    "blockLabelGoal": "{title}, {range}, goal {goal}"
   },
   "analytics": {
     "title": "Analytics",
@@ -250,14 +307,11 @@
     },
     "taskChart": {
       "title": "Task completion",
-      "subtitle": "Share of each day's tasks you finished",
-      "series": "Completed",
-      "empty": "No tasks in this range yet"
+      "subtitle": "Share of each day's tasks you finished"
     },
     "hoursChart": {
       "title": "Productive hours",
       "subtitle": "When you usually mark tasks as done",
-      "series": "Tasks completed",
       "noDataTitle": "Not enough data yet",
       "noDataMessage": "This chart fills in as you complete tasks — a task's completion time is only recorded from now on."
     },
@@ -284,8 +338,6 @@
     "subtitle": "A few lines about today — everything saves as you type.",
     "todayTitle": "Today's note",
     "placeholder": "How did today go?",
-    "save": "Save",
-    "cancel": "Cancel",
     "delete": "Delete",
     "deleteTitle": "Delete note",
     "deleteMessage": "Delete the note from {date}? This can't be undone.",
@@ -311,50 +363,73 @@
   },
   "profile": {
     "title": "Profile",
-    "metaDescription": "Manage your account, preferences, and security",
-    "edit": "Edit",
-    "firstName": "First Name",
-    "lastName": "Last Name",
-    "emailAddress": "Email address",
-    "phone": "Phone",
-    "bio": "Bio",
-    "socialLinks": "Social Links",
-    "address": "Address",
-    "country": "Country",
-    "cityState": "City/State",
-    "postalCode": "Postal Code",
-    "taxId": "TAX ID",
-    "security": "Security",
-    "changePassword": "Change Password",
-    "changePasswordHint": "Receive real-time notifications and team alerts.",
-    "twoFactor": "Two-factor authentication (2FA)",
-    "twoFactorHint": "Keep your account secure by enabling 2FA",
-    "dangerZone": "Danger Zone",
-    "logoutAllDevices": "Logout all devices",
-    "logoutAllDevicesHint": "Sign out from every active session.",
-    "logout": "Logout",
-    "deleteAccount": "Delete account",
-    "deleteAccountHint": "Once you delete your account, there is no going back. Please be certain.",
-    "editPersonalInfo": "Edit Personal Information",
-    "editPersonalInfoHint": "Update your details to keep your profile up-to-date.",
-    "changeProfilePicture": "Change Profile Picture",
-    "uploadHint": "Upload a square image (200×200 px) in JPEG or PNG format.",
-    "personalInformation": "Personal Information",
-    "editAddress": "Edit Address",
-    "facebook": "Facebook",
-    "xcom": "X.com",
-    "linkedin": "Linkedin",
-    "instagram": "Instagram"
+    "metaDescription": "The account you are signed in with.",
+    "googleAccountNote": "Your name, email and photo come from the Google account you signed in with.",
+    "sessionTitle": "Session",
+    "sessionHint": "Signing out ends this session on this device."
   },
   "error": {
     "title": "Something went wrong",
     "message": "This page ran into an error. Your data is safe — try again."
   },
   "notFound": {
-    "title": "Page Not Found",
-    "metaDescription": "The page you’re looking for doesn’t exist",
     "error": "ERROR",
     "message": "We can’t seem to find the page you are looking for!",
     "backHome": "Back to Home Page"
+  },
+  "week": {
+    "title": "Week",
+    "metaDescription": "Your week as a whole: what is planned, what got done, and what to move next.",
+    "subtitle": "Plan the week, review what actually happened, and move what slipped into the next one.",
+    "previousWeek": "Previous week",
+    "nextWeek": "Next week",
+    "thisWeek": "This week",
+    "daysTitle": "Days of the week",
+    "loading": "Loading your week…",
+    "todayMarker": "Today",
+    "noTasks": "Nothing planned",
+    "openDay": "Open day",
+    "openDayAria": "Open {date} in Today",
+    "tasksDoneOf": "{done} / {total}",
+    "selectTask": "Select “{title}”",
+    "moveTask": "Move",
+    "moveTaskAria": "Move “{title}” to another day",
+    "dropTaskAria": "Take “{title}” off the plan",
+    "restoreTaskAria": "Put “{title}” back on the plan",
+    "errors": {
+      "load": "We couldn’t load your week. Please refresh the page.",
+      "save": "We couldn’t save the change. Please try again."
+    },
+    "review": {
+      "title": "Week review",
+      "completion": "Done of what was due",
+      "completionOf": "{done} of {due} tasks",
+      "nothingDue": "Nothing was due in this week yet.",
+      "futureHint": "This week has not started — everything here is still a plan.",
+      "planned": "Planned",
+      "completed": "Completed",
+      "unfinished": "Unfinished",
+      "upcoming": "Still to come",
+      "dropped": "Dropped",
+      "scheduled": "With a time",
+      "unscheduled": "Without a time",
+      "plannedTime": "Planned time",
+      "goalLinked": "Linked to a goal",
+      "carryTo": "Carry to {date}",
+      "hint": "Nothing moves forward by itself: carry a task into the next week, give it a new date, or take it off the plan.",
+      "hiddenHint": "The rest of the unfinished work is in the day cards below."
+    },
+    "bulk": {
+      "selected": "{count} selected",
+      "date": "Move to",
+      "move": "Move",
+      "clear": "Clear selection",
+      "moved": "{count, plural, one {# task moved} other {# tasks moved}}",
+      "dropped": "{count, plural, one {# task taken off the plan} other {# tasks taken off the plan}}",
+      "partial": "{done} of {total} changed — the rest could not be saved.",
+      "failedMove": "Nothing could be moved. Please try again.",
+      "failedDrop": "Nothing could be taken off the plan. Please try again.",
+      "dismiss": "Close"
+    }
   }
 }
