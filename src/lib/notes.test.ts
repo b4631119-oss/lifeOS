@@ -6,8 +6,8 @@ import type { Note } from "@/types/lifeos";
 import { noteExcerpt, previousNotes, sortNotesNewestFirst } from "./notes.ts";
 
 /** A note as Firestore would hand it back: the id is the date. */
-function note(date: string, content = "", aiSummary: string | null = null): Note {
-  return { id: date, date, content, aiSummary, createdAt: null };
+function note(date: string, content = ""): Note {
+  return { id: date, date, content, createdAt: null };
 }
 
 test("sortNotesNewestFirst orders by day, newest first, without mutating the input", () => {
