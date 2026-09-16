@@ -7,16 +7,14 @@ import type { Auth } from "firebase/auth";
  * This module deliberately imports nothing from the SDK at runtime: only the
  * two `import type`s above, which TypeScript erases. Everything that needs an
  * SDK instance loads it through the async helpers at the bottom, so a chunk
- * that only reads `isFirebaseConfigured` (the landing page deciding whether to
- * offer sign-in at all, say) does not drag ~190 KB of gzip behind it.
+ * that only reads `isFirebaseConfigured` does not drag the SDK behind it.
  *
- * `src/lib/firebase.ts` keeps the synchronous Firestore facade for the data
- * layer (`src/lib/firestore.ts` and the hooks, which cannot work without the
- * SDK anyway) and reads the same config object from here, so there is exactly
- * one place where the env vars are mapped.
+ * This is the *only* place the `NEXT_PUBLIC_FIREBASE_*` variables are mapped to
+ * config fields: `src/lib/firebase.ts` (the Firestore facade used by the data
+ * layer) imports the object from here rather than repeating the mapping.
  *
- * Values come from `NEXT_PUBLIC_*` environment variables (see `.env.example`)
- * because the client SDK runs in the browser.
+ * Values come from environment variables (see `.env.example`) because the
+ * client SDK runs in the browser.
  */
 export const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -32,11 +30,12 @@ export const isFirebaseConfigured = Boolean(
   firebaseConfig.apiKey && firebaseConfig.projectId,
 );
 
+/** Message shown when the app is used without a configured Firebase project. */
+export const NOT_CONFIGURED_MESSAGE =
+  "Firebase is not configured. Copy .env.example to .env and fill in the NEXT_PUBLIC_FIREBASE_* values.";
+
 let app: FirebaseApp | null = null;
 let auth: Auth | null = null;
-
-const NOT_CONFIGURED =
-  "Firebase is not configured. Copy .env.example to .env and fill in the NEXT_PUBLIC_FIREBASE_* values.";
 
 /**
  * The singleton app, initialized on first use.
@@ -48,7 +47,7 @@ const NOT_CONFIGURED =
  */
 export async function loadFirebaseApp(): Promise<FirebaseApp> {
   if (app) return app;
-  if (!isFirebaseConfigured) throw new Error(NOT_CONFIGURED);
+  if (!isFirebaseConfigured) throw new Error(NOT_CONFIGURED_MESSAGE);
 
   const { getApp, getApps, initializeApp } = await import("firebase/app");
   app = getApps().length ? getApp() : initializeApp(firebaseConfig);
