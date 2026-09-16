@@ -1,6 +1,6 @@
 "use client";
 
-import type { LifeTask } from "@/types/lifeos";
+import type { Goal, LifeTask } from "@/types/lifeos";
 import { useTranslations } from "next-intl";
 import TaskItem from "./TaskItem";
 import TodayEmptyState from "./TodayEmptyState";
@@ -8,6 +8,12 @@ import TodayEmptyState from "./TodayEmptyState";
 interface TaskListProps {
   tasks: LifeTask[];
   loading: boolean;
+  /** Whether the list belongs to today, which the empty state wording depends on. */
+  isToday: boolean;
+  /** The user's goals by id, so a linked task can show (and open) its goal. */
+  goalsById: Record<string, Goal>;
+  /** True once the goals list has answered, so a missing link is not guessed. */
+  goalsResolved: boolean;
   onToggle: (task: LifeTask) => void;
   onEdit: (task: LifeTask) => void;
   onDelete: (task: LifeTask) => void;
@@ -16,6 +22,9 @@ interface TaskListProps {
 export default function TaskList({
   tasks,
   loading,
+  isToday,
+  goalsById,
+  goalsResolved,
   onToggle,
   onEdit,
   onDelete,
@@ -33,7 +42,7 @@ export default function TaskList({
   }
 
   if (tasks.length === 0) {
-    return <TodayEmptyState />;
+    return <TodayEmptyState isToday={isToday} />;
   }
 
   return (
@@ -42,6 +51,8 @@ export default function TaskList({
         <TaskItem
           key={task.id}
           task={task}
+          goalsById={goalsById}
+          goalsResolved={goalsResolved}
           onToggle={onToggle}
           onEdit={onEdit}
           onDelete={onDelete}
