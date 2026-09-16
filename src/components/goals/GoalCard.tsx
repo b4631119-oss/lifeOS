@@ -1,105 +1,145 @@
 "use client";
 
-import { CheckLineIcon, PencilIcon, TrashBinIcon, ShootingStarIcon } from "@/icons";
-import { cn } from "@/utils";
-import { useTranslations } from "next-intl";
-import { useMemo, useState } from "react";
-import type { Goal, GoalSubtask } from "@/types/lifeos";
-import GoalActionsMenu from "./GoalActionsMenu";
+import Badge from "@/components/ui/badge/Badge";
+import { ShootingStarIcon } from "@/icons";
+import { Link, useRouter } from "@/i18n/navigation";
+import { formatTimeRange } from "@/lib/date";
+import {
+  goalProgressOf,
+  goalStatusOf,
+  nextActionFor,
+} from "@/lib/goals";
+import { isScheduled } from "@/lib/taskSchedule";
+import type { Goal, GoalStatus, LifeTask } from "@/types/lifeos";
+import { useLocale, useTranslations } from "next-intl";
+import GoalActionsMenu, { type GoalAction } from "./GoalActionsMenu";
+
+const STATUS_COLORS: Record<GoalStatus, "primary" | "success" | "light"> = {
+  active: "primary",
+  completed: "success",
+  archived: "light",
+};
 
 interface GoalCardProps {
   goal: Goal;
+  /** The tasks linked to this goal (already loaded by the list). */
+  tasks: LifeTask[];
+  /** Today, for ordering the next action. */
+  today: string;
+  /**
+   * True once the linked tasks have answered at least once.
+   *
+   * Progress is a count of real work, so it stays unshown while that work is
+   * still loading — a goal must never read "no linked tasks yet" just because
+   * its query is in flight.
+   */
+  tasksLoaded: boolean;
   onEditRequest: (goal: Goal) => void;
   onDeleteRequest: (goal: Goal) => void;
-  onToggleSubtask: (goalId: string, subtaskId: string, done: boolean) => Promise<void>;
-  onAddSubtask: (goalId: string, title: string) => Promise<void>;
-  onDeleteSubtask: (goalId: string, subtaskId: string) => Promise<void>;
-  onEditSubtask: (goalId: string, subtaskId: string, title: string) => Promise<void>;
+  /** Moves the goal between active, completed and archived. */
+  onStatusChange: (goal: Goal, status: GoalStatus) => void;
 }
 
+/**
+ * One goal, in terms of the work that moves it.
+ *
+ * Progress is "3 of 7 tasks completed" — a count of linked tasks, never a
+ * percentage of the goal being reached, because the app has no model of what
+ * reaching it would mean. A goal with nothing linked says so instead of showing
+ * a zero: "no linked tasks yet" is the honest reading of a goal nobody has
+ * turned into work.
+ */
 export default function GoalCard({
   goal,
+  tasks,
+  today,
+  tasksLoaded,
   onEditRequest,
   onDeleteRequest,
-  onToggleSubtask,
-  onAddSubtask,
-  onDeleteSubtask,
-  onEditSubtask,
+  onStatusChange,
 }: GoalCardProps) {
   const t = useTranslations("goals");
-  const [showAllSubtasks, setShowAllSubtasks] = useState(false);
-  const [editingSubtaskId, setEditingSubtaskId] = useState<string | null>(null);
-  const [editTitle, setEditTitle] = useState("");
-  const [addingSubtask, setAddingSubtask] = useState(false);
-  const [newSubtaskTitle, setNewSubtaskTitle] = useState("");
-  const [newSubtaskError, setNewSubtaskError] = useState(false);
+  const tCommon = useTranslations("common");
+  const locale = useLocale();
+  const router = useRouter();
 
-  const completedCount = goal.subtasks.filter((s) => s.done).length;
-  const totalCount = goal.subtasks.length;
-  const progress = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+  const status = goalStatusOf(goal);
+  const progress = goalProgressOf(tasks);
+  const nextAction = nextActionFor(tasks, today);
+  const legacySteps = goal.subtasks.length;
+  const percent =
+    progress.total === 0
+      ? 0
+      : Math.round((progress.done / progress.total) * 100);
 
-  const displaySubtasks = useMemo(() => {
-    if (showAllSubtasks || goal.subtasks.length <= 5) {
-      return goal.subtasks;
-    }
-    return goal.subtasks.slice(0, 5);
-  }, [goal.subtasks, showAllSubtasks]);
-
-  const handleAddSubtask = async () => {
-    const trimmed = newSubtaskTitle.trim();
-    if (!trimmed) {
-      setNewSubtaskError(true);
-      return;
-    }
-    setNewSubtaskError(false);
-    await onAddSubtask(goal.id, trimmed);
-    setNewSubtaskTitle("");
-    setAddingSubtask(false);
-  };
-
-  const handleEditSubtask = async (subtask: GoalSubtask) => {
-    const trimmed = editTitle.trim();
-    if (!trimmed) return;
-    await onEditSubtask(goal.id, subtask.id, trimmed);
-    setEditingSubtaskId(null);
-  };
-
-  const handleDeleteSubtask = async (subtaskId: string) => {
-    await onDeleteSubtask(goal.id, subtaskId);
-  };
-
-  const handleToggle = async (subtask: GoalSubtask) => {
-    await onToggleSubtask(goal.id, subtask.id, !subtask.done);
-  };
+  const statusAction: GoalAction[] =
+    status === "active"
+      ? [
+          {
+            key: "complete",
+            label: t("markComplete"),
+            onSelect: () => onStatusChange(goal, "completed"),
+          },
+          {
+            key: "archive",
+            label: t("archive"),
+            onSelect: () => onStatusChange(goal, "archived"),
+          },
+        ]
+      : status === "completed"
+        ? [
+            {
+              key: "reopen",
+              label: t("reopen"),
+              onSelect: () => onStatusChange(goal, "active"),
+            },
+            {
+              key: "archive",
+              label: t("archive"),
+              onSelect: () => onStatusChange(goal, "archived"),
+            },
+          ]
+        : [
+            {
+              key: "restore",
+              label: t("restore"),
+              onSelect: () => onStatusChange(goal, "active"),
+            },
+          ];
 
   return (
     <li className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <ShootingStarIcon className="h-5 w-5 text-brand-500" />
-            <h3 className="text-theme-sm font-semibold text-gray-800 dark:text-white/90 truncate">
-              {goal.title}
+          <div className="flex flex-wrap items-center gap-2">
+            <ShootingStarIcon className="h-5 w-5 shrink-0 text-brand-500" />
+            <h3 className="min-w-0 truncate text-theme-sm font-semibold text-gray-800 dark:text-white/90">
+              {/* The title is the way in: the goal page is where the work is. */}
+              <Link
+                href={`/goals/${goal.id}`}
+                aria-label={t("openGoal", { title: goal.title })}
+                className="rounded-sm hover:text-brand-600 focus:ring-3 focus:ring-brand-500/20 focus:outline-hidden dark:hover:text-brand-400"
+              >
+                {goal.title}
+              </Link>
             </h3>
+            <Badge size="sm" color={STATUS_COLORS[status]}>
+              {/* One wording for a goal's state, shared with the task form's
+                  goal selector — not two keys that can drift apart. */}
+              {tCommon(`goalStatuses.${status}`)}
+            </Badge>
           </div>
+
           {goal.description && (
-            <p className="mt-1.5 text-theme-xs text-gray-500 dark:text-gray-400 line-clamp-2">
+            <p className="mt-1.5 line-clamp-2 text-theme-xs text-gray-500 dark:text-gray-400">
               {goal.description}
             </p>
           )}
+
           {goal.deadline && (
-            <div className="mt-1.5 flex items-center gap-1.5 text-theme-xs text-gray-400 dark:text-gray-500">
-              <span className="relative top-0.5">
-                <svg className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
-                  <path
-                    fillRule="evenodd"
-                    d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </span>
-              <span>{goal.deadline}</span>
-            </div>
+            <p className="mt-1.5 text-theme-xs text-gray-400 dark:text-gray-500">
+              {t("deadlineLabel")} {goal.deadline}
+            </p>
           )}
         </div>
 
@@ -107,10 +147,16 @@ export default function GoalCard({
           label={t("moreOptions")}
           actions={[
             {
+              key: "open",
+              label: t("open"),
+              onSelect: () => router.push(`/goals/${goal.id}`),
+            },
+            {
               key: "edit",
               label: t("edit"),
               onSelect: () => onEditRequest(goal),
             },
+            ...statusAction,
             {
               key: "delete",
               label: t("delete"),
@@ -122,167 +168,80 @@ export default function GoalCard({
       </div>
 
       <div className="mt-4">
-        <div className="flex items-center justify-between">
-          <span className="text-theme-xs font-medium text-gray-700 dark:text-gray-300">
-            {t("progress")} {progress}%
-          </span>
-          <span className="text-theme-xs text-gray-500 dark:text-gray-400">
-            {completedCount} / {totalCount} {t("subtasks")}
-          </span>
-        </div>
-        <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-800">
-          <div
-            className="h-full bg-brand-500 transition-all duration-300"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-      </div>
-
-      <div className="mt-4">
-        <div className="flex items-center justify-between">
-          <h4 className="text-theme-xs font-medium text-gray-700 dark:text-gray-300">
-            {t("subtasks")}
-          </h4>
-          <button
-            type="button"
-            onClick={() => setAddingSubtask(true)}
-            className="text-theme-xs text-brand-500 hover:text-brand-600 font-medium"
-          >
-            + {t("addSubtask")}
-          </button>
-        </div>
-
-        {addingSubtask && (
-          <div className="mt-2 flex items-center gap-2">
-            <input
-              type="text"
-              value={newSubtaskTitle}
-              onChange={(e) => {
-                setNewSubtaskTitle(e.target.value);
-                setNewSubtaskError(false);
-              }}
-              placeholder={t("subtaskTitlePlaceholder")}
-              className={`flex-1 rounded-lg border px-3 py-2 text-theme-sm ${
-                newSubtaskError
-                  ? "border-error-500 focus:border-error-500 focus:ring-error-500"
-                  : "border-gray-300 focus:border-brand-500 focus:ring-brand-500 dark:border-gray-700 dark:bg-white/5"
-              }`}
-            />
-            <button
-              type="button"
-              onClick={handleAddSubtask}
-              className="rounded-lg bg-brand-500 px-3 py-2 text-theme-xs font-medium text-white hover:bg-brand-600"
+        {!tasksLoaded ? (
+          <p className="text-theme-xs text-gray-400 dark:text-gray-500">
+            {t("loading")}
+          </p>
+        ) : progress.total > 0 ? (
+          <>
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-theme-xs font-medium text-gray-700 dark:text-gray-300">
+                {t("taskProgress")}
+              </span>
+              <span className="text-theme-xs text-gray-500 dark:text-gray-400">
+                {t("tasksCompleted", {
+                  done: progress.done,
+                  total: progress.total,
+                })}
+              </span>
+            </div>
+            <div
+              className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-800"
+              role="progressbar"
+              aria-valuemin={0}
+              // The scale is tasks, not percent: "3 of 6" is what this measures,
+              // and it is also what a screen reader is told.
+              aria-valuemax={progress.total}
+              aria-valuenow={progress.done}
+              aria-valuetext={t("tasksCompleted", {
+                done: progress.done,
+                total: progress.total,
+              })}
             >
-              {t("create")}
-            </button>
-            <button
-              type="button"
-              onClick={() => setAddingSubtask(false)}
-              className="rounded-lg px-3 py-2 text-theme-xs font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/5"
-            >
-              {t("cancel")}
-            </button>
-          </div>
-        )}
-
-        {goal.subtasks.length === 0 && !addingSubtask && (
-          <p className="mt-3 text-theme-xs text-gray-400 dark:text-gray-500 text-center py-4">
-            {t("noSubtasks")}
+              <div
+                className="h-full bg-brand-500 transition-all duration-300"
+                style={{ width: `${percent}%` }}
+              />
+            </div>
+          </>
+        ) : (
+          <p className="text-theme-xs text-gray-500 dark:text-gray-400">
+            {t("noLinkedTasks")}
           </p>
         )}
-
-        <ul className="mt-3 space-y-2">
-          {displaySubtasks.map((subtask) => (
-            <li key={subtask.id} className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => handleToggle(subtask)}
-                aria-pressed={subtask.done}
-                className="flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 transition-colors"
-                aria-label={subtask.done ? t("markTodo") : t("markDone")}
-              >
-                {subtask.done ? (
-                  <CheckLineIcon className="h-3.5 w-3.5 text-white" />
-                ) : null}
-              </button>
-              {editingSubtaskId === subtask.id ? (
-                <div className="flex-1 flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={editTitle}
-                    onChange={(e) => setEditTitle(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleEditSubtask(subtask)}
-                    className="flex-1 rounded-lg border border-gray-300 px-3 py-1.5 text-theme-sm focus:border-brand-500 focus:ring-brand-500 dark:border-gray-700 dark:bg-white/5"
-                    autoFocus
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handleEditSubtask(subtask)}
-                    className="text-brand-500 hover:text-brand-600 text-theme-xs"
-                  >
-                    {t("save")}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setEditingSubtaskId(null)}
-                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-theme-xs"
-                  >
-                    {t("cancel")}
-                  </button>
-                </div>
-              ) : (
-                <>
-                  <span
-                    className={cn(
-                      "flex-1 text-theme-sm truncate",
-                      subtask.done
-                        ? "line-through text-gray-400 dark:text-gray-500"
-                        : "text-gray-800 dark:text-white/90",
-                    )}
-                    onDoubleClick={() => {
-                      setEditingSubtaskId(subtask.id);
-                      setEditTitle(subtask.title);
-                    }}
-                  >
-                    {subtask.title}
-                  </span>
-                  <div className="flex items-center gap-1">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEditingSubtaskId(subtask.id);
-                        setEditTitle(subtask.title);
-                      }}
-                      className="flex h-11 w-11 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-white/5 dark:hover:text-gray-200"
-                      aria-label={t("edit")}
-                    >
-                      <PencilIcon className="h-4 w-4" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteSubtask(subtask.id)}
-                      className="flex h-11 w-11 items-center justify-center rounded-lg text-gray-400 hover:bg-error-50 hover:text-error-500 dark:hover:bg-error-500/10"
-                      aria-label={t("delete")}
-                    >
-                      <TrashBinIcon className="h-4 w-4" />
-                    </button>
-                  </div>
-                </>
-              )}
-            </li>
-          ))}
-        </ul>
-
-        {!showAllSubtasks && goal.subtasks.length > 5 && (
-          <button
-            type="button"
-            onClick={() => setShowAllSubtasks(true)}
-            className="mt-2 w-full rounded-lg border border-gray-200 py-2 text-theme-xs text-gray-600 hover:bg-gray-100 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-white/5"
-          >
-            {t("viewMore", { count: goal.subtasks.length - 5 })}
-          </button>
-        )}
       </div>
+
+      {tasksLoaded && nextAction && (
+        <div className="mt-4 rounded-xl bg-gray-50 px-3 py-2.5 dark:bg-white/[0.03]">
+          <p className="text-theme-xs font-medium text-gray-500 dark:text-gray-400">
+            {t("nextAction")}
+          </p>
+          <p className="mt-0.5 truncate text-theme-sm text-gray-800 dark:text-white/90">
+            {nextAction.title}
+          </p>
+          <p className="text-theme-xs text-gray-400 dark:text-gray-500">
+            {isScheduled(nextAction)
+              ? formatTimeRange(
+                  nextAction.startTime,
+                  nextAction.endTime,
+                  locale,
+                )
+              : t("noTimeSet")}
+          </p>
+        </div>
+      )}
+
+      {legacySteps > 0 && (
+        <p className="mt-4 text-theme-xs text-gray-500 dark:text-gray-400">
+          {t("legacySteps", { count: legacySteps })}{" "}
+          <Link
+            href={`/goals/${goal.id}`}
+            className="font-medium text-brand-600 underline underline-offset-2 hover:text-brand-700 dark:text-brand-400"
+          >
+            {t("legacyStepsAction")}
+          </Link>
+        </p>
+      )}
     </li>
   );
 }
