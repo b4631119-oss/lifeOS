@@ -1,94 +1,96 @@
 "use client";
 
-import { useTheme } from "@/context/ThemeContext";
+import { useElementWidth } from "@/hooks/useElementWidth";
 import { hourLabel, type HourBucket } from "@/lib/analytics";
-import type { ApexOptions } from "apexcharts";
-import dynamic from "next/dynamic";
-import { useLocale, useTranslations } from "next-intl";
+import {
+  HOURS_LAYOUT,
+  hourBars,
+  niceMax,
+  peakHour,
+  plotMetrics,
+} from "@/lib/chart";
+import { useLocale } from "next-intl";
 import { useMemo } from "react";
-
-const ReactApexChart = dynamic(() => import("react-apexcharts"), {
-  ssr: false,
-});
 
 interface ProductiveHoursChartProps {
   buckets: HourBucket[];
 }
 
-/** How many tasks were marked done in each hour of the day. */
-export default function ProductiveHoursChart({
-  buckets,
-}: ProductiveHoursChartProps) {
-  const t = useTranslations("analytics.hoursChart");
+export default function ProductiveHoursChart({ buckets }: ProductiveHoursChartProps) {
   const locale = useLocale();
-  const { theme } = useTheme();
+  const [containerRef, width] = useElementWidth<HTMLDivElement>();
 
-  const peakHour = useMemo(() => {
-    let hour: number | null = null;
-    let count = 0;
+  const layout = HOURS_LAYOUT;
+  const { plotWidth, plotHeight } = plotMetrics(width, layout);
 
-    for (const bucket of buckets) {
-      if (bucket.count > count) {
-        count = bucket.count;
-        hour = bucket.hour;
-      }
-    }
-
-    return hour;
-  }, [buckets]);
-
-  const options: ApexOptions = useMemo(
-    () => ({
-      chart: {
-        fontFamily: "Outfit, Inter, sans-serif",
-        type: "bar",
-        height: 280,
-        toolbar: { show: false },
-        background: "transparent",
-      },
-      theme: { mode: theme },
-      // Per-bar colors so the strongest hour stands out without a legend for a
-      // single series.
-      colors: buckets.map((bucket) =>
-        bucket.hour === peakHour ? "#12b76a" : "#9cb9ff",
-      ),
-      plotOptions: {
-        bar: {
-          distributed: true,
-          columnWidth: "55%",
-          borderRadius: 4,
-          borderRadiusApplication: "end",
-        },
-      },
-      dataLabels: { enabled: false },
-      grid: { borderColor: "rgba(148, 163, 184, 0.2)", strokeDashArray: 4 },
-      xaxis: {
-        categories: buckets.map((bucket) => hourLabel(bucket.hour, locale)),
-        axisBorder: { show: false },
-        axisTicks: { show: false },
-        labels: { rotate: -45, rotateAlways: true, style: { fontSize: "11px" } },
-      },
-      yaxis: { min: 0, forceNiceScale: true, labels: { formatter: (v) => `${Math.round(v)}` } },
-      legend: { show: false },
-      tooltip: { y: { formatter: (value: number) => `${value}` } },
-      noData: { text: t("noDataMessage") },
-    }),
-    [buckets, locale, peakHour, theme, t],
+  const peak = useMemo(() => peakHour(buckets), [buckets]);
+  const yMax = useMemo(() => niceMax(Math.max(...buckets.map((b) => b.count), 0)), [buckets]);
+  const bars = useMemo(
+    () => hourBars(buckets, plotWidth, plotHeight, layout, yMax),
+    [buckets, plotWidth, plotHeight, layout, yMax],
   );
 
-  const series = useMemo(
-    () => [{ name: t("series"), data: buckets.map((bucket) => bucket.count) }],
-    [buckets, t],
-  );
+  const yTicks = useMemo(() => {
+    const step = yMax / 4;
+    return Array.from({ length: 5 }, (_, i) => ({
+      y: layout.top + plotHeight - (i * step / yMax) * plotHeight,
+      label: String(i * step),
+    }));
+  }, [yMax, plotHeight, layout]);
+
+  if (width === 0) return <div ref={containerRef} className="h-[280px]" />;
+
+  const baseline = layout.top + plotHeight;
 
   return (
-    <div className="custom-scrollbar max-w-full overflow-x-auto">
-      <ReactApexChart
-        options={options}
-        series={series}
-        type="bar"
-        height={280}
-      />
+    <div ref={containerRef} className="max-w-full overflow-x-auto">
+      <svg width={width} height={layout.height} className="font-sans text-[11px]">
+        {/* Y-axis gridlines */}
+        {yTicks.map((tick, i) => (
+          <g key={i}>
+            <line
+              x1={layout.left}
+              y1={tick.y}
+              x2={layout.left + plotWidth}
+              y2={tick.y}
+              stroke="rgba(148,163,184,0.2)"
+              strokeDasharray="4 4"
+            />
+            <text x={layout.left - 6} y={tick.y + 4} textAnchor="end" fill="#667085">
+              {tick.label}
+            </text>
+          </g>
+        ))}
+
+        {/* Bars */}
+        {bars.map((bar, i) => (
+          <rect
+            key={i}
+            x={bar.x}
+            y={baseline - bar.height}
+            width={bar.width}
+            height={bar.height}
+            rx={4}
+            fill={bar.hour === peak ? "#12b76a" : "#9cb9ff"}
+          />
+        ))}
+
+        {/* X-axis labels (every 3rd hour to avoid crowding) */}
+        {bars
+          .filter((_, i) => i % 3 === 0 || i === bars.length - 1)
+          .map((bar, i) => (
+            <text
+              key={i}
+              x={bar.x + bar.width / 2}
+              y={baseline + 18}
+              textAnchor="middle"
+              fill="#667085"
+              transform={`rotate(-45, ${bar.x + bar.width / 2}, ${baseline + 18})`}
+            >
+              {hourLabel(bar.hour, locale)}
+            </text>
+          ))}
+      </svg>
     </div>
   );
 }

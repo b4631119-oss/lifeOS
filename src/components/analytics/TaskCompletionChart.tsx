@@ -1,82 +1,104 @@
 "use client";
 
-import { useTheme } from "@/context/ThemeContext";
+import { useElementWidth } from "@/hooks/useElementWidth";
 import type { DailyCompletion } from "@/lib/analytics";
-import type { ApexOptions } from "apexcharts";
-import dynamic from "next/dynamic";
-import { useTranslations } from "next-intl";
-import { useMemo } from "react";
+import {
+  COMPLETION_LAYOUT,
+  Y_TICKS,
+  axisPositions,
+  joinRuns,
+  labelIndexes,
+  percentY,
+  plotMetrics,
+} from "@/lib/chart";
 
-// Same lazy-loading pattern as the template's charts: ApexCharts touches the
-// DOM on import, so it must not run during server rendering.
-const ReactApexChart = dynamic(() => import("react-apexcharts"), {
-  ssr: false,
-});
+import { useMemo } from "react";
 
 interface TaskCompletionChartProps {
   data: DailyCompletion[];
 }
 
-/** Percentage of each day's tasks that were completed, one point per day. */
 export default function TaskCompletionChart({ data }: TaskCompletionChartProps) {
-  const t = useTranslations("analytics.taskChart");
-  const { theme } = useTheme();
+  const [containerRef, width] = useElementWidth<HTMLDivElement>();
 
-  const options: ApexOptions = useMemo(
-    () => ({
-      chart: {
-        // Matches `--font-outfit` in globals.css, so Cyrillic axis labels use
-        // Inter rather than falling back to the browser default inside the SVG.
-        fontFamily: "Outfit, Inter, sans-serif",
-        type: "area",
-        height: 300,
-        toolbar: { show: false },
-        background: "transparent",
-        zoom: { enabled: false },
-      },
-      theme: { mode: theme },
-      colors: ["#465fff"],
-      dataLabels: { enabled: false },
-      stroke: { curve: "smooth", width: 2 },
-      fill: {
-        type: "gradient",
-        gradient: { opacityFrom: 0.45, opacityTo: 0.05 },
-      },
-      markers: { size: 3, strokeWidth: 2, hover: { size: 6 } },
-      grid: { borderColor: "rgba(148, 163, 184, 0.2)", strokeDashArray: 4 },
-      xaxis: {
-        categories: data.map((point) => point.label),
-        axisBorder: { show: false },
-        axisTicks: { show: false },
-        tooltip: { enabled: false },
-        labels: { style: { fontSize: "11px" } },
-      },
-      yaxis: {
-        min: 0,
-        max: 100,
-        tickAmount: 4,
-        labels: { formatter: (value: number) => `${Math.round(value)}%` },
-      },
-      legend: { show: false },
-      tooltip: { y: { formatter: (value: number) => `${value}%` } },
-      noData: { text: t("empty") },
-    }),
-    [data, theme, t],
-  );
+  const layout = COMPLETION_LAYOUT;
+  const { plotWidth, plotHeight, baseline } = plotMetrics(width, layout);
 
-  const series = useMemo(
-    () => [{ name: t("series"), data: data.map((point) => point.percent) }],
-    [data, t],
-  );
+  const points = useMemo(() => {
+    const xs = axisPositions(data.length, plotWidth, layout.left);
+    return data.map((point, i) => ({
+      x: xs[i],
+      y: point.percent != null ? percentY(point.percent, plotHeight, layout.top) : null,
+      label: point.label,
+    }));
+  }, [data, plotWidth, plotHeight, layout]);
+
+  const runs = useMemo(() => joinRuns(points, baseline), [points, baseline]);
+  const yTicks = useMemo(() => {
+    return Array.from({ length: Y_TICKS + 1 }, (_, i) => {
+      const pct = (i / Y_TICKS) * 100;
+      return { y: percentY(pct, plotHeight, layout.top), label: `${Math.round(pct)}%` };
+    });
+  }, [plotHeight, layout]);
+
+  const xLabels = useMemo(() => {
+    const xs = axisPositions(data.length, plotWidth, layout.left);
+    return labelIndexes(data.length).map((i) => ({ x: xs[i], label: data[i]?.label ?? "" }));
+  }, [data, plotWidth, layout]);
+
+  if (width === 0) return <div ref={containerRef} className="h-[300px]" />;
 
   return (
-    <div className="custom-scrollbar max-w-full overflow-x-auto">
-      <ReactApexChart
-        options={options}
-        series={series}
-        type="area"
-        height={300}
-      />
+    <div ref={containerRef} className="max-w-full overflow-x-auto">
+      <svg width={width} height={layout.height} className="font-sans text-[11px]">
+        {/* Y-axis gridlines */}
+        {yTicks.map((tick, i) => (
+          <g key={i}>
+            <line
+              x1={layout.left}
+              y1={tick.y}
+              x2={layout.left + plotWidth}
+              y2={tick.y}
+              stroke="rgba(148,163,184,0.2)"
+              strokeDasharray="4 4"
+            />
+            <text x={layout.left - 6} y={tick.y + 4} textAnchor="end" fill="#667085">
+              {tick.label}
+            </text>
+          </g>
+        ))}
+
+        {/* Area fill */}
+        {runs.map((run, i) => (
+          <path key={`a${i}`} d={run.area} fill="url(#areaGradient)" />
+        ))}
+
+        {/* Line */}
+        {runs.map((run, i) => (
+          <path key={`l${i}`} d={run.line} fill="none" stroke="#465fff" strokeWidth={2} />
+        ))}
+
+        {/* Dots */}
+        {points
+          .filter((p) => p.y !== null)
+          .map((p, i) => (
+            <circle key={i} cx={p.x} cy={p.y!} r={3} fill="#465fff" stroke="#fff" strokeWidth={2} />
+          ))}
+
+        {/* X-axis labels */}
+        {xLabels.map((l, i) => (
+          <text key={i} x={l.x} y={baseline + 18} textAnchor="middle" fill="#667085">
+            {l.label}
+          </text>
+        ))}
+
+        <defs>
+          <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#465fff" stopOpacity={0.45} />
+            <stop offset="100%" stopColor="#465fff" stopOpacity={0.05} />
+          </linearGradient>
+        </defs>
+      </svg>
     </div>
   );
 }
