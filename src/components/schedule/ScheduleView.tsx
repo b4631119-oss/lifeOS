@@ -4,14 +4,18 @@ import ErrorBanner from "@/components/common/ErrorBanner";
 import type { TaskFormValues } from "@/components/today/TaskForm";
 import TaskFormModal from "@/components/today/TaskFormModal";
 import { useAuth } from "@/context/AuthContext";
+import { useDay } from "@/context/DayContext";
+import { useDayTasks } from "@/hooks/useDayTasks";
+import { useGoals } from "@/hooks/useGoals";
 import { useModal } from "@/hooks/useModal";
-import { useTodayTasks } from "@/hooks/useTodayTasks";
 import { formatTimeRange } from "@/lib/date";
-import type { LifeTask } from "@/types/lifeos";
+import { isScheduled, tasksInPlan, unscheduledTasks } from "@/lib/taskSchedule";
+import type { Goal, LifeTask } from "@/types/lifeos";
 import {
   DndContext,
   KeyboardSensor,
-  PointerSensor,
+  MouseSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   type Announcements,
@@ -26,6 +30,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useMemo, useRef, useState } from "react";
 import ScheduleGrid from "./ScheduleGrid";
 import ScheduleHeader from "./ScheduleHeader";
+import UnscheduledTasks from "./UnscheduledTasks";
 import {
   DEFAULT_DURATION_MINUTES,
   PX_PER_MINUTE,
@@ -56,23 +61,44 @@ const verticalStepCoordinateGetter: KeyboardCoordinateGetter = (
 };
 
 /**
- * The schedule for today.
+ * The schedule for the selected day.
  *
- * It reads and writes the very same `tasks` collection as the Today module
- * through `useTodayTasks`, so both views are already in sync in real time —
- * there is no second data path and nothing to reconcile.
+ * It reads and writes the very same `tasks` collection, and the same selected
+ * date, as the Today module — there is no second data path and nothing to
+ * reconcile. Only tasks with a time can be placed on the timeline; the rest are
+ * listed above it (see `UnscheduledTasks`) rather than given an hour they never
+ * had.
  */
 export default function ScheduleView() {
   const t = useTranslations("schedule");
   const locale = useLocale();
   const { user } = useAuth();
-  const { tasks, loading, error, createTask, editTask, reload } = useTodayTasks(
+  const { date } = useDay();
+  const { tasks, loading, error, createTask, editTask, reload } = useDayTasks(
     user?.uid,
+    date,
+  );
+  // Only the goals' names are needed here: a scheduled task shows which goal it
+  // moves forward, and the edit dialog offers the same optional field as Today.
+  const { goals } = useGoals(user?.uid);
+  const goalsById = useMemo<Record<string, Goal>>(
+    () => Object.fromEntries(goals.map((goal) => [goal.id, goal])),
+    [goals],
   );
 
   const sensors = useSensors(
     // A plain click must stay a click — the drag only starts after 4px.
-    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+    //
+    // Mouse and touch are separate sensors on purpose. `PointerSensor` looks
+    // like it covers both, but on a touch screen the browser claims the gesture
+    // for scrolling and fires `pointercancel` as soon as the finger moves over
+    // the block, so its drag never survives; `TouchSensor` handles that case
+    // with a press-and-hold instead (the 250ms delay), which leaves a quick
+    // swipe free to scroll the day.
+    useSensor(MouseSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(TouchSensor, {
+      activationConstraint: { delay: 250, tolerance: 5 },
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: verticalStepCoordinateGetter,
     }),
@@ -114,9 +140,15 @@ export default function ScheduleView() {
     return next;
   }, [pending, tasks]);
 
+  // The timeline is the *active* plan: a dropped task was taken off it on
+  // purpose, so it is not drawn (it stays visible on its own day instead).
+  const plan = useMemo(() => tasksInPlan(tasks), [tasks]);
+  const scheduled = useMemo(() => plan.filter(isScheduled), [plan]);
+  const withoutTime = useMemo(() => unscheduledTasks(plan), [plan]);
+
   const rows = useMemo(
-    () => layoutTasks(tasks, optimistic),
-    [tasks, optimistic],
+    () => layoutTasks(scheduled, optimistic),
+    [scheduled, optimistic],
   );
 
   const openCreate = useCallback(
@@ -232,12 +264,17 @@ export default function ScheduleView() {
   return (
     <div>
       <ScheduleHeader
-        taskCount={tasks.length}
+        taskCount={scheduled.length}
         loading={loading}
         onAddTask={handleAddTask}
       />
 
-      {error && <ErrorBanner message={t("errors.load")} onRetry={reload} />}
+      {error && (
+        <ErrorBanner
+          message={error.kind === "load" ? t("errors.load") : t("errors.save")}
+          onRetry={error.kind === "load" ? reload : undefined}
+        />
+      )}
 
       {moveError && (
         <div className="mb-6 rounded-lg border border-error-500/30 bg-error-50 px-4 py-3 text-theme-sm text-error-600 dark:bg-error-500/10 dark:text-error-400">
@@ -253,7 +290,7 @@ export default function ScheduleView() {
         </div>
       ) : (
         <>
-          {tasks.length === 0 && (
+          {scheduled.length === 0 && (
             <div className="mb-6 rounded-2xl border border-dashed border-gray-300 bg-white px-5 py-6 text-center dark:border-gray-700 dark:bg-white/3">
               <p className="text-theme-sm font-medium text-gray-800 dark:text-white/90">
                 {t("emptyTitle")}
@@ -263,6 +300,8 @@ export default function ScheduleView() {
               </p>
             </div>
           )}
+
+          <UnscheduledTasks tasks={withoutTime} onEdit={openEdit} />
 
           <p className="mb-3 text-theme-xs text-gray-500 dark:text-gray-400">
             {t("dragHint")}
@@ -282,6 +321,7 @@ export default function ScheduleView() {
           >
             <ScheduleGrid
               rows={rows}
+              goalsById={goalsById}
               onCreateAt={openCreate}
               onEdit={openEdit}
               isClickSuppressed={isClickSuppressed}
@@ -294,6 +334,7 @@ export default function ScheduleView() {
         isOpen={formModal.isOpen}
         onClose={closeModal}
         task={editingTask}
+        goals={goals}
         onSubmit={handleSubmit}
         defaultStartTime={slot?.startTime}
         defaultEndTime={slot?.endTime}
