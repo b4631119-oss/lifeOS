@@ -13,7 +13,6 @@ import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import NoteEditor from "./NoteEditor";
 import NoteHistoryList from "./NoteHistoryList";
-import NoteSummaryCard from "./NoteSummaryCard";
 
 export default function NotesView() {
   const t = useTranslations("notes");
@@ -28,10 +27,6 @@ export default function NotesView() {
     notes,
     loading,
     error,
-    summary,
-    summarizing,
-    summaryError,
-    requestSummary,
     removeNote,
     reload,
   } = useNotes(user);
@@ -80,15 +75,6 @@ export default function NotesView() {
               saveState={saveState}
               savedAt={savedAt}
               locale={locale}
-              summarizing={summarizing}
-              onSummarize={requestSummary}
-            />
-
-            <NoteSummaryCard
-              summary={summary}
-              summarizing={summarizing}
-              error={summaryError}
-              onRetry={requestSummary}
             />
           </ComponentCard>
 
