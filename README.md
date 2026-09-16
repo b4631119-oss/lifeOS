@@ -106,6 +106,3 @@ KV) if the AI routes are exposed to real traffic.
 
 Uses Tailwind CSS v4 with theme tokens defined in `src/app/globals.css`. All styling uses CSS logical properties for RTL support.
 
-## License
-
-MIT
