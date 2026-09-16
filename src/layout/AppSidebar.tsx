@@ -18,62 +18,57 @@ import {
 } from "../icons/index";
 
 type NavItem = {
-  key: string;
+  label: string;
   icon: React.ReactNode;
-  path?: string;
-  new?: boolean;
-  target?: string;
+  path: string;
 };
-
-const navItems: NavItem[] = [
-  { icon: <GridIcon />, key: "dashboard", path: "/" },
-  { icon: <CheckCircleIcon />, key: "habits", path: "/habits" },
-  { icon: <TimeIcon />, key: "schedule", path: "/schedule" },
-  { icon: <ShootingStarIcon />, key: "goals", path: "/goals" },
-  { icon: <PieChartIcon />, key: "analytics", path: "/analytics" },
-  { icon: <DocsIcon />, key: "notes", path: "/notes" },
-  { icon: <UserCircleIcon />, key: "userProfile", path: "/profile" },
-];
 
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const pathname = usePathname();
-  const t = useTranslations("sidebar");
+  const t = useTranslations();
   const tCommon = useTranslations("common");
+
+  const isActive = useCallback((path: string) => path === pathname, [pathname]);
+
+  // Every label is the module's own title (the same string the page metadata
+  // uses), so the nav can never drift from the page it points at.
+  const navItems: NavItem[] = [
+    { icon: <GridIcon />, label: t("today.title"), path: "/" },
+    { icon: <CheckCircleIcon />, label: t("habits.title"), path: "/habits" },
+    { icon: <TimeIcon />, label: t("schedule.title"), path: "/schedule" },
+    { icon: <ShootingStarIcon />, label: t("goals.title"), path: "/goals" },
+    { icon: <PieChartIcon />, label: t("analytics.title"), path: "/analytics" },
+    { icon: <DocsIcon />, label: t("notes.title"), path: "/notes" },
+    { icon: <UserCircleIcon />, label: t("profile.title"), path: "/profile" },
+  ];
 
   const renderMenuItems = (items: NavItem[]) => (
     <ul className="flex flex-col gap-1">
       {items.map((nav) => (
-        <li key={nav.key}>
-          {nav.path && (
-            <Link
-              href={nav.path}
-              target={nav.target}
+        <li key={nav.path}>
+          <Link
+            href={nav.path}
+            className={cn(
+              "group menu-item",
+              isActive(nav.path) ? "menu-item-active" : "menu-item-inactive",
+            )}
+          >
+            <span
               className={cn(
-                "group menu-item",
-                isActive(nav.path) ? "menu-item-active" : "menu-item-inactive",
+                isActive(nav.path)
+                  ? "menu-item-icon-active"
+                  : "menu-item-icon-inactive",
               )}
             >
-              <span
-                className={cn(
-                  isActive(nav.path)
-                    ? "menu-item-icon-active"
-                    : "menu-item-icon-inactive",
-                )}
-              >
-                {nav.icon}
-              </span>
-              {(isExpanded || isHovered || isMobileOpen) && (
-                <span>{t(`items.${nav.key}`)}</span>
-              )}
-            </Link>
-          )}
+              {nav.icon}
+            </span>
+            {(isExpanded || isHovered || isMobileOpen) && <span>{nav.label}</span>}
+          </Link>
         </li>
       ))}
     </ul>
   );
-
-  const isActive = useCallback((path: string) => path === pathname, [pathname]);
 
   return (
     <>
@@ -152,7 +147,7 @@ const AppSidebar: React.FC = () => {
                   )}
                 >
                   {isExpanded || isHovered || isMobileOpen
-                    ? t("groups.menu")
+                    ? t("sidebar.groups.menu")
                     : <HorizontaLDots />}
                 </h2>
                 {renderMenuItems(navItems)}

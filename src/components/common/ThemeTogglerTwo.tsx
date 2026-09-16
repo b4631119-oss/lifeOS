@@ -1,12 +1,16 @@
 "use client";
 
 import { useTheme } from "@/context/ThemeContext";
+import { useTranslations } from "next-intl";
 
 export default function ThemeTogglerTwo() {
   const { toggleTheme } = useTheme();
+  const t = useTranslations("common");
   return (
     <button
+      type="button"
       onClick={toggleTheme}
+      aria-label={t("toggleTheme")}
       className="inline-flex size-14 items-center justify-center rounded-full bg-brand-500 text-white transition-colors hover:bg-brand-600"
     >
       <svg

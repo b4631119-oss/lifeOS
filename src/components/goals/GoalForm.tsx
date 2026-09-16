@@ -126,7 +126,7 @@ export default function GoalForm({
             className="rounded-lg bg-brand-500 px-4 py-2 text-theme-sm font-medium text-white transition-colors hover:bg-brand-600 disabled:opacity-50"
             disabled={submitting}
           >
-            {submitting ? t("decomposing") : isEditing ? t("update") : t("create")}
+            {submitting ? t("saving") : isEditing ? t("update") : t("create")}
           </button>
         </div>
       </div>

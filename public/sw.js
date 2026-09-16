@@ -8,8 +8,8 @@
  *
  * 1. It never touches cross-origin traffic. Firebase Auth and Firestore live on
  *    other origins — caching their requests would break sign-in and the
- *    real-time subscriptions. `/api/*` (the AI routes) is skipped too, so a
- *    summary or a goal breakdown is never answered from a stale cache.
+ *    real-time subscriptions. `/api/*` is skipped too, so nothing dynamic is
+ *    ever answered from a stale cache.
  * 2. It only caches GET requests, and only ever returns a cached *document* for
  *    a navigation. RSC payloads and other same-origin requests go straight to
  *    the network, because replaying a stale payload would render the wrong page
@@ -19,7 +19,7 @@
  * loaded client-side, so a cached shell carries no user data.
  */
 
-const CACHE_NAME = "lifeos-v1";
+const CACHE_NAME = "lifeos-v2";
 
 /** Immutable, content-hashed build output plus the PWA/static assets. */
 const PRECACHE_PATHS = [
@@ -29,13 +29,54 @@ const PRECACHE_PATHS = [
   "/icons/",
 ];
 
+/**
+ * The routes a signed-in user opens first. They are fetched on install so the
+ * shell survives a cold offline start, instead of only working once each page
+ * has been visited at least once (the runtime rules in `fetch` below).
+ */
+const SHELL_ROUTES = [
+  "",
+  "/habits",
+  "/goals",
+  "/analytics",
+  "/notes",
+  "/schedule",
+  "/profile",
+];
+
+const SHELL_URLS = [
+  ...SHELL_ROUTES.map((route) => `/${route}`),
+  ...SHELL_ROUTES.map((route) => `/ru${route}`),
+];
+
 /** Request destinations worth caching even outside the paths above. */
 const CACHEABLE_DESTINATIONS = new Set(["font", "image", "script", "style"]);
 
-self.addEventListener("install", () => {
-  // Take over as soon as the new worker is installed; the app is a thin client
-  // and its data is fetched from Firestore, so there is no migration to wait on.
-  self.skipWaiting();
+self.addEventListener("install", (event) => {
+  event.waitUntil(
+    (async () => {
+      const cache = await caches.open(CACHE_NAME);
+
+      // One request per route rather than `addAll`, whose single rejection
+      // (offline install, a route that fails to render) would abort the whole
+      // batch and leave the cache empty.
+      await Promise.all(
+        SHELL_URLS.map(async (url) => {
+          try {
+            const response = await fetch(url, { cache: "reload" });
+            if (response.ok) await cache.put(url, response);
+          } catch {
+            // Nothing to do: the runtime rules fill the entry in on first visit.
+          }
+        }),
+      );
+
+      // Take over as soon as the new worker is installed; the app is a thin
+      // client and its data is fetched from Firestore, so there is no migration
+      // to wait on.
+      await self.skipWaiting();
+    })(),
+  );
 });
 
 self.addEventListener("activate", (event) => {

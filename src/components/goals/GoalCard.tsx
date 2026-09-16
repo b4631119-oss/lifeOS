@@ -253,7 +253,7 @@ export default function GoalCard({
                         setEditingSubtaskId(subtask.id);
                         setEditTitle(subtask.title);
                       }}
-                      className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                      className="flex h-11 w-11 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-white/5 dark:hover:text-gray-200"
                       aria-label={t("edit")}
                     >
                       <PencilIcon className="h-4 w-4" />
@@ -261,7 +261,7 @@ export default function GoalCard({
                     <button
                       type="button"
                       onClick={() => handleDeleteSubtask(subtask.id)}
-                      className="p-1 text-gray-400 hover:text-error-500"
+                      className="flex h-11 w-11 items-center justify-center rounded-lg text-gray-400 hover:bg-error-50 hover:text-error-500 dark:hover:bg-error-500/10"
                       aria-label={t("delete")}
                     >
                       <TrashBinIcon className="h-4 w-4" />

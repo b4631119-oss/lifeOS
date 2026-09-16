@@ -61,7 +61,7 @@ export default function TaskItem({
           type="button"
           onClick={() => onEdit(task)}
           aria-label={t("edit")}
-          className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-white/5 dark:hover:text-gray-200"
+          className="flex h-11 w-11 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-white/5 dark:hover:text-gray-200"
         >
           <PencilIcon className="h-4 w-4" />
         </button>
@@ -69,7 +69,7 @@ export default function TaskItem({
           type="button"
           onClick={() => onDelete(task)}
           aria-label={t("delete")}
-          className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-error-50 hover:text-error-500 dark:hover:bg-error-500/10"
+          className="flex h-11 w-11 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-error-50 hover:text-error-500 dark:hover:bg-error-500/10"
         >
           <TrashBinIcon className="h-4 w-4" />
         </button>

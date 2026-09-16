@@ -2,16 +2,28 @@
 
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { useSidebar } from "@/context/SidebarContext";
-import { useRouter } from "@/i18n/navigation";
+import { usePathname, useRouter } from "@/i18n/navigation";
 import AppHeader from "@/layout/AppHeader";
 import AppSidebar from "@/layout/AppSidebar";
 import Backdrop from "@/layout/Backdrop";
+import dynamic from "next/dynamic";
 import React, { useEffect } from "react";
+
+/**
+ * Loaded only by signed-out visitors on the home route, so it stays out of the
+ * chunk every other (admin) page ships.
+ */
+const LandingView = dynamic(() => import("@/components/landing/LandingView"));
 
 function AdminGuard({ children }: { children: React.ReactNode }) {
   const { isExpanded, isHovered, isMobileOpen } = useSidebar();
   const { user, loading } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
+
+  // A signed-out visitor on the home route gets the landing page instead of the
+  // dashboard; every other route keeps bouncing to the sign-in form.
+  const isHome = pathname === "/";
 
   const mainContentMargin = isMobileOpen
     ? "ml-0"
@@ -20,10 +32,10 @@ function AdminGuard({ children }: { children: React.ReactNode }) {
       : "xl:ml-[90px]";
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (!loading && !user && !isHome) {
       router.replace("/signin");
     }
-  }, [loading, user, router]);
+  }, [loading, user, isHome, router]);
 
   if (loading) {
     return (
@@ -34,7 +46,7 @@ function AdminGuard({ children }: { children: React.ReactNode }) {
   }
 
   if (!user) {
-    return null;
+    return isHome ? <LandingView /> : null;
   }
 
   return (

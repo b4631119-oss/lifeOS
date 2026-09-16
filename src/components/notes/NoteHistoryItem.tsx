@@ -68,17 +68,6 @@ export default function NoteHistoryItem({
           <p className="text-theme-sm leading-relaxed whitespace-pre-wrap text-gray-700 dark:text-gray-300">
             {note.content}
           </p>
-
-          {note.aiSummary && (
-            <div className="mt-3 rounded-lg bg-gray-50 p-3 dark:bg-white/[0.04]">
-              <p className="text-theme-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
-                {t("summaryLabel")}
-              </p>
-              <p className="mt-1.5 text-theme-sm leading-relaxed text-gray-700 dark:text-gray-300">
-                {note.aiSummary}
-              </p>
-            </div>
-          )}
         </div>
       )}
     </li>

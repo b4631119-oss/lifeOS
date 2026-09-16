@@ -16,7 +16,14 @@ async function signInWithGoogle() {
   return signInWithPopup(auth, provider);
 }
 
-export default function GoogleSignInButton() {
+interface GoogleSignInButtonProps {
+  /** Sign-up reuses the same Google popup, only the label differs. */
+  variant?: "signIn" | "signUp";
+}
+
+export default function GoogleSignInButton({
+  variant = "signIn",
+}: GoogleSignInButtonProps) {
   const t = useTranslations("auth");
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -65,7 +72,9 @@ export default function GoogleSignInButton() {
         className="inline-flex w-full items-center justify-center gap-3 rounded-lg bg-gray-100 px-7 py-3 text-sm font-normal text-gray-700 transition-colors hover:bg-gray-200 hover:text-gray-800 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10"
       >
         <GoogleIcon />
-        {isLoading ? t("signingIn") : t("signInWithGoogle")}
+        {isLoading
+          ? t("signingIn")
+          : t(variant === "signUp" ? "signUpWithGoogle" : "signInWithGoogle")}
       </button>
       {error && (
         <p className="text-theme-xs text-error-500 dark:text-error-400">

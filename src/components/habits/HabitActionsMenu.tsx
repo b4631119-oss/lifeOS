@@ -39,7 +39,7 @@ export default function HabitActionsMenu({
         aria-label={label}
         aria-haspopup="menu"
         aria-expanded={isOpen}
-        className="dropdown-toggle flex h-9.5 w-9.5 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-white/5 dark:hover:text-gray-200"
+        className="dropdown-toggle flex h-11 w-11 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-white/5 dark:hover:text-gray-200"
       >
         <MoreDotIcon className="h-5 w-5" />
       </button>

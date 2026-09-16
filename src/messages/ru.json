@@ -9,129 +9,12 @@
     "delete": "Удалить",
     "retry": "Повторить",
     "filter": "Фильтр",
-    "seeAll": "Показать все"
+    "seeAll": "Показать все",
+    "toggleTheme": "Переключить тему"
   },
   "sidebar": {
     "groups": {
-      "menu": "Меню",
-      "support": "Поддержка",
-      "others": "Другое"
-    },
-    "badges": {
-      "new": "новое",
-      "pro": "pro"
-    },
-    "items": {
-      "dashboard": "Дашборд",
-      "ecommerceHome": "Интернет-магазин",
-      "analytics": "Аналитика",
-      "notes": "Заметки",
-      "goals": "Цели",
-      "marketing": "Маркетинг",
-      "crm": "CRM",
-      "stocks": "Акции",
-      "saas": "SaaS",
-      "logistics": "Логистика",
-      "ai": "ИИ",
-      "sales": "Продажи",
-      "finance": "Финансы",
-      "aiAssistant": "ИИ-ассистент",
-      "textGenerator": "Генератор текста",
-      "imageGenerator": "Генератор изображений",
-      "codeGenerator": "Генератор кода",
-      "videoGenerator": "Генератор видео",
-      "aiSettings": "Настройки ИИ",
-      "ecommerce": "Интернет-магазин",
-      "products": "Товары",
-      "addProduct": "Добавить товар",
-      "billing": "Оплата",
-      "invoices": "Счета",
-      "singleInvoice": "Счёт",
-      "createInvoice": "Создать счёт",
-      "transactions": "Транзакции",
-      "singleTransaction": "Транзакция",
-      "calendar": "Календарь",
-      "habits": "Привычки",
-      "schedule": "Расписание",
-      "userProfile": "Профиль пользователя",
-      "task": "Задача",
-      "taskList": "Список",
-      "kanban": "Канбан",
-      "forms": "Формы",
-      "formElements": "Элементы формы",
-      "formLayout": "Макет формы",
-      "tables": "Таблицы",
-      "basicTables": "Простые таблицы",
-      "dataTables": "Таблицы данных",
-      "pages": "Страницы",
-      "fileManager": "Файловый менеджер",
-      "pricingTables": "Тарифы",
-      "faq": "Вопросы и ответы",
-      "apiKeys": "API-ключи",
-      "integrations": "Интеграции",
-      "blankPage": "Пустая страница",
-      "error404": "Ошибка 404",
-      "error500": "Ошибка 500",
-      "error503": "Ошибка 503",
-      "comingSoon": "Скоро",
-      "maintenance": "Обслуживание",
-      "successPage": "Успех",
-      "layouts": "Макеты",
-      "layoutOne": "Макет один",
-      "layoutTwo": "Макет два",
-      "layoutThree": "Макет три",
-      "layoutFour": "Макет четыре",
-      "layoutFive": "Макет пять",
-      "layoutSix": "Макет шесть",
-      "charts": "Графики",
-      "lineChart": "Линейный график",
-      "barChart": "Столбчатый график",
-      "pieChart": "Круговая диаграмма",
-      "radarChart": "Лепестковая диаграмма",
-      "radialChart": "Радиальная диаграмма",
-      "maps": "Карты",
-      "mapsGoogle": "Карты",
-      "vectorMap": "Векторная карта",
-      "uiElements": "UI-элементы",
-      "alerts": "Уведомления",
-      "avatar": "Аватар",
-      "badge": "Бейдж",
-      "breadcrumb": "Хлебные крошки",
-      "buttons": "Кнопки",
-      "buttonsGroup": "Группа кнопок",
-      "cards": "Карточки",
-      "carousel": "Карусель",
-      "dropdowns": "Выпадающие списки",
-      "images": "Изображения",
-      "links": "Ссылки",
-      "listView": "Список",
-      "modals": "Модальные окна",
-      "notificationUi": "Уведомление",
-      "pagination": "Пагинация",
-      "popovers": "Всплывающие подсказки",
-      "progressbar": "Прогресс-бар",
-      "ribbons": "Ленты",
-      "spinners": "Спиннеры",
-      "tabs": "Вкладки",
-      "tooltips": "Подсказки",
-      "videos": "Видео",
-      "authentication": "Аутентификация",
-      "signIn": "Вход",
-      "signUp": "Регистрация",
-      "resetPassword": "Сброс пароля",
-      "twoStepVerification": "Двухэтапная проверка",
-      "chat": "Чат",
-      "supportMenu": "Поддержка",
-      "supportList": "Список обращений",
-      "supportReply": "Ответ поддержки",
-      "email": "Почта",
-      "inbox": "Входящие",
-      "inboxDetails": "Детали"
-    },
-    "widget": {
-      "title": "LifeOS",
-      "description": "Ваша личная система управления жизнью — планируйте день, формируйте привычки, достигайте целей.",
-      "purchasePlan": "Начать"
+      "menu": "Меню"
     }
   },
   "header": {
@@ -157,32 +40,18 @@
     "tagline": "Ваша личная система управления жизнью — планируйте день, формируйте привычки и достигайте целей.",
     "backToDashboard": "Вернуться на главную",
     "signInTitle": "Вход",
-    "signInSubtitle": "Введите email и пароль, чтобы войти!",
+    "signInSubtitle": "Войдите через аккаунт Google, чтобы продолжить.",
     "signUpTitle": "Регистрация",
-    "signUpSubtitle": "Введите email и пароль, чтобы зарегистрироваться!",
+    "signUpSubtitle": "Создайте аккаунт через Google — это одно нажатие.",
     "signInWithGoogle": "Войти через Google",
     "signingIn": "Выполняется вход…",
     "signUpWithGoogle": "Зарегистрироваться через Google",
-    "or": "Или",
-    "firstName": "Имя",
-    "lastName": "Фамилия",
     "email": "Email",
-    "password": "Пароль",
-    "firstNamePlaceholder": "Введите имя",
-    "lastNamePlaceholder": "Введите фамилию",
     "emailPlaceholder": "info@gmail.com",
-    "signUpEmailPlaceholder": "Введите email",
-    "passwordPlaceholder": "Введите пароль",
-    "keepLoggedIn": "Не выходить из аккаунта",
-    "forgotPassword": "Забыли пароль?",
     "signIn": "Войти",
     "signUp": "Зарегистрироваться",
     "noAccount": "Нет аккаунта?",
     "alreadyHaveAccount": "Уже есть аккаунт?",
-    "termsPrefix": "Создавая аккаунт, вы соглашаетесь с",
-    "terms": "Условиями и положениями,",
-    "andOur": "а также с",
-    "privacyPolicy": "Политикой конфиденциальности",
     "errors": {
       "google": "Не удалось войти через Google. Попробуйте ещё раз.",
       "unauthorizedDomain": "Домен {host} не добавлен в Firebase. Добавьте его в Authentication → Settings → Authorized domains и попробуйте снова.",
@@ -190,809 +59,28 @@
       "popupCancelled": "Вход отменён — окно Google было закрыто.",
       "network": "Не удалось связаться с Firebase. Проверьте соединение и попробуйте снова.",
       "notEnabled": "Вход через Google не включён в этом проекте Firebase."
-    }
+    },
+    "backToSignIn": "Назад ко входу",
+    "resetPasswordTitle": "Сброс пароля",
+    "resetPasswordSubtitle": "Введите email — пришлём ссылку для установки нового пароля.",
+    "sendResetLink": "Отправить ссылку",
+    "sendingResetLink": "Отправляем…",
+    "resetLinkSentTitle": "Проверьте почту",
+    "resetLinkSentBody": "Мы отправили ссылку для сброса пароля на {email}.",
+    "resetPasswordMetaDescription": "Сброс пароля LifeOS — ссылка приходит на почту."
   },
-  "ecommerce": {
-    "title": "Панель интернет-магазина",
-    "metrics": {
-      "customers": "Клиенты",
-      "orders": "Заказы"
+  "landing": {
+    "title": "Планируйте день, держите привычки, доходите до целей",
+    "subtitle": "LifeOS — личная система управления жизнью: расписание дня, серии привычек, цели и цифры, по которым видно, что действительно работает.",
+    "modules": {
+      "tasks": "Планируйте день по часам и отмечайте задачи по ходу.",
+      "habits": "Следите за сериями на сетке месяца и видите, какие привычки держатся.",
+      "goals": "Разбейте цель на подзадачи и следите за прогрессом.",
+      "analytics": "Процент выполнения, продуктивные часы и обзор привычек на одном экране."
     },
-    "months": {
-      "jan": "янв",
-      "feb": "фев",
-      "mar": "мар",
-      "apr": "апр",
-      "may": "май",
-      "jun": "июн",
-      "jul": "июл",
-      "aug": "авг",
-      "sep": "сен",
-      "oct": "окт",
-      "nov": "ноя",
-      "dec": "дек"
-    },
-    "monthlySales": {
-      "title": "Продажи за месяц",
-      "series": "Продажи"
-    },
-    "monthlyTarget": {
-      "title": "Цель на месяц",
-      "subtitle": "Цель, которую вы поставили на каждый месяц",
-      "earned": "Сегодня вы заработали {amount} — больше, чем в прошлом месяце. Так держать!",
-      "target": "Цель",
-      "revenue": "Выручка",
-      "today": "Сегодня"
-    },
-    "statistics": {
-      "title": "Статистика",
-      "subtitle": "Цель, которую вы поставили на каждый месяц",
-      "sales": "Продажи",
-      "revenue": "Выручка",
-      "monthly": "По месяцам",
-      "quarterly": "По кварталам",
-      "annually": "По годам",
-      "selectDateRange": "Выберите период"
-    },
-    "recentOrders": {
-      "title": "Последние заказы",
-      "products": "Товары",
-      "category": "Категория",
-      "price": "Цена",
-      "status": "Статус",
-      "variants": "{count, plural, one {# вариант} few {# варианта} many {# вариантов} other {# варианта}}",
-      "categories": {
-        "laptop": "Ноутбук",
-        "watch": "Часы",
-        "smartphone": "Смартфон",
-        "electronics": "Электроника",
-        "accessories": "Аксессуары"
-      },
-      "statuses": {
-        "delivered": "Доставлен",
-        "pending": "В ожидании",
-        "canceled": "Отменён"
-      }
-    },
-    "demographic": {
-      "title": "Демография клиентов",
-      "subtitle": "Количество клиентов по странам",
-      "customers": "{count} клиентов",
-      "usa": "США",
-      "france": "Франция"
-    }
-  },
-  "analytics": {
-    "title": "Аналитика",
-    "metaDescription": "Ваша продуктивность на одном экране — выполнение задач, продуктивные часы и стрики привычек",
-    "subtitle": "Как на самом деле прошли последние недели — по вашим задачам и привычкам.",
-    "rangeLabel": "Период графика",
-    "rangeLast7": "7 дней",
-    "rangeLast30": "30 дней",
-    "loading": "Считаем ваши показатели…",
-    "stats": {
-      "completionRate": "Доля выполненных",
-      "tasksDone": "Задач выполнено",
-      "ofTotal": "{done} из {total}",
-      "bestHour": "Самый продуктивный час",
-      "noPeak": "Данных пока мало",
-      "activeHabits": "Активных привычек"
-    },
-    "taskChart": {
-      "title": "Выполнение задач",
-      "subtitle": "Какая доля задач дня была закрыта",
-      "series": "Выполнено",
-      "empty": "За этот период задач пока нет"
-    },
-    "hoursChart": {
-      "title": "Продуктивные часы",
-      "subtitle": "В какое время вы обычно отмечаете задачи выполненными",
-      "series": "Задач выполнено",
-      "noDataTitle": "Данных пока мало",
-      "noDataMessage": "График заполнится по мере выполнения задач — время завершения записывается только с этого момента."
-    },
-    "habits": {
-      "title": "Стрики привычек",
-      "subtitle": "Текущая и лучшая серия каждой активной привычки",
-      "current": "Текущий",
-      "best": "Лучший",
-      "doneToday": "Выполнено сегодня",
-      "empty": "Активных привычек пока нет."
-    },
-    "empty": {
-      "title": "Пока нечего анализировать",
-      "message": "Добавьте несколько задач или привычек — и на этой странице появятся ваши тенденции.",
-      "cta": "Перейти к «Сегодня»"
-    },
-    "errors": {
-      "load": "Не удалось загрузить аналитику."
-    }
-  },
-  "error": {
-    "title": "Что-то пошло не так",
-    "message": "На этой странице произошла ошибка. Ваши данные в порядке — попробуйте ещё раз."
-  },
-  "notFound": {
-    "title": "Страница не найдена",
-    "metaDescription": "Страницы, которую вы ищете, не существует",
-    "error": "ОШИБКА",
-    "message": "Не удалось найти страницу, которую вы ищете!",
-    "backHome": "Вернуться на главную"
-  },
-  "marketing": {
-    "metrics": {
-      "avgClientRating": "Средняя оценка клиентов",
-      "instagramFollowers": "Подписчики в Instagram",
-      "totalRevenue": "Общая выручка",
-      "vsLastMonth": "к прошлому месяцу"
-    },
-    "impressionChart": {
-      "title": "Показы и трафик данных",
-      "totalRevenue": "Общая выручка",
-      "sales": "Продажи",
-      "revenue": "Выручка"
-    },
-    "featuredCampaign": {
-      "title": "Избранные кампании",
-      "viewMore": "Подробнее",
-      "delete": "Удалить",
-      "products": "Товары",
-      "campaign": "Кампания",
-      "status": "Статус",
-      "adsCampaign": "Рекламная кампания",
-      "campaigns": {
-        "growBrand": "Увеличьте узнаваемость бренда с...",
-        "betterIdeas": "Создавайте лучшие идеи...",
-        "increaseTraffic": "Увеличьте трафик сайта..."
-      },
-      "statuses": {
-        "success": "Успех",
-        "pending": "В ожидании",
-        "failed": "Ошибка"
-      }
-    },
-    "trafficStats": {
-      "title": "Статистика трафика",
-      "viewMore": "Подробнее",
-      "delete": "Удалить",
-      "newSubscribers": "Новые подписчики",
-      "conversionRate": "Конверсия",
-      "pageBounceRate": "Показатель отказов страницы",
-      "thenLastWeek": "чем на прошлой неделе",
-      "newSales": "Новые продажи"
-    },
-    "trafficSource": {
-      "title": "Топ источников трафика",
-      "viewMore": "Подробнее",
-      "delete": "Удалить",
-      "viewAll": "Показать все"
-    }
-  },
-  "crm": {
-    "metrics": {
-      "activeDeal": "Активная сделка",
-      "revenueTotal": "Общая выручка",
-      "closedDeals": "Закрытые сделки",
-      "lastMonth": "в прошлом месяце"
-    },
-    "statistics": {
-      "title": "Статистика",
-      "subtitle": "Цель, которую вы поставили на каждый месяц",
-      "avgYearlyProfit": "Средняя годовая прибыль",
-      "sales": "Продажи",
-      "revenue": "Выручка"
-    },
-    "estimatedRevenue": {
-      "title": "Прогноз выручки",
-      "subtitle": "Цель, которую вы поставили на каждый месяц",
-      "goals": "Цели на июнь",
-      "marketing": "Маркетинг",
-      "sales": "Продажи"
-    },
-    "salesCategory": {
-      "title": "Категории продаж",
-      "affiliate": "Партнёрские",
-      "direct": "Прямые",
-      "adsense": "Adsense",
-      "affiliateProgram": "Партнёрская программа",
-      "directBuy": "Прямая покупка",
-      "products": "Товары",
-      "total": "Всего",
-      "usedOf": "Использовано из"
-    },
-    "upcomingSchedule": {
-      "title": "Ближайшее расписание",
-      "schedules": {
-        "item1": {
-          "title": "Пресс-конференция по бизнес-аналитике",
-          "description": "Будущее управления на основе данных + ещё 6"
-        },
-        "item2": {
-          "title": "Бизнес-спринт",
-          "description": "Техники из бизнес-спринта + ещё 2"
-        },
-        "item3": {
-          "title": "Встреча по отзывам клиентов",
-          "description": "Выводы из встречи по отзывам клиентов + ещё 8"
-        }
-      }
-    },
-    "recentOrders": {
-      "title": "Последние заказы",
-      "dealId": "ID сделки",
-      "customer": "Клиент",
-      "productService": "Товар/Услуга",
-      "dealValue": "Сумма сделки",
-      "closeDate": "Дата закрытия",
-      "status": "Статус",
-      "action": "Действие",
-      "products": {
-        "softwareLicense": "Лицензия на ПО",
-        "cloudHosting": "Облачный хостинг",
-        "webDomain": "Веб-домен",
-        "sslCertificate": "SSL-сертификат",
-        "premiumSupport": "Премиум-поддержка"
-      },
-      "statuses": {
-        "complete": "Завершено",
-        "pending": "В ожидании",
-        "cancel": "Отмена"
-      }
-    }
-  },
-  "stocks": {
-    "title": "Акции",
-    "dividend": {
-      "title": "Дивиденды",
-      "series": "Дивиденды",
-      "viewMore": "Подробнее",
-      "delete": "Удалить"
-    },
-    "portfolioPerformance": {
-      "title": "Доходность портфеля",
-      "subtitle": "Статистика вашей доходности по месяцам",
-      "series": "Доходность портфеля"
-    },
-    "trendingStocks": {
-      "title": "Популярные акции",
-      "shortStock": "Продать в шорт",
-      "buyStock": "Купить акцию"
-    },
-    "watchlist": {
-      "title": "Мой список наблюдения",
-      "viewMore": "Подробнее",
-      "delete": "Удалить"
-    },
-    "latestTransactions": {
-      "title": "Последние транзакции",
-      "searchPlaceholder": "Поиск...",
-      "table": {
-        "name": "Имя",
-        "date": "Дата",
-        "price": "Цена",
-        "category": "Категория",
-        "status": "Статус"
-      },
-      "actions": {
-        "bought": "Куплено {symbol}",
-        "sell": "Продать {symbol}"
-      },
-      "categories": {
-        "finance": "Финансы"
-      },
-      "statuses": {
-        "success": "Успех",
-        "pending": "В ожидании",
-        "failed": "Ошибка"
-      }
-    }
-  },
-  "saas": {
-    "title": "SaaS",
-    "metrics": {
-      "overview": "Обзор",
-      "totalRevenue": "Общая выручка",
-      "activeUsers": "Активные пользователи",
-      "clv": "Пожизненная ценность клиента",
-      "cac": "Стоимость привлечения клиента"
-    },
-    "churnRate": {
-      "title": "Отток",
-      "subtitle": "Переход на бесплатный тариф",
-      "thanLastWeek": "чем на прошлой неделе",
-      "series": "Отток",
-      "viewMore": "Подробнее",
-      "delete": "Удалить"
-    },
-    "userGrowth": {
-      "title": "Рост пользователей",
-      "subtitle": "Новые регистрации на сайте и в мобильном приложении",
-      "thanLastWeek": "чем на прошлой неделе",
-      "series": "Выручка",
-      "viewMore": "Подробнее",
-      "delete": "Удалить"
-    },
-    "conversionFunnel": {
-      "title": "Воронка конверсии",
-      "viewMore": "Подробнее",
-      "delete": "Удалить",
-      "series": {
-        "adImpressions": "Показы рекламы",
-        "websiteSession": "Сессии на сайте",
-        "appDownload": "Загрузки приложения",
-        "newUsers": "Новые пользователи"
-      }
-    },
-    "recentInvoices": {
-      "title": "Последние счета",
-      "table": {
-        "serialNo": "№",
-        "closeDate": "Дата закрытия",
-        "user": "Пользователь",
-        "amount": "Сумма",
-        "status": "Статус"
-      },
-      "statuses": {
-        "complete": "Завершено",
-        "pending": "В ожидании",
-        "cancelled": "Отменено"
-      }
-    },
-    "productPerformance": {
-      "title": "Эффективность продукта",
-      "viewMore": "Подробнее",
-      "delete": "Удалить",
-      "tabs": {
-        "dailySales": "Ежедневные продажи",
-        "onlineSales": "Онлайн-продажи",
-        "newUsers": "Новые пользователи"
-      },
-      "digitalProduct": "Цифровой продукт",
-      "physicalProduct": "Физический продукт",
-      "avgDailySales": "Средние дневные продажи",
-      "totalOnlineSales": "Всего онлайн-продаж",
-      "addedLastMonth": "Добавлено в прошлом месяце",
-      "totalNewUsers": "Всего новых пользователей",
-      "series": {
-        "sales": "Продажи",
-        "revenue": "Выручка"
-      }
-    },
-    "activities": {
-      "title": "Активность",
-      "viewMore": "Подробнее",
-      "delete": "Удалить",
-      "newInvoice": "Новый счёт",
-      "createdInvoice": "создал счёт"
-    }
-  },
-  "logistics": {
-    "title": "Логистика",
-    "metrics": {
-      "totalOrders": "Всего заказов",
-      "ordersInTransit": "Заказы в пути"
-    },
-    "deliveryStatistics": {
-      "title": "Статистика доставки",
-      "subtitle": "Всего доставок 70,5K",
-      "monthly": "По месяцам",
-      "yearly": "По годам",
-      "shipment": "Отправление",
-      "delivery": "Доставка"
-    },
-    "revenueEarned": {
-      "totalRevenue": "Всего заработано",
-      "shippedQuantities": "Отгруженное количество",
-      "newSales": "Новые продажи"
-    },
-    "deliveryVehicle": {
-      "title": "Транспорт доставки",
-      "subtitle": "Транспорт на маршруте",
-      "thanLastWeek": "чем на прошлой неделе",
-      "onRoute": "В пути"
-    },
-    "trackingDelivery": {
-      "title": "Отслеживание доставки",
-      "subtitle": "История последней просмотренной доставки"
-    },
-    "trackingProgress": {
-      "trackingId": "ID отслеживания",
-      "inTransit": "В пути",
-      "pickedUp": "Забран",
-      "delivered": "Доставлен"
-    },
-    "deliveryMan": {
-      "courier": "Курьер"
-    },
-    "deliveriesActivity": {
-      "title": "Активность доставок",
-      "subtitle": "Отслеживайте последние отправки",
-      "tabs": {
-        "all": "Все",
-        "delivered": "Доставленные",
-        "inTransit": "В пути",
-        "pending": "В ожидании",
-        "processing": "Обработка"
-      },
-      "filter": {
-        "button": "Фильтр",
-        "category": "Категория",
-        "searchCategory": "Поиск категории...",
-        "company": "Компания",
-        "searchCompany": "Поиск компании...",
-        "apply": "Применить"
-      },
-      "table": {
-        "orderId": "ID заказа",
-        "category": "Категория",
-        "company": "Компания",
-        "arrivalTime": "Время прибытия",
-        "route": "Маршрут",
-        "price": "Цена",
-        "status": "Статус"
-      },
-      "categories": {
-        "furniture": "Мебель",
-        "clothing": "Одежда",
-        "books": "Книги",
-        "automotive": "Авто",
-        "electronics": "Электроника",
-        "health": "Здоровье",
-        "toys": "Игрушки",
-        "kitchen": "Кухня",
-        "beauty": "Красота",
-        "sports": "Спорт"
-      },
-      "statuses": {
-        "delivered": "Доставлен",
-        "inTransit": "В пути",
-        "canceled": "Отменён"
-      },
-      "pagination": {
-        "showing": "Показано",
-        "to": "по",
-        "of": "из",
-        "page": "Страница"
-      }
-    }
-  },
-  "aiDashboard": {
-    "stats": {
-      "users": "Пользователи",
-      "projects": "Проекты",
-      "revenue": "Выручка",
-      "paidUsers": "Платные пользователи",
-      "last30Days": "Последние 30 дней"
-    },
-    "userRevenue": {
-      "title": "Пользователи и выручка",
-      "subtitle": "Следите за прогрессом и вовлечённостью по месяцам.",
-      "users": "Пользователи",
-      "revenue": "Выручка",
-      "monthly": "По месяцам",
-      "quarterly": "По кварталам",
-      "annually": "По годам"
-    },
-    "apiToken": {
-      "title": "Использование API-токенов",
-      "totalApiTokenUsed": "Всего использовано токенов",
-      "tokenUsed": "Использовано токенов",
-      "configuredKey": "{count, plural, one {# API-ключ настроен} few {# API-ключа настроено} many {# API-ключей настроено} other {# API-ключа настроено}}",
-      "viewAllUsageDetails": "Все детали использования"
-    },
-    "userAnalytics": {
-      "title": "Аналитика пользователей",
-      "subtitle": "Данные о пользователях платформы",
-      "totalUsers": "Всего пользователей",
-      "freeUsers": "Бесплатные пользователи",
-      "paidUsers": "Платные пользователи",
-      "ofTotalUser": "от всех пользователей",
-      "thisMonth": "Этот месяц",
-      "fromLastMonth": "к прошлому месяцу",
-      "thisYear": "Этот год",
-      "fromLastYear": "к прошлому году"
-    },
-    "projectAnalytics": {
-      "title": "Аналитика проектов",
-      "subtitle": "Подробные данные о проектах",
-      "totalProjects": "Всего проектов",
-      "today": "Сегодня",
-      "yesterday": "Вчера",
-      "projectCreated": "Проект создан",
-      "thisMonth": "Этот месяц",
-      "fromLastMonth": "к прошлому месяцу",
-      "thisYear": "Этот год",
-      "fromLastYear": "к прошлому году"
-    },
-    "recentTransactions": {
-      "title": "Последние транзакции",
-      "searchPlaceholder": "Поиск...",
-      "filter": "Фильтр",
-      "table": {
-        "paidBy": "Оплатил",
-        "packageName": "Пакет",
-        "price": "Цена",
-        "paidDate": "Дата оплаты",
-        "status": "Статус",
-        "actions": "Действия"
-      },
-      "packages": {
-        "starterMonthly": "Starter — месяц",
-        "growthYearly": "Growth — год",
-        "premiumMonthly": "Premium — месяц"
-      },
-      "statuses": {
-        "active": "Активна",
-        "expired": "Истекла"
-      },
-      "pagination": {
-        "previous": "Назад",
-        "next": "Вперёд",
-        "pageOf": "Страница {current} из {total}"
-      }
-    }
-  },
-  "sales": {
-    "salesStats": {
-      "title": "Панель продаж",
-      "subtitle": "Следите за выручкой, эффективностью и ростом продаж в реальном времени",
-      "selectDateRange": "Выберите период",
-      "export": "Экспорт",
-      "totalRevenue": "Общая выручка",
-      "totalSales": "Всего продаж",
-      "conversionRate": "Конверсия",
-      "refundRate": "Возвраты",
-      "vsLastMonth": "к прошлому месяцу",
-      "newSales": "Новые продажи"
-    },
-    "userRevenueStats": {
-      "title": "Пользователи и выручка",
-      "subtitle": "Следите за прогрессом и вовлечённостью по месяцам.",
-      "daily": "По дням",
-      "weekly": "По неделям",
-      "monthly": "По месяцам",
-      "onlineSales": "Онлайн-продажи",
-      "offlineSales": "Офлайн-продажи"
-    },
-    "userRetention": {
-      "title": "Удержание пользователей",
-      "subtitle": "Вовлечённость пользователей со временем",
-      "increasedVsLastWeek": "Выше, чем на прошлой неделе"
-    },
-    "salesByChannel": {
-      "title": "Продажи по каналам",
-      "subtitle": "Обзор эффективности каналов",
-      "increasedVsLastWeek": "Выше, чем на прошлой неделе",
-      "channels": {
-        "website": "Сайт",
-        "email": "Почта",
-        "socialMedia": "Соцсети"
-      },
-      "table": {
-        "channels": "Каналы",
-        "metric": "Показатель",
-        "total": "Всего"
-      }
-    },
-    "salesByCountry": {
-      "title": "Продажи по странам",
-      "subtitle": "Обзор продаж по странам",
-      "countries": {
-        "usa": "США",
-        "france": "Франция",
-        "japan": "Япония",
-        "germany": "Германия"
-      }
-    },
-    "topProducts": {
-      "title": "Топ товаров",
-      "table": {
-        "productName": "Название товара",
-        "category": "Категория",
-        "sales": "Продажи",
-        "earnings": "Доход",
-        "stocks": "Запасы",
-        "status": "Статус"
-      },
-      "products": {
-        "classicDenimJacket": "Классическая джинсовая куртка",
-        "slimFitChinos": "Зауженные чиносы",
-        "organicCottonTShirt": "Футболка из органического хлопка",
-        "leatherAnkleBoots": "Кожаные ботинки"
-      },
-      "variants": {
-        "threeSizes": "3 размера",
-        "fourColors": "4 цвета",
-        "fiveColors": "5 цветов",
-        "sixSizes": "6 размеров"
-      },
-      "categories": {
-        "jacket": "Куртка",
-        "pants": "Брюки",
-        "tShirt": "Футболка",
-        "footwear": "Обувь"
-      },
-      "statuses": {
-        "inStock": "В наличии",
-        "lowStock": "Мало на складе",
-        "outOfStock": "Нет в наличии"
-      }
-    }
-  },
-  "finance": {
-    "totalBalanceOverview": {
-      "title": "Общий баланс",
-      "overview": "Обзор ваших текущих средств",
-      "thanLastMonth": "к прошлому месяцу",
-      "primaryAccount": "Основной счёт:",
-      "seeDetails": "Подробнее",
-      "transfer": "Перевод",
-      "received": "Получено",
-      "balance": "Баланс"
-    },
-    "stats": {
-      "totalBalance": "Общий баланс",
-      "monthlyIncome": "Доход за месяц",
-      "totalSpent": "Всего потрачено",
-      "savingRate": "Норма сбережений",
-      "thanLastMonth": "к прошлому месяцу",
-      "goalProgress": "Цель: 30% — осталось 3,9%"
-    },
-    "cashflow": {
-      "title": "Обзор денежных потоков",
-      "totalRevenue": "Общая выручка",
-      "income": "Доход",
-      "expense": "Расход"
-    },
-    "spending": {
-      "title": "Расходы",
-      "yearly": "По годам",
-      "monthly": "По месяцам",
-      "total": "Всего",
-      "categories": {
-        "activity": "Активность",
-        "onlinePurchases": "Онлайн-покупки",
-        "groceries": "Продукты",
-        "digitalGoods": "Цифровые товары",
-        "stationery": "Канцелярия",
-        "others": "Другое"
-      }
-    },
-    "quickSend": {
-      "title": "Быстрый перевод",
-      "sendFrom": "Откуда",
-      "currency": "Валюта",
-      "amount": "Сумма",
-      "sendMoney": "Отправить"
-    },
-    "myCards": {
-      "title": "Мои карты",
-      "addCard": "Добавить карту",
-      "virtualCard": "Виртуальная карта",
-      "recentTransactions": "Последние транзакции",
-      "seeAllTransactions": "Все транзакции",
-      "transactions": {
-        "paymentReceived": "Платёж получен",
-        "cashbackDesc": "Кэшбэк от Stellar Rewards",
-        "netflixSubscription": "Подписка Netflix",
-        "netflixDesc": "Списание за сентябрьскую подписку",
-        "moneyReceived": "Деньги получены",
-        "paypalDesc": "Платёж получен через PayPal",
-        "googleAds": "Google Ads",
-        "googleAdsDesc": "Платёж получен от Google Ads"
-      }
-    },
-    "transactionsTable": {
-      "title": "Последние транзакции",
-      "searchPlaceholder": "Поиск...",
-      "filter": "Фильтр",
-      "table": {
-        "orderId": "ID заказа",
-        "activity": "Операция",
-        "price": "Цена",
-        "date": "Дата",
-        "status": "Статус"
-      },
-      "activities": {
-        "hotelBooking": "Бронирование отеля",
-        "onlineShopping": "Онлайн-покупки",
-        "gamePurchase": "Покупка игры",
-        "utilityBillPayment": "Оплата коммунальных услуг",
-        "onlineCourseEnrollment": "Запись на онлайн-курс"
-      },
-      "statuses": {
-        "completed": "Завершено",
-        "inProgress": "В процессе"
-      }
-    }
-  },
-  "calendar": {
-    "title": "Календарь",
-    "metaDescription": "Планируйте своё время и управляйте им",
-    "addEvent": "Добавить событие +",
-    "addEventAction": "Добавить событие",
-    "addEventTitle": "Добавить событие",
-    "editEventTitle": "Редактировать событие",
-    "modalSubtitle": "Спланируйте следующий важный момент: создайте или измените событие, чтобы всё было под контролем",
-    "eventTitle": "Название события",
-    "eventColor": "Цвет события",
-    "startDate": "Укажите дату начала",
-    "endDate": "Укажите дату окончания",
-    "updateChanges": "Сохранить изменения",
-    "close": "Закрыть",
-    "defaultEventTitle": "Событие",
-    "defaultNewEventTitle": "Новое событие",
-    "more": "ещё {count}",
-    "views": {
-      "year": "Год",
-      "month": "Месяц",
-      "week": "Неделя",
-      "day": "День"
-    },
-    "levels": {
-      "danger": "Опасность",
-      "success": "Успех",
-      "primary": "Основной",
-      "warning": "Предупреждение"
-    }
-  },
-  "profile": {
-    "title": "Профиль",
-    "metaDescription": "Управляйте аккаунтом, настройками и безопасностью",
-    "edit": "Редактировать",
-    "firstName": "Имя",
-    "lastName": "Фамилия",
-    "emailAddress": "Электронная почта",
-    "phone": "Телефон",
-    "bio": "О себе",
-    "socialLinks": "Социальные сети",
-    "address": "Адрес",
-    "country": "Страна",
-    "cityState": "Город/Регион",
-    "postalCode": "Почтовый индекс",
-    "taxId": "ИНН",
-    "security": "Безопасность",
-    "changePassword": "Сменить пароль",
-    "changePasswordHint": "Получайте уведомления в реальном времени и оповещения для команды.",
-    "twoFactor": "Двухфакторная аутентификация (2FA)",
-    "twoFactorHint": "Защитите аккаунт, включив 2FA",
-    "dangerZone": "Опасная зона",
-    "logoutAllDevices": "Выйти на всех устройствах",
-    "logoutAllDevicesHint": "Завершите все активные сессии.",
-    "logout": "Выйти",
-    "deleteAccount": "Удалить аккаунт",
-    "deleteAccountHint": "После удаления аккаунта вернуться назад не получится. Убедитесь в своём решении.",
-    "editPersonalInfo": "Редактирование личных данных",
-    "editPersonalInfoHint": "Обновите данные, чтобы профиль оставался актуальным.",
-    "changeProfilePicture": "Сменить фото профиля",
-    "uploadHint": "Загрузите квадратное изображение (200×200 px) в формате JPEG или PNG.",
-    "personalInformation": "Личные данные",
-    "editAddress": "Редактировать адрес",
-    "facebook": "Facebook",
-    "xcom": "X.com",
-    "linkedin": "Linkedin",
-    "instagram": "Instagram"
-  },
-  "schedule": {
-    "title": "Расписание",
-    "metaDescription": "Ваш день в виде почасовой шкалы",
-    "subtitle": "Перетащите задачу, чтобы перенести её — длительность сохранится.",
-    "addTask": "Добавить задачу",
-    "now": "Сейчас",
-    "loading": "Загружаем ваше расписание…",
-    "emptyTitle": "Пока ничего не запланировано",
-    "emptyMessage": "Нажмите на любой свободный час, чтобы запланировать задачу, а затем перетащите её в нужное место.",
-    "taskCount": "{count, plural, one {# задача} few {# задачи} many {# задач} other {# задачи}}",
-    "dragHint": "Перетащите блок, чтобы перенести его — работают и стрелки на клавиатуре.",
-    "blockLabel": "{title}, {range}",
-    "dragInstructions": "Чтобы перенести задачу, нажмите пробел, переместите её стрелками и нажмите пробел ещё раз, чтобы поставить. Escape отменяет перенос.",
-    "dragging": "Переносим {title}",
-    "dropped": "{title} перенесена на {range}",
-    "dragCancelled": "Перенос {title} отменён",
-    "errors": {
-      "load": "Не удалось загрузить расписание. Обновите страницу.",
-      "move": "Не удалось перенести задачу. Попробуйте ещё раз."
-    }
+    "privacyNote": "Вход только через Google — всё остаётся под вашим аккаунтом.",
+    "signInPrompt": "Уже есть аккаунт?",
+    "signInLink": "Войти"
   },
   "today": {
     "title": "Сегодня",
@@ -1075,7 +163,7 @@
   },
   "goals": {
     "title": "Цели",
-    "metaDescription": "Ставьте и отслеживайте долгосрочные цели с ИИ-декомпозицией",
+    "metaDescription": "Ставьте долгосрочные цели, разбивайте их на подзадачи и следите за прогрессом.",
     "subtitle": "Разбивайте большие цели на выполнимые шаги",
     "addGoal": "Добавить цель",
     "goalTitle": "Название цели",
@@ -1111,29 +199,89 @@
     "done": "Готово",
     "markDone": "Отметить как выполненную",
     "markTodo": "Отметить как невыполненную",
-    "decomposeAi": "Разложить ИИ",
-    "decomposing": "ИИ разбивает вашу цель…",
-    "decomposeSuccess": "Добавлено {count} подзадач от ИИ",
-    "decomposeSuccessTitle": "Подзадачи добавлены",
-    "decomposeError": "Не удалось разложить цель. Попробуйте ещё раз.",
-    "decomposeErrorTitle": "Не удалось разложить цель",
     "noSubtasks": "Подзадач пока нет",
     "errors": {
       "load": "Не удалось загрузить цели. Обновите страницу.",
       "save": "Не удалось сохранить цель. Попробуйте ещё раз.",
-      "delete": "Не удалось удалить цель. Попробуйте ещё раз.",
-      "decompose": "ИИ-декомпозиция не удалась. Попробуйте позже."
+      "delete": "Не удалось удалить цель. Попробуйте ещё раз."
+    },
+    "save": "Сохранить",
+    "viewMore": "{count, plural, one {Показать ещё # подзадачу} few {Показать ещё # подзадачи} many {Показать ещё # подзадач} other {Показать ещё # подзадачи}}",
+    "saving": "Сохраняем…"
+  },
+  "schedule": {
+    "title": "Расписание",
+    "metaDescription": "Ваш день в виде почасовой шкалы",
+    "subtitle": "Перетащите задачу, чтобы перенести её — длительность сохранится.",
+    "addTask": "Добавить задачу",
+    "now": "Сейчас",
+    "loading": "Загружаем ваше расписание…",
+    "emptyTitle": "Пока ничего не запланировано",
+    "emptyMessage": "Нажмите на любой свободный час, чтобы запланировать задачу, а затем перетащите её в нужное место.",
+    "taskCount": "{count, plural, one {# задача} few {# задачи} many {# задач} other {# задачи}}",
+    "dragHint": "Перетащите блок, чтобы перенести его — работают и стрелки на клавиатуре.",
+    "blockLabel": "{title}, {range}",
+    "dragInstructions": "Чтобы перенести задачу, нажмите пробел, переместите её стрелками и нажмите пробел ещё раз, чтобы поставить. Escape отменяет перенос.",
+    "dragging": "Переносим {title}",
+    "dropped": "{title} перенесена на {range}",
+    "dragCancelled": "Перенос {title} отменён",
+    "errors": {
+      "load": "Не удалось загрузить расписание. Обновите страницу.",
+      "move": "Не удалось перенести задачу. Попробуйте ещё раз."
+    }
+  },
+  "analytics": {
+    "title": "Аналитика",
+    "metaDescription": "Ваша продуктивность на одном экране — выполнение задач, продуктивные часы и стрики привычек",
+    "subtitle": "Как на самом деле прошли последние недели — по вашим задачам и привычкам.",
+    "rangeLabel": "Период графика",
+    "rangeLast7": "7 дней",
+    "rangeLast30": "30 дней",
+    "loading": "Считаем ваши показатели…",
+    "stats": {
+      "completionRate": "Доля выполненных",
+      "tasksDone": "Задач выполнено",
+      "ofTotal": "{done} из {total}",
+      "bestHour": "Самый продуктивный час",
+      "noPeak": "Данных пока мало",
+      "activeHabits": "Активных привычек"
+    },
+    "taskChart": {
+      "title": "Выполнение задач",
+      "subtitle": "Какая доля задач дня была закрыта",
+      "series": "Выполнено",
+      "empty": "За этот период задач пока нет"
+    },
+    "hoursChart": {
+      "title": "Продуктивные часы",
+      "subtitle": "В какое время вы обычно отмечаете задачи выполненными",
+      "series": "Задач выполнено",
+      "noDataTitle": "Данных пока мало",
+      "noDataMessage": "График заполнится по мере выполнения задач — время завершения записывается только с этого момента."
+    },
+    "habits": {
+      "title": "Стрики привычек",
+      "subtitle": "Текущая и лучшая серия каждой активной привычки",
+      "current": "Текущий",
+      "best": "Лучший",
+      "doneToday": "Выполнено сегодня",
+      "empty": "Активных привычек пока нет."
+    },
+    "empty": {
+      "title": "Пока нечего анализировать",
+      "message": "Добавьте несколько задач или привычек — и на этой странице появятся ваши тенденции.",
+      "cta": "Перейти к «Сегодня»"
+    },
+    "errors": {
+      "load": "Не удалось загрузить аналитику."
     }
   },
   "notes": {
     "title": "Заметки",
-    "metaDescription": "Записывайте заметки о дне и получайте короткий ИИ-итог",
+    "metaDescription": "Записывайте короткие заметки о дне — история сохраняется по датам.",
     "subtitle": "Несколько строк о сегодняшнем дне — всё сохраняется по мере набора.",
     "todayTitle": "Заметка за сегодня",
     "placeholder": "Как прошёл день?",
-    "summarize": "Сделать итог",
-    "summarizing": "Составляем итог…",
-    "summarizeHint": "Сначала напишите пару слов — итогу нужно, из чего его делать.",
     "save": "Сохранить",
     "cancel": "Отмена",
     "delete": "Удалить",
@@ -1146,27 +294,65 @@
       "saved": "Сохранено в {time}",
       "error": "Не удалось сохранить заметку"
     },
-    "summary": {
-      "title": "ИИ-итог",
-      "empty": "Итога пока нет. Напишите несколько строк — и ИИ прокомментирует ваш день.",
-      "loading": "Читаем ваш день…",
-      "retry": "Попробовать снова"
-    },
     "history": {
       "title": "Прошлые заметки",
       "count": "{count, plural, =0 {Заметок пока нет} one {# заметка} few {# заметки} many {# заметок} other {# заметки}}",
       "empty": "Здесь появятся ваши прошлые заметки.",
       "noText": "Пустая заметка",
-      "summaryLabel": "ИИ-итог",
       "deleteNote": "Удалить заметку от {date}"
     },
     "errors": {
       "load": "Не удалось загрузить заметки. Обновите страницу.",
       "save": "Не удалось сохранить заметку. Попробуйте ещё раз.",
-      "delete": "Не удалось удалить заметку. Попробуйте ещё раз.",
-      "rateLimit": "ИИ сейчас ограничен по запросам. Попробуйте через минуту.",
-      "notConfigured": "ИИ не настроен для этого приложения.",
-      "summary": "Не удалось составить итог. Попробуйте ещё раз."
+      "delete": "Не удалось удалить заметку. Попробуйте ещё раз."
     }
+  },
+  "profile": {
+    "title": "Профиль",
+    "metaDescription": "Управляйте аккаунтом, настройками и безопасностью",
+    "edit": "Редактировать",
+    "firstName": "Имя",
+    "lastName": "Фамилия",
+    "emailAddress": "Электронная почта",
+    "phone": "Телефон",
+    "bio": "О себе",
+    "socialLinks": "Социальные сети",
+    "address": "Адрес",
+    "country": "Страна",
+    "cityState": "Город/Регион",
+    "postalCode": "Почтовый индекс",
+    "taxId": "ИНН",
+    "security": "Безопасность",
+    "changePassword": "Сменить пароль",
+    "changePasswordHint": "Получайте уведомления в реальном времени и оповещения для команды.",
+    "twoFactor": "Двухфакторная аутентификация (2FA)",
+    "twoFactorHint": "Защитите аккаунт, включив 2FA",
+    "dangerZone": "Опасная зона",
+    "logoutAllDevices": "Выйти на всех устройствах",
+    "logoutAllDevicesHint": "Завершите все активные сессии.",
+    "logout": "Выйти",
+    "deleteAccount": "Удалить аккаунт",
+    "deleteAccountHint": "После удаления аккаунта вернуться назад не получится. Убедитесь в своём решении.",
+    "editPersonalInfo": "Редактирование личных данных",
+    "editPersonalInfoHint": "Обновите данные, чтобы профиль оставался актуальным.",
+    "changeProfilePicture": "Сменить фото профиля",
+    "uploadHint": "Загрузите квадратное изображение (200×200 px) в формате JPEG или PNG.",
+    "personalInformation": "Личные данные",
+    "editAddress": "Редактировать адрес",
+    "facebook": "Facebook",
+    "xcom": "X.com",
+    "linkedin": "Linkedin",
+    "instagram": "Instagram"
+  },
+  "error": {
+    "title": "Что-то пошло не так",
+    "message": "На этой странице произошла ошибка. Ваши данные в порядке — попробуйте ещё раз."
+  },
+  "notFound": {
+    "title": "Страница не найдена",
+    "metaDescription": "Страницы, которую вы ищете, не существует",
+    "error": "ОШИБКА",
+    "message": "Не удалось найти страницу, которую вы ищете!",
+    "backHome": "Вернуться на главную"
   }
 }
