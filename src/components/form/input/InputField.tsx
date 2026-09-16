@@ -41,6 +41,11 @@ const Input: FC<InputProps> = ({
     inputClasses += ` bg-transparent text-gray-800 border-gray-300 focus:border-brand-300 focus:ring-brand-500/20 dark:border-gray-700 dark:text-white/90  dark:focus:border-brand-800`;
   }
 
+  // The message under the field is not decoration: when it is an error the
+  // field is marked invalid and the message is what the field points at, so a
+  // screen reader hears the reason instead of an unexplained red box.
+  const hintId = id && hint ? `${id}-hint` : undefined;
+
   return (
     <div className="relative">
       <input
@@ -56,11 +61,15 @@ const Input: FC<InputProps> = ({
         step={step}
         disabled={disabled}
         className={inputClasses}
+        aria-invalid={error || undefined}
+        aria-describedby={hintId}
         {...props}
       />
 
       {hint && (
         <p
+          id={hintId}
+          role={error ? "alert" : undefined}
           className={`mt-1.5 text-xs ${
             error
               ? "text-error-500"
