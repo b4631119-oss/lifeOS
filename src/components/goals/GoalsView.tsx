@@ -2,7 +2,6 @@
 
 import ConfirmModal from "@/components/common/ConfirmModal";
 import ErrorBanner from "@/components/common/ErrorBanner";
-import NoticeModal from "@/components/common/NoticeModal";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import { useAuth } from "@/context/AuthContext";
 import { useGoals } from "@/hooks/useGoals";
@@ -31,13 +30,6 @@ export default function GoalsView() {
   const [goalToDelete, setGoalToDelete] = useState<Goal | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
-  /** Result of an AI breakdown, shown in a dialog instead of `alert()`. */
-  const [notice, setNotice] = useState<{
-    tone: "success" | "error";
-    title: string;
-    message: string;
-  } | null>(null);
-
   const handleDeleteRequest = (goal: Goal) => {
     setGoalToDelete(goal);
     deleteModal.openModal();
@@ -66,50 +58,6 @@ export default function GoalsView() {
     });
     setEditingGoal(null);
     setShowForm(false);
-  };
-
-  const handleDecompose = async (goal: Goal) => {
-    try {
-      const idToken = await user?.getIdToken();
-      if (!idToken) throw new Error("Not authenticated");
-
-      const response = await fetch("/api/ai/decompose", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${idToken}`,
-        },
-        body: JSON.stringify({ title: goal.title, description: goal.description }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || t("decomposeError"));
-      }
-
-      const data = await response.json();
-      const newSubtasks = data.subtasks.map((st: { title: string }) => ({
-        id: crypto.randomUUID(),
-        title: st.title,
-        done: false,
-      }));
-
-      await updateGoal(goal.id, {
-        subtasks: [...goal.subtasks, ...newSubtasks],
-      });
-
-      setNotice({
-        tone: "success",
-        title: t("decomposeSuccessTitle"),
-        message: t("decomposeSuccess", { count: newSubtasks.length }),
-      });
-    } catch {
-      setNotice({
-        tone: "error",
-        title: t("decomposeErrorTitle"),
-        message: t("errors.decompose"),
-      });
-    }
   };
 
   const handleEditRequest = (goal: Goal) => {
@@ -161,7 +109,6 @@ export default function GoalsView() {
               goal={goal}
               onEditRequest={handleEditRequest}
               onDeleteRequest={handleDeleteRequest}
-              onDecompose={handleDecompose}
               onToggleSubtask={async (goalId, subtaskId, done) => {
                 const goal = goals.find((g) => g.id === goalId);
                 if (!goal) return;
@@ -208,13 +155,6 @@ export default function GoalsView() {
         onConfirm={handleConfirmDelete}
       />
 
-      <NoticeModal
-        isOpen={notice !== null}
-        tone={notice?.tone}
-        title={notice?.title ?? ""}
-        message={notice?.message ?? ""}
-        onClose={() => setNotice(null)}
-      />
     </div>
   );
 }

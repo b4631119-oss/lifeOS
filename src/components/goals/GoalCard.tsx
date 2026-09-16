@@ -9,11 +9,8 @@ import GoalActionsMenu from "./GoalActionsMenu";
 
 interface GoalCardProps {
   goal: Goal;
-  /** Opens the edit form in the parent, seeded with this goal. */
   onEditRequest: (goal: Goal) => void;
-  /** Opens the parent's delete confirmation modal. */
   onDeleteRequest: (goal: Goal) => void;
-  onDecompose: (goal: Goal) => Promise<void>;
   onToggleSubtask: (goalId: string, subtaskId: string, done: boolean) => Promise<void>;
   onAddSubtask: (goalId: string, title: string) => Promise<void>;
   onDeleteSubtask: (goalId: string, subtaskId: string) => Promise<void>;
@@ -24,7 +21,6 @@ export default function GoalCard({
   goal,
   onEditRequest,
   onDeleteRequest,
-  onDecompose,
   onToggleSubtask,
   onAddSubtask,
   onDeleteSubtask,
@@ -110,11 +106,6 @@ export default function GoalCard({
         <GoalActionsMenu
           label={t("moreOptions")}
           actions={[
-            {
-              key: "decompose",
-              label: t("decomposeAi"),
-              onSelect: () => onDecompose(goal),
-            },
             {
               key: "edit",
               label: t("edit"),
