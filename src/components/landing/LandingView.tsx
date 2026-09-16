@@ -1,44 +1,54 @@
-"use client";
-
 import GoogleSignInButton from "@/components/auth/GoogleSignInButton";
 import GridShape from "@/components/common/GridShape";
 import { ThemeToggleButton } from "@/components/common/ThemeToggleButton";
 import LanguageSwitcher from "@/components/header/LanguageSwitcher";
 import { Link } from "@/i18n/navigation";
 import {
+  CalenderIcon,
   CheckCircleIcon,
+  DocsIcon,
   GridIcon,
   PieChartIcon,
   ShootingStarIcon,
+  TimeIcon,
 } from "@/icons";
-import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 import Image from "next/image";
 
 /**
  * What a signed-out visitor sees on `/`.
  *
- * Until now `/` was the dashboard behind a client-side auth guard, so the only
- * public thing a stranger could reach was the sign-in form. The guard lives in
- * the `(admin)` layout, which renders this instead of the dashboard for guests
- * on the home route; every other route still redirects to `/signin`.
+ * A Server Component on purpose: the value proposition has to exist in the
+ * served HTML (for a visitor on a slow connection, and for anything that reads
+ * the page without running its JavaScript), and this page must stay free of
+ * Firebase and of the authenticated shell. The interactive parts are the three
+ * client islands inside it — the language switcher, the theme toggle and the
+ * Google button — none of which import the SDK until they are used.
  *
- * The module titles are read from their own namespaces rather than duplicated
- * here — the sidebar labels and these cards can never drift apart that way.
+ * The module titles come from their own namespaces rather than being duplicated
+ * here, so the sidebar labels, the page titles and these cards cannot drift
+ * apart.
  */
-export default function LandingView() {
-  const t = useTranslations("landing");
-  const tCommon = useTranslations("common");
-  const tToday = useTranslations("today");
-  const tHabits = useTranslations("habits");
-  const tGoals = useTranslations("goals");
-  const tAnalytics = useTranslations("analytics");
-  const tAuth = useTranslations("auth");
+export default async function LandingView({ locale }: { locale: string }) {
+  const t = await getTranslations({ locale, namespace: "landing" });
+  const tCommon = await getTranslations({ locale, namespace: "common" });
+  const tToday = await getTranslations({ locale, namespace: "today" });
+  const tWeek = await getTranslations({ locale, namespace: "week" });
+  const tHabits = await getTranslations({ locale, namespace: "habits" });
+  const tGoals = await getTranslations({ locale, namespace: "goals" });
+  const tSchedule = await getTranslations({ locale, namespace: "schedule" });
+  const tNotes = await getTranslations({ locale, namespace: "notes" });
+  const tAnalytics = await getTranslations({ locale, namespace: "analytics" });
+  const tAuth = await getTranslations({ locale, namespace: "auth" });
 
   const modules = [
     { key: "tasks", title: tToday("title"), text: t("modules.tasks"), icon: <GridIcon /> },
+    { key: "week", title: tWeek("title"), text: t("modules.week"), icon: <CalenderIcon /> },
+    { key: "schedule", title: tSchedule("title"), text: t("modules.schedule"), icon: <TimeIcon /> },
     { key: "habits", title: tHabits("title"), text: t("modules.habits"), icon: <CheckCircleIcon /> },
     { key: "goals", title: tGoals("title"), text: t("modules.goals"), icon: <ShootingStarIcon /> },
     { key: "analytics", title: tAnalytics("title"), text: t("modules.analytics"), icon: <PieChartIcon /> },
+    { key: "notes", title: tNotes("title"), text: t("modules.notes"), icon: <DocsIcon /> },
   ];
 
   return (
@@ -86,7 +96,25 @@ export default function LandingView() {
             {t("subtitle")}
           </p>
 
-          <ul className="mt-8 grid gap-4 sm:grid-cols-2">
+          {/* The one action that matters, directly under the promise it acts
+              on, instead of below four feature cards. */}
+          <div className="mt-8 max-w-sm">
+            <GoogleSignInButton />
+            <p className="mt-3 text-theme-xs text-gray-500 dark:text-gray-400">
+              {t("privacyNote")}
+            </p>
+          </div>
+
+          <p className="mt-4 max-w-sm text-theme-xs text-gray-500 dark:text-gray-400">
+            <Link
+              href="/today"
+              className="font-medium text-brand-500 hover:text-brand-600 dark:text-brand-400"
+            >
+              {t("openApp")}
+            </Link>
+          </p>
+
+          <ul className="mt-10 grid gap-4 sm:grid-cols-2">
             {modules.map((module) => (
               <li
                 key={module.key}
@@ -105,18 +133,11 @@ export default function LandingView() {
             ))}
           </ul>
 
-          <div className="mt-8 max-w-sm">
-            <GoogleSignInButton />
-            <p className="mt-3 text-theme-xs text-gray-500 dark:text-gray-400">
-              {t("privacyNote")}
-            </p>
-          </div>
-
           <p className="mt-6 text-theme-sm text-gray-500 dark:text-gray-400">
             {t("signInPrompt")}{" "}
             <Link
               href="/signin"
-              className="font-medium text-brand-500 hover:text-brand-600"
+              className="font-medium text-brand-500 hover:text-brand-600 dark:text-brand-400"
             >
               {t("signInLink")}
             </Link>
