@@ -1,10 +1,11 @@
 "use client";
 
+import DayNavigator from "@/components/common/DayNavigator";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import Button from "@/components/ui/button/Button";
+import { useDay } from "@/context/DayContext";
 import { PlusIcon } from "@/icons";
-import { formatDayLabel } from "@/lib/date";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 
 interface TodayHeaderProps {
   onAddTask: () => void;
@@ -12,24 +13,16 @@ interface TodayHeaderProps {
 
 export default function TodayHeader({ onAddTask }: TodayHeaderProps) {
   const t = useTranslations("today");
-  const locale = useLocale();
+  const { isToday } = useDay();
 
   return (
     <div>
       <PageBreadcrumb pageTitle={t("title")} />
 
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <p
-            className="text-theme-sm font-medium text-gray-800 dark:text-white/90"
-            suppressHydrationWarning
-          >
-            {formatDayLabel(new Date(), locale)}
-          </p>
-          <p className="text-theme-xs text-gray-500 dark:text-gray-400">
-            {t("greeting")}
-          </p>
-        </div>
+        {/* The greeting only makes sense for today; every other day shows its
+            relative position ("yesterday") instead. */}
+        <DayNavigator subtitle={isToday ? t("greeting") : undefined} />
 
         <Button size="sm" startIcon={<PlusIcon />} onClick={onAddTask}>
           {t("addTask")}
