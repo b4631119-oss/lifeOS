@@ -1,3 +1,5 @@
+"use client";
+
 import { useTheme } from "@/context/ThemeContext";
 import { useTranslations } from "next-intl";
 import React from "react";
