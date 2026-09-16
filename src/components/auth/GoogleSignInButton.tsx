@@ -2,25 +2,24 @@
 
 import { useRouter } from "@/i18n/navigation";
 import { GoogleIcon } from "@/icons";
+import { preloadAuthSdk, signInWithGoogle } from "@/lib/authActions";
 import { authErrorKey, currentHost, firebaseAuthCode } from "@/lib/authErrors";
 import { useTranslations } from "next-intl";
-import { useCallback, useRef, useState } from "react";
-
-/** Lazy-load Firebase Auth SDK and sign in with Google popup. */
-async function signInWithGoogle() {
-  const [{ getFirebaseApp }, { getAuth, GoogleAuthProvider, signInWithPopup }] =
-    await Promise.all([import("@/lib/firebase"), import("firebase/auth")]);
-  const auth = getAuth(getFirebaseApp());
-  const provider = new GoogleAuthProvider();
-  provider.setCustomParameters({ prompt: "select_account" });
-  return signInWithPopup(auth, provider);
-}
+import { useCallback, useState } from "react";
 
 interface GoogleSignInButtonProps {
   /** Sign-up reuses the same Google popup, only the label differs. */
   variant?: "signIn" | "signUp";
 }
 
+/**
+ * The only way into the product (see `lib/authActions.ts`).
+ *
+ * Signing in lands on the dashboard (`/today`). That is safe even though the
+ * popup's promise can resolve before React has seen the auth event: the
+ * dashboard mounts its own `AuthProvider`, which starts in the loading state
+ * and only renders the guard once the persisted session has been read back.
+ */
 export default function GoogleSignInButton({
   variant = "signIn",
 }: GoogleSignInButtonProps) {
@@ -28,7 +27,6 @@ export default function GoogleSignInButton({
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const abortRef = useRef<AbortController | null>(null);
 
   const handleSignIn = useCallback(async () => {
     setIsLoading(true);
@@ -36,7 +34,7 @@ export default function GoogleSignInButton({
 
     try {
       await signInWithGoogle();
-      router.replace("/");
+      router.replace("/today");
     } catch (cause: unknown) {
       // popup-blocked errors have no code — show a translated message
       if (
@@ -53,21 +51,16 @@ export default function GoogleSignInButton({
     }
   }, [router, t]);
 
-  // Prefetch Firebase SDK on hover / focus so the click doesn't wait for network.
-  const prefetch = useCallback(() => {
-    if (abortRef.current) return;
-    const ac = new AbortController();
-    abortRef.current = ac;
-    import("@/lib/firebase").catch(() => {});
-  }, []);
-
   return (
     <div className="flex flex-col gap-2">
       <button
         type="button"
         onClick={handleSignIn}
-        onMouseEnter={prefetch}
-        onFocus={prefetch}
+        // Warms the auth chunk on hover/focus so the click doesn't wait for the
+        // network. Deliberately the auth SDK only: warming the Firestore facade
+        // here would download the whole data layer to sign in.
+        onMouseEnter={preloadAuthSdk}
+        onFocus={preloadAuthSdk}
         disabled={isLoading}
         className="inline-flex w-full items-center justify-center gap-3 rounded-lg bg-gray-100 px-7 py-3 text-sm font-normal text-gray-700 transition-colors hover:bg-gray-200 hover:text-gray-800 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10"
       >
