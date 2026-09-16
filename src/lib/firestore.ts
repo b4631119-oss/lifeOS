@@ -11,6 +11,7 @@ import {
   setDoc,
   updateDoc,
   where,
+  writeBatch,
   type DocumentData,
   type QueryDocumentSnapshot,
   type Timestamp,
@@ -35,6 +36,15 @@ import type {
 
 import { withCompletionStamp } from "./completionStamp";
 import { getFirestoreDb } from "./firebase";
+import {
+  DEFAULT_PRIORITY,
+  compareDayTasks,
+} from "./taskSchedule.ts";
+import { newTaskDoc, taskPatch } from "./taskPatch.ts";
+import {
+  legacySubtaskTaskDrafts,
+  remainingSubtasksAfterConversion,
+} from "./goals.ts";
 
 /** Subcollection names under `users/{uid}`. */
 const TASKS = "tasks";
@@ -60,12 +70,21 @@ function mapTask(snap: Snap): LifeTask {
   return {
     id: snap.id,
     title: (data.title as string) ?? "",
+    // Empty (or missing) times mean unscheduled, not an error — see `LifeTask`.
     startTime: (data.startTime as string) ?? "",
     endTime: (data.endTime as string) ?? "",
     status: (data.status as LifeTask["status"]) ?? "todo",
+    // Absent on every document written before priorities existed: a task with
+    // no priority is a medium one, not an unknown one.
+    priority: (data.priority as LifeTask["priority"]) ?? DEFAULT_PRIORITY,
     date: (data.date as string) ?? "",
     createdAt: (data.createdAt as Timestamp | null) ?? null,
     completedAt: (data.completedAt as Timestamp | null) ?? null,
+    // Both absent on every document written before they existed. An empty
+    // string is read as "no link" too, so neither shape can strand a task.
+    goalId: (data.goalId as string | undefined) || undefined,
+    // Absent on every document written before dropping existed.
+    dropped: Boolean(data.dropped),
   };
 }
 
@@ -89,13 +108,19 @@ function mapHabitLog(snap: Snap): HabitLog {
   };
 }
 
-function mapGoal(snap: Snap): Goal {
-  const data = snap.data();
+/** Anything with an id and data — a document or a query snapshot. */
+type DocSnap = { id: string; data: () => DocumentData | undefined };
+
+function mapGoal(snap: DocSnap): Goal {
+  const data = snap.data() ?? {};
   return {
     id: snap.id,
     title: (data.title as string) ?? "",
     description: (data.description as string) ?? "",
     deadline: (data.deadline as string) ?? "",
+    // Absent on every goal written before the lifecycle existed, and an old
+    // goal is an active one.
+    status: (data.status as Goal["status"]) ?? "active",
     subtasks: (data.subtasks as Goal["subtasks"]) ?? [],
     createdAt: (data.createdAt as Timestamp | null) ?? null,
   };
@@ -107,7 +132,6 @@ function mapNote(snap: Snap): Note {
     id: snap.id,
     date: (data.date as string) ?? "",
     content: (data.content as string) ?? "",
-    aiSummary: (data.aiSummary as string | null) ?? null,
     createdAt: (data.createdAt as Timestamp | null) ?? null,
   };
 }
@@ -160,10 +184,15 @@ export async function getTasksSince(
     query(userCollection(uid, TASKS), where("date", ">=", fromDate)),
   );
 
-  return snapshot.docs.map(mapTask).sort(
-    (a, b) =>
-      a.date.localeCompare(b.date) || a.startTime.localeCompare(b.startTime),
-  );
+  return snapshot.docs.map(mapTask).sort(byDateThenTime);
+}
+
+/**
+ * Chronological across days, then by time within a day (unscheduled tasks last
+ * — see `compareDayTasks`).
+ */
+function byDateThenTime(a: LifeTask, b: LifeTask): number {
+  return a.date.localeCompare(b.date) || compareDayTasks(a, b);
 }
 
 /**
@@ -175,19 +204,20 @@ export async function getTasks(uid: string, date?: string): Promise<LifeTask[]> 
     : userCollection(uid, TASKS);
 
   const snapshot = await getDocs(source);
-  return snapshot.docs
-    .map(mapTask)
-    .sort((a, b) => a.startTime.localeCompare(b.startTime));
+  return snapshot.docs.map(mapTask).sort(compareDayTasks);
 }
 
 export async function addTask(uid: string, task: NewTask): Promise<string> {
-  const ref = await addDoc(userCollection(uid, TASKS), {
-    ...task,
-    // A task created already-done still needs a completion time, otherwise it
-    // would never appear in the analytics hour histogram.
-    completedAt: task.status === "done" ? serverTimestamp() : null,
-    createdAt: serverTimestamp(),
-  });
+  const ref = await addDoc(
+    userCollection(uid, TASKS),
+    newTaskDoc({
+      ...task,
+      // A task created already-done still needs a completion time, otherwise it
+      // would never appear in the analytics hour histogram.
+      completedAt: task.status === "done" ? serverTimestamp() : null,
+      createdAt: serverTimestamp(),
+    }),
+  );
   return ref.id;
 }
 
@@ -197,9 +227,11 @@ export async function updateTask(
   data: Partial<NewTask>,
   previousStatus?: TaskStatus,
 ): Promise<void> {
+  // `taskPatch` is what keeps a title edit, a drag or a carry from wiping the
+  // fields it never mentioned — the goal link in particular.
   await updateDoc(
     userDoc(uid, TASKS, taskId),
-    withCompletionStamp(data, previousStatus),
+    taskPatch(withCompletionStamp(data, previousStatus)),
   );
 }
 
@@ -223,12 +255,60 @@ export function subscribeToTasks(
 
   return onSnapshot(
     source,
-    (snapshot) => {
-      const tasks = snapshot.docs
-        .map(mapTask)
-        .sort((a, b) => a.startTime.localeCompare(b.startTime));
-      onNext(tasks);
-    },
+    (snapshot) => onNext(snapshot.docs.map(mapTask).sort(compareDayTasks)),
+    (error) => onError?.(error),
+  );
+}
+
+/**
+ * Subscribes to the tasks linked to one goal.
+ *
+ * A single-field equality query on `goalId`: no composite index, no second
+ * collection, still inside `users/{uid}/tasks` where the owner-scoped rules
+ * already apply, and it returns only the work that was actually linked — there
+ * is nothing to filter afterwards and no list to keep in step with anything.
+ */
+export function subscribeToGoalTasks(
+  uid: string,
+  goalId: string,
+  onNext: (tasks: LifeTask[]) => void,
+  onError?: (error: Error) => void,
+): Unsubscribe {
+  return onSnapshot(
+    query(userCollection(uid, TASKS), where("goalId", "==", goalId)),
+    (snapshot) => onNext(snapshot.docs.map(mapTask).sort(byDateThenTime)),
+    (error) => onError?.(error),
+  );
+}
+
+/** A closed range of `YYYY-MM-DD` days; either end may be open. */
+export type TaskDateRange = { from: string; to?: string };
+
+/**
+ * Subscribes to the tasks dated inside a range of days.
+ *
+ * Bounds are on the same field (`date`), which is a single-field range scan —
+ * no composite index, no second query. Used by the Today view (from a day
+ * backwards, unbounded above) and by the Week view, where the upper bound is
+ * what keeps a week's read to that week instead of to the whole future.
+ */
+export function subscribeToTaskRange(
+  uid: string,
+  range: TaskDateRange,
+  onNext: (tasks: LifeTask[]) => void,
+  onError?: (error: Error) => void,
+): Unsubscribe {
+  const source = range.to
+    ? query(
+        userCollection(uid, TASKS),
+        where("date", ">=", range.from),
+        where("date", "<=", range.to),
+      )
+    : query(userCollection(uid, TASKS), where("date", ">=", range.from));
+
+  return onSnapshot(
+    source,
+    (snapshot) => onNext(snapshot.docs.map(mapTask).sort(byDateThenTime)),
     (error) => onError?.(error),
   );
 }
@@ -364,6 +444,13 @@ export async function updateGoal(
   await updateDoc(userDoc(uid, GOALS, goalId), data);
 }
 
+/**
+ * Deletes a goal document — and nothing else.
+ *
+ * The hooks in `useGoalTasks` deliberately stop here: a linked task is the
+ * user's own work, so ending a direction must not delete a day of it. The link
+ * simply stops resolving, and the UI shows those tasks as having no goal.
+ */
 export async function deleteGoal(uid: string, goalId: string): Promise<void> {
   await deleteDoc(userDoc(uid, GOALS, goalId));
 }
@@ -379,6 +466,65 @@ export function subscribeToGoals(
     (snapshot) => onNext(snapshot.docs.map(mapGoal)),
     (error) => onError?.(error),
   );
+}
+
+/**
+ * Subscribes to a single goal document.
+ *
+ * Reports `null` once the goal is gone instead of failing: an open detail page
+ * and a task that still points at a deleted goal both have to keep working.
+ */
+export function subscribeToGoal(
+  uid: string,
+  goalId: string,
+  onNext: (goal: Goal | null) => void,
+  onError?: (error: Error) => void,
+): Unsubscribe {
+  return onSnapshot(
+    userDoc(uid, GOALS, goalId),
+    (snapshot) => onNext(snapshot.exists() ? mapGoal(snapshot) : null),
+    (error) => onError?.(error),
+  );
+}
+
+/**
+ * Turns a goal's remaining pre-task steps into real tasks for `date`.
+ *
+ * One atomic batch: either every open step becomes a task and the goal keeps
+ * only its completed steps, or nothing changes at all — there is no half-moved
+ * goal to clean up by hand.
+ *
+ * Completed steps are deliberately not converted. They were finished at a
+ * moment nobody recorded, so a task marked done today would invent that history
+ * (and land in today's completion rate).
+ *
+ * Returns how many tasks were created.
+ */
+export async function moveLegacySubtasksToTasks(
+  uid: string,
+  goal: Goal,
+  date: string,
+): Promise<number> {
+  const drafts = legacySubtaskTaskDrafts(goal, date);
+  if (drafts.length === 0) return 0;
+
+  const batch = writeBatch(getFirestoreDb());
+
+  for (const draft of drafts) {
+    batch.set(doc(userCollection(uid, TASKS)), {
+      ...newTaskDoc(draft),
+      completedAt: null,
+      createdAt: serverTimestamp(),
+    });
+  }
+
+  batch.update(userDoc(uid, GOALS, goal.id), {
+    subtasks: remainingSubtasksAfterConversion(goal),
+  });
+
+  await batch.commit();
+
+  return drafts.length;
 }
 
 /* ----------------------------------- notes ---------------------------------- */
@@ -400,10 +546,10 @@ export async function getNotes(uid: string, date?: string): Promise<Note[]> {
  * existence, and today's note needs no query to be found — its id is known.
  *
  * `merge: true` keeps the write additive — it never clobbers a field it does not
- * carry (the AI summary, say), which also means a save stays harmless if the
- * initial read failed and left us unsure whether the note already exists.
- * Pass `isNew` only when that note is known to be absent, so it gets its
- * creation time; later saves must not restamp it.
+ * carry, which also means a save stays harmless if the initial read failed and
+ * left us unsure whether the note already exists. Pass `isNew` only when that
+ * note is known to be absent, so it gets its creation time; later saves must not
+ * restamp it.
  */
 export async function saveNote(
   uid: string,
@@ -416,7 +562,7 @@ export async function saveNote(
     {
       date,
       content,
-      ...(isNew ? { aiSummary: null, createdAt: serverTimestamp() } : {}),
+      ...(isNew ? { createdAt: serverTimestamp() } : {}),
     },
     { merge: true },
   );
