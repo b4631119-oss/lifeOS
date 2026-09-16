@@ -1,4 +1,4 @@
-import TodayView from "@/components/today/TodayView";
+import TodayViewLoader from "@/components/today/TodayViewLoader";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Metadata } from "next";
 
@@ -25,5 +25,5 @@ export default async function Today({ params }: TodayPageProps) {
   // are rendered in isolation when prerendering).
   setRequestLocale(locale);
 
-  return <TodayView />;
+  return <TodayViewLoader />;
 }
