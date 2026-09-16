@@ -18,6 +18,16 @@ const nextConfig: NextConfig = {
         pathname: "/**",
       },
     ],
+    // Google account avatars (`user.photoURL`) are the only remote images the
+    // app renders, in the header and on the profile page. Anything else is
+    // rejected by `photoURLOf`, which only accepts https URLs, and by Next,
+    // which only optimizes hosts listed here.
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "*.googleusercontent.com",
+      },
+    ],
   },
   async headers() {
     return [
