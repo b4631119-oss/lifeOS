@@ -6,16 +6,15 @@ import type { Unsubscribe, User } from "firebase/auth";
 /**
  * Every auth action the UI can trigger, each loading the SDK on demand.
  *
- * These used to run through `AuthContext`, which meant `firebase/auth` sat in
- * the initial bundle of every page — the sign-in form and the 404 included,
- * even though neither is signed in. Here the SDK is imported inside the action,
- * so it arrives when the visitor actually asks for it:
+ * These live here rather than in `AuthContext` so that `firebase/auth` is not
+ * part of any page's initial bundle: the public landing page and `/signin`
+ * ship no Firebase code at all, the first click on "Sign in with Google"
+ * fetches it (the button warms the import on hover/focus, see
+ * `GoogleSignInButton`), and the dashboard loads it during the auth check it
+ * was already waiting for.
  *
- * - the landing page and `/signin` ship no Firebase code at all;
- * - the first click on "Sign in with Google" fetches it (the button warms the
- *   import on hover/focus, see `GoogleSignInButton`), which is invisible next
- *   to the popup itself;
- * - the dashboard loads it during the auth check it was already waiting for.
+ * The avatar and name shown in the header and on the profile page come from the
+ * `User` this module resolves — the app holds no identity of its own.
  *
  * `import type` at the top is erased at build time, so it does not pull the SDK
  * back into the bundle.
@@ -44,15 +43,6 @@ export async function signOutUser(): Promise<void> {
     loadFirebaseAuth(),
   ]);
   await signOut(auth);
-}
-
-/** Emails a password-reset link. The mail itself is sent and hosted by Firebase. */
-export async function sendPasswordReset(email: string): Promise<void> {
-  const [{ sendPasswordResetEmail }, auth] = await Promise.all([
-    import("firebase/auth"),
-    loadFirebaseAuth(),
-  ]);
-  await sendPasswordResetEmail(auth, email);
 }
 
 /**
