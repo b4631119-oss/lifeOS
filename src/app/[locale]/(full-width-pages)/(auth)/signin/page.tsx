@@ -1,11 +1,29 @@
 import SignInForm from "@/components/auth/SignInForm";
-import { Metadata } from "next";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "Sign In | LifeOS",
-  description: "Sign in to your LifeOS account",
+type SignInPageProps = {
+  params: Promise<{ locale: string }>;
 };
 
-export default function SignIn() {
+export async function generateMetadata({
+  params,
+}: SignInPageProps): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "auth" });
+
+  return {
+    title: `${t("signInTitle")} | LifeOS`,
+    description: t("signInMetaDescription"),
+  };
+}
+
+export default async function SignIn({ params }: SignInPageProps) {
+  const { locale } = await params;
+
+  // Opts the page into static rendering (the layout sets this too, but pages
+  // are rendered in isolation when prerendering).
+  setRequestLocale(locale);
+
   return <SignInForm />;
 }

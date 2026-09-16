@@ -1,11 +1,29 @@
 import SignUpForm from "@/components/auth/SignUpForm";
-import { Metadata } from "next";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "Sign Up | LifeOS",
-  description: "Create your LifeOS account",
+type SignUpPageProps = {
+  params: Promise<{ locale: string }>;
 };
 
-export default function SignUp() {
+export async function generateMetadata({
+  params,
+}: SignUpPageProps): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "auth" });
+
+  return {
+    title: `${t("signUpTitle")} | LifeOS`,
+    description: t("signUpMetaDescription"),
+  };
+}
+
+export default async function SignUp({ params }: SignUpPageProps) {
+  const { locale } = await params;
+
+  // Opts the page into static rendering (the layout sets this too, but pages
+  // are rendered in isolation when prerendering).
+  setRequestLocale(locale);
+
   return <SignUpForm />;
 }

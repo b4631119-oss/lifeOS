@@ -67,7 +67,9 @@
     "sendingResetLink": "Отправляем…",
     "resetLinkSentTitle": "Проверьте почту",
     "resetLinkSentBody": "Мы отправили ссылку для сброса пароля на {email}.",
-    "resetPasswordMetaDescription": "Сброс пароля LifeOS — ссылка приходит на почту."
+    "resetPasswordMetaDescription": "Сброс пароля LifeOS — ссылка приходит на почту.",
+    "signInMetaDescription": "Вход в LifeOS через аккаунт Google — план дня, привычки, цели и аналитика в одном месте.",
+    "signUpMetaDescription": "Создайте аккаунт LifeOS через Google — план дня, привычки, цели и аналитика в одном месте."
   },
   "landing": {
     "title": "Планируйте день, держите привычки, доходите до целей",

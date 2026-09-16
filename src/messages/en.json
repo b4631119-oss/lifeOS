@@ -67,7 +67,9 @@
     "sendingResetLink": "Sending…",
     "resetLinkSentTitle": "Check your inbox",
     "resetLinkSentBody": "We sent a password reset link to {email}.",
-    "resetPasswordMetaDescription": "Reset your LifeOS password — we send a link to your email."
+    "resetPasswordMetaDescription": "Reset your LifeOS password — we send a link to your email.",
+    "signInMetaDescription": "Sign in to LifeOS with your Google account — daily plan, habits, goals and analytics in one place.",
+    "signUpMetaDescription": "Create your LifeOS account with Google — daily plan, habits, goals and analytics in one place."
   },
   "landing": {
     "title": "Plan the day, keep the habits, reach the goals",
