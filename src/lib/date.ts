@@ -5,6 +5,33 @@ export function todayKey(date: Date = new Date()): string {
   return dateKey(date);
 }
 
+/**
+ * Milliseconds from `now` until the next local midnight.
+ *
+ * The day is not a value that can be read once: a tab or an installed app left
+ * open across 00:00 would otherwise keep writing to yesterday's documents (see
+ * `useTodayKey`). This is the delay until the calendar day actually changes, so
+ * a single timer can be scheduled per day instead of polling.
+ *
+ * Built through the local `Date` constructor rather than by adding 24 hours, so
+ * a DST transition is handled by the platform: on the day the clock jumps, the
+ * next local midnight is 23 or 25 hours away and the returned difference is the
+ * real elapsed time either way.
+ */
+export function msUntilNextLocalDay(now: Date = new Date()): number {
+  const nextMidnight = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate() + 1,
+    0,
+    0,
+    0,
+    0,
+  );
+
+  return nextMidnight.getTime() - now.getTime();
+}
+
 /** Local calendar date as `YYYY-MM-DD` (matches the Firestore `date` field). */
 export function dateKey(date: Date): string {
   const year = date.getFullYear();
@@ -56,22 +83,24 @@ export function formatDayLabel(
  * How far through the scheduled day we are, as a percentage.
  *
  * Uses the scheduled window (earliest start -> latest end) when any task has a
- * time, otherwise falls back to the full 24 hour day. With no tasks at all there
- * is no schedule to measure against, so it reports 0 instead of the raw time of
- * day (which would show a non-zero bar on an empty day).
+ * time, otherwise falls back to the full 24 hour day. With no timed task at all
+ * there is no schedule to measure against, so it reports 0 instead of the raw
+ * time of day (which would show a non-zero bar on a day that has only
+ * unscheduled tasks — the bar would then be measuring the clock, not the plan).
  */
 export function dayElapsedPercent(
   tasks: Pick<LifeTask, "startTime" | "endTime">[],
   now: Date = new Date(),
 ): number {
-  if (tasks.length === 0) return 0;
-
   const starts = tasks
     .map((task) => toMinutes(task.startTime))
     .filter((value): value is number => value !== null);
   const ends = tasks
     .map((task) => toMinutes(task.endTime))
     .filter((value): value is number => value !== null);
+
+  // Nothing is scheduled: no window to be through.
+  if (starts.length === 0 && ends.length === 0) return 0;
 
   const windowStart = starts.length > 0 ? Math.min(...starts) : 0;
   const windowEnd = ends.length > 0 ? Math.max(...ends) : 24 * 60;
@@ -84,9 +113,23 @@ export function dayElapsedPercent(
   return Math.min(100, Math.max(0, Math.round(percent)));
 }
 
-function toMinutes(value: string): number | null {
-  const [hours, minutes] = value.split(":").map(Number);
-  if (!Number.isFinite(hours) || !Number.isFinite(minutes)) return null;
+/**
+ * `"HH:mm"` (or `"HH:mm:ss"`) → minutes since midnight, or `null` when it is
+ * not a time at all.
+ *
+ * Strict on purpose, and `null` for the empty string: since times became
+ * optional, `""` is a real value meaning *unscheduled*, and the old
+ * `split(":").map(Number)` read it as 0 — i.e. midnight, which silently put an
+ * unscheduled task at 00:00 in the elapsed-day window.
+ */
+export function toMinutes(value: string): number | null {
+  const match = /^(\d{1,2}):(\d{2})(?::\d{2})?$/.exec(value);
+  if (!match) return null;
+
+  const hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  if (hours > 23 || minutes > 59) return null;
+
   return hours * 60 + minutes;
 }
 
@@ -95,6 +138,58 @@ export function addDays(date: Date, days: number): Date {
   const next = new Date(date);
   next.setDate(next.getDate() + days);
   return next;
+}
+
+/** The `YYYY-MM-DD` key of the day after `key`. */
+export function nextDayKey(key: string): string {
+  return dateKey(addDays(parseDateKey(key), 1));
+}
+
+/**
+ * The day `offset` days away from `today`.
+ *
+ * Day navigation stores an *offset* rather than an absolute date, so an offset
+ * of 0 keeps following the calendar: a tab left open across midnight shows the
+ * new day instead of a date that has just turned into yesterday.
+ */
+export function dayKeyFor(today: string, offset: number): string {
+  if (offset === 0) return today;
+  return dateKey(addDays(parseDateKey(today), offset));
+}
+
+/**
+ * True for a well-formed `YYYY-MM-DD` key that names a real calendar day.
+ *
+ * Checked by round-tripping through `parseDateKey`, so impossible dates are
+ * rejected too: the platform would happily turn "2026-02-30" into 2 March.
+ */
+export function isValidDateKey(key: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(key)) return false;
+  return dateKey(parseDateKey(key)) === key;
+}
+
+/**
+ * A localized, relative day label: "today", "yesterday", "in 3 days".
+ *
+ * `Intl.RelativeTimeFormat` supplies the wording *and* the plural rules in both
+ * locales, so no message keys are needed for it. The day difference is rounded
+ * rather than divided exactly, so a DST change (a 23 or 25 hour day) still
+ * counts as one day.
+ */
+export function formatRelativeDay(
+  key: string,
+  today: string,
+  locale?: string,
+): string {
+  const days = Math.round(
+    (parseDateKey(key).getTime() - parseDateKey(today).getTime()) /
+      (24 * 60 * 60 * 1000),
+  );
+
+  return new Intl.RelativeTimeFormat(locale, { numeric: "auto" }).format(
+    days,
+    "day",
+  );
 }
 
 /** Parses a `YYYY-MM-DD` key into a local Date at midnight. */
