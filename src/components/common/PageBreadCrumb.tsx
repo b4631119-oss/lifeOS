@@ -23,7 +23,9 @@ const PageBreadcrumb: React.FC<BreadcrumbProps> = ({ pageTitle }) => {
           <li>
             <Link
               className="inline-flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400"
-              href="/"
+              // The dashboard's home, not the public landing page: this
+              // breadcrumb only ever renders inside the authenticated shell.
+              href="/today"
             >
               {t("home")}
               <svg
