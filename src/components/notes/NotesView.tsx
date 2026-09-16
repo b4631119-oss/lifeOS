@@ -7,6 +7,7 @@ import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import { useAuth } from "@/context/AuthContext";
 import { useModal } from "@/hooks/useModal";
 import { useNotes } from "@/hooks/useNotes";
+import { useTodayKey } from "@/hooks/useTodayKey";
 import { formatDayLabel, formatHistoryDate } from "@/lib/date";
 import type { Note } from "@/types/lifeos";
 import { useLocale, useTranslations } from "next-intl";
@@ -14,7 +15,25 @@ import { useState } from "react";
 import NoteEditor from "./NoteEditor";
 import NoteHistoryList from "./NoteHistoryList";
 
+/**
+ * The notes page, in two parts on purpose.
+ *
+ * The outer component only observes the calendar day; the inner one owns the
+ * editor and is **keyed by that day**. Crossing midnight therefore unmounts
+ * yesterday's editor (flushing any pending keystrokes to yesterday's document)
+ * and mounts a fresh one for the new day — instead of an editor that has to be
+ * told, mid-session, that its document id, its saved text and its history all
+ * changed underneath it.
+ *
+ * `useNotes` → see `src/hooks/useNotes.ts` for the save/serialization rules.
+ */
 export default function NotesView() {
+  const today = useTodayKey();
+
+  return <NotesForDay key={today} today={today} />;
+}
+
+function NotesForDay({ today }: { today: string }) {
   const t = useTranslations("notes");
   const locale = useLocale();
   const { user } = useAuth();
@@ -29,7 +48,7 @@ export default function NotesView() {
     error,
     removeNote,
     reload,
-  } = useNotes(user);
+  } = useNotes(user, today);
 
   const deleteModal = useModal();
   const [noteToDelete, setNoteToDelete] = useState<Note | null>(null);
