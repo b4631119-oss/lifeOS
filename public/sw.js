@@ -8,8 +8,8 @@
  *
  * 1. It never touches cross-origin traffic. Firebase Auth and Firestore live on
  *    other origins — caching their requests would break sign-in and the
- *    real-time subscriptions. `/api/*` is skipped too, so nothing dynamic is
- *    ever answered from a stale cache.
+ *    real-time subscriptions. `/api/*` is skipped too, so a future server route
+ *    is never answered from a stale cache.
  * 2. It only caches GET requests, and only ever returns a cached *document* for
  *    a navigation. RSC payloads and other same-origin requests go straight to
  *    the network, because replaying a stale payload would render the wrong page
@@ -19,7 +19,9 @@
  * loaded client-side, so a cached shell carries no user data.
  */
 
-const CACHE_NAME = "lifeos-v2";
+// v3: the dashboard moved from `/` to `/today`, so the precached shell URLs
+// changed shape — a new cache name drops the entries from the old layout.
+const CACHE_NAME = "lifeos-v3";
 
 /** Immutable, content-hashed build output plus the PWA/static assets. */
 const PRECACHE_PATHS = [
@@ -35,7 +37,7 @@ const PRECACHE_PATHS = [
  * has been visited at least once (the runtime rules in `fetch` below).
  */
 const SHELL_ROUTES = [
-  "",
+  "/today",
   "/habits",
   "/goals",
   "/analytics",
@@ -44,8 +46,12 @@ const SHELL_ROUTES = [
   "/profile",
 ];
 
+// The routes already start with a slash, so the English URL is the route
+// itself and Russian only adds the locale prefix. (The public landing page at
+// `/` is deliberately not precached: it is not part of the signed-in shell and
+// is filled in by the runtime rules on the first visit.)
 const SHELL_URLS = [
-  ...SHELL_ROUTES.map((route) => `/${route}`),
+  ...SHELL_ROUTES,
   ...SHELL_ROUTES.map((route) => `/ru${route}`),
 ];
 
@@ -98,7 +104,7 @@ self.addEventListener("fetch", (event) => {
 
   const url = new URL(request.url);
 
-  // Firebase, the AI routes and anything else we did not put here on purpose.
+  // Firebase and anything else we did not put here on purpose.
   if (url.origin !== self.location.origin) return;
   if (url.pathname.startsWith("/api/")) return;
 
