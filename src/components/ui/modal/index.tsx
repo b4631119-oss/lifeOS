@@ -10,11 +10,19 @@ interface ModalProps {
   children: ReactNode;
   showCloseButton?: boolean;
   isFullscreen?: boolean;
+  /**
+   * Id of the element naming the dialog — normally its `<h3>` title.
+   *
+   * A dialog without an accessible name is announced as just "dialog", so the
+   * caller passes the id of the heading it already renders (see `useId` at the
+   * call sites).
+   */
+  labelledBy?: string;
 }
 
 /**
  * Shared dialog wrapper used by every module.  Handles:
- *  - `role="dialog"` / `aria-modal` for assistive technology
+ *  - `role="dialog"` / `aria-modal` / `aria-labelledby` for assistive technology
  *  - Focus trap (Tab / Shift+Tab) while open
  *  - Restores focus to the previously focused element on close
  *  - Blocks background scroll via `body.overflow: hidden`
@@ -27,6 +35,7 @@ export const Modal: React.FC<ModalProps> = ({
   className,
   showCloseButton = true,
   isFullscreen = false,
+  labelledBy,
 }) => {
   const modalRef = useRef<HTMLDivElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
@@ -105,6 +114,7 @@ export const Modal: React.FC<ModalProps> = ({
       className="fixed inset-0 z-99999 flex items-start justify-center py-4 overflow-y-auto"
       role="dialog"
       aria-modal="true"
+      aria-labelledby={labelledBy}
     >
       {!isFullscreen && (
         <div
