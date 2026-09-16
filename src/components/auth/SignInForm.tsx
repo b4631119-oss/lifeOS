@@ -12,6 +12,9 @@ import { useTranslations } from "next-intl";
  * no handler, no `onSubmit`, so pressing Enter reloaded the page — and
  * `signInWithEmail` was never wired to anything. It is gone rather than
  * half-working, and the copy now says what the page actually offers.
+ *
+ * The password-reset page went the same way: an account is a Google account,
+ * so there is no LifeOS password to reset.
  */
 export default function SignInForm() {
   const t = useTranslations("auth");
@@ -24,7 +27,7 @@ export default function SignInForm() {
           className="inline-flex items-center text-sm text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
         >
           <ChevronLeftIcon className="rtl:rotate-180" />
-          {t("backToDashboard")}
+          {t("backToHome")}
         </Link>
       </div>
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center">
