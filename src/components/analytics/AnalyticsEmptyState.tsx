@@ -18,7 +18,7 @@ export default function AnalyticsEmptyState() {
         {t("message")}
       </p>
       <Link
-        href="/"
+        href="/today"
         className="mt-6 inline-block rounded-lg bg-brand-500 px-6 py-2.5 text-theme-sm font-medium text-white transition-colors hover:bg-brand-600"
       >
         {t("cta")}
