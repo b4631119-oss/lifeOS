@@ -6,7 +6,7 @@ import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import { useAuth } from "@/context/AuthContext";
 import { useHabits } from "@/hooks/useHabits";
 import { useModal } from "@/hooks/useModal";
-import { addDays, dateKey } from "@/lib/date";
+import { addDays, dateKey, parseDateKey } from "@/lib/date";
 import { GRID_DAYS, GRID_WEEKS } from "@/lib/habits";
 import type { Habit } from "@/types/lifeos";
 import { useTranslations } from "next-intl";
@@ -39,9 +39,11 @@ export default function HabitsView() {
   const [editingHabit, setEditingHabit] = useState<Habit | null>(null);
   const [habitToDelete, setHabitToDelete] = useState<Habit | null>(null);
 
-  // The 12 week grid window, oldest day first.
+  // The 12 week grid window, oldest day first. Derived from the reactive day
+  // (`useHabits` re-reads `useTodayKey`), so the window slides at midnight
+  // instead of ending on yesterday until the next reload.
   const gridDates = useMemo(() => {
-    const end = new Date();
+    const end = parseDateKey(today);
     const dates: string[] = [];
 
     for (let offset = GRID_DAYS - 1; offset >= 0; offset -= 1) {
@@ -49,7 +51,7 @@ export default function HabitsView() {
     }
 
     return dates;
-  }, []);
+  }, [today]);
 
   const handleRenameRequest = (habit: Habit) => {
     setEditingHabit(habit);
