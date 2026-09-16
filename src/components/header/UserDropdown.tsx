@@ -1,20 +1,30 @@
 "use client";
 
+import UserAvatar from "@/components/common/UserAvatar";
+import { useAuth } from "@/context/AuthContext";
 import { useClickOutside } from "@/hooks/useClickOutside";
 import { getLanguage, languages } from "@/i18n/languages";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { ChevronDownIcon } from "@/icons";
+import { signOutUser } from "@/lib/authActions";
+import { resolveIdentity } from "@/lib/identity";
 import { cn } from "@/utils";
 import { useLocale, useTranslations } from "next-intl";
-import Image from "next/image";
 import { useRef, useState } from "react";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 
 export default function UserDropdown() {
   const t = useTranslations("userDropdown");
+  const tCommon = useTranslations("common");
   const locale = useLocale() as Locale;
+  const { user } = useAuth();
+  // Resolved from the signed-in Firebase user; the fallbacks are translated,
+  // and no identity is ever hard-coded (see `lib/identity.ts`).
+  const identity = resolveIdentity(user);
+  const displayName = identity.name || tCommon("accountNameFallback");
+  const email = identity.email || tCommon("emailMissing");
   const router = useRouter();
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
@@ -51,17 +61,13 @@ export default function UserDropdown() {
         onClick={toggleDropdown}
         className="dropdown-toggle flex items-center text-gray-700 dark:text-gray-400"
       >
-        <span className="me-3 h-11 w-11 overflow-hidden rounded-full">
-          <Image
-            width={44}
-            height={44}
-            src="/images/user/owner.png"
-            // Decorative: the user's name sits right next to it.
-            alt=""
-          />
+        <span className="me-3 flex">
+          <UserAvatar photoURL={identity.photoURL} name={identity.name} />
         </span>
 
-        <span className="me-1 block text-theme-sm font-medium">Bilolidin</span>
+        <span className="me-1 block max-w-40 truncate text-theme-sm font-medium">
+          {displayName}
+        </span>
 
         <ChevronDownIcon
           className={`size-5 text-gray-500 transition-transform duration-200 dark:text-gray-400 ${
@@ -75,12 +81,12 @@ export default function UserDropdown() {
         onClose={closeDropdown}
         className="absolute mt-4.25 flex w-65 flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg ltr:right-0 rtl:right-auto rtl:left-0 dark:border-gray-800 dark:bg-gray-dark"
       >
-        <div>
-          <span className="block text-theme-sm font-medium text-gray-700 dark:text-gray-400">
-            Melibaev Bilolidin
+        <div className="min-w-0">
+          <span className="block truncate text-theme-sm font-medium text-gray-700 dark:text-gray-400">
+            {displayName}
           </span>
-          <span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
-            b4631119@gmail.com
+          <span className="mt-0.5 block truncate text-theme-xs text-gray-500 dark:text-gray-400">
+            {email}
           </span>
         </div>
 
@@ -249,11 +255,8 @@ export default function UserDropdown() {
         <button
           type="button"
           onClick={async () => {
-            const [{ getFirebaseApp }, { getAuth, signOut }] = await Promise.all([
-              import("@/lib/firebase"),
-              import("firebase/auth"),
-            ]);
-            await signOut(getAuth(getFirebaseApp()));
+            closeDropdown();
+            await signOutUser();
             router.replace("/signin");
           }}
           className="group mt-3 flex w-full items-center justify-center gap-3 rounded-lg border border-gray-200 px-3 py-2 text-theme-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-700 dark:border-gray-800 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
