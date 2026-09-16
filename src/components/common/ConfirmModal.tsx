@@ -3,7 +3,7 @@
 import Button from "@/components/ui/button/Button";
 import { Modal } from "@/components/ui/modal";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useId, useState } from "react";
 
 /**
  * The modules that own a `deleteTitle` / `deleteMessage` / `cancel` / `delete`
@@ -38,6 +38,7 @@ export default function ConfirmModal({
   onConfirm,
 }: ConfirmModalProps) {
   const t = useTranslations(namespace);
+  const headingId = useId();
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -55,8 +56,16 @@ export default function ConfirmModal({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} className="m-4 max-w-md p-6 sm:p-8">
-      <h3 className="text-title-sm font-semibold text-gray-800 dark:text-white/90">
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      labelledBy={headingId}
+      className="m-4 max-w-md p-6 sm:p-8"
+    >
+      <h3
+        id={headingId}
+        className="text-title-sm font-semibold text-gray-800 dark:text-white/90"
+      >
         {t("deleteTitle")}
       </h3>
       <p className="mt-3 text-theme-sm text-gray-500 dark:text-gray-400">
