@@ -4,26 +4,18 @@ import { Link, usePathname } from "@/i18n/navigation";
 import { cn } from "@/utils";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback } from "react";
 import { useSidebar } from "../context/SidebarContext";
 import {
-  BoxCubeIcon,
-  CalenderIcon,
   CheckCircleIcon,
-  ChevronDownIcon,
   DocsIcon,
   GridIcon,
   HorizontaLDots,
-  ListIcon,
-  PageIcon,
   PieChartIcon,
-  PlugInIcon,
   ShootingStarIcon,
-  TableIcon,
   TimeIcon,
   UserCircleIcon,
 } from "../icons/index";
-import SidebarWidget from "./SidebarWidget";
 
 type NavItem = {
   key: string;
@@ -31,129 +23,16 @@ type NavItem = {
   path?: string;
   new?: boolean;
   target?: string;
-  subItems?: {
-    key: string;
-    path: string;
-    pro?: boolean;
-    new?: boolean;
-    target?: string;
-  }[];
 };
-
-/** Which menu a submenu belongs to, and where it sits in that menu. */
-type SubmenuTarget = {
-  type: "main" | "support" | "others";
-  index: number;
-};
-
-/** The menu of the submenu that owns `path`, or `null` for a top-level route. */
-function findRouteSubmenu(path: string): SubmenuTarget | null {
-  const menus: [SubmenuTarget["type"], NavItem[]][] = [
-    ["main", navItems],
-    ["others", othersItems],
-  ];
-
-  for (const [type, items] of menus) {
-    const index = items.findIndex((nav) =>
-      nav.subItems?.some((subItem) => subItem.path === path),
-    );
-
-    if (index !== -1) return { type, index };
-  }
-
-  return null;
-}
 
 const navItems: NavItem[] = [
-  {
-    icon: <GridIcon />,
-    key: "dashboard",
-    subItems: [{ key: "ecommerceHome", path: "/" }],
-  },
-  {
-    icon: <CheckCircleIcon />,
-    key: "habits",
-    path: "/habits",
-  },
-  {
-    icon: <TimeIcon />,
-    key: "schedule",
-    path: "/schedule",
-  },
-  {
-    icon: <ShootingStarIcon />,
-    key: "goals",
-    path: "/goals",
-  },
-  {
-    icon: <PieChartIcon />,
-    key: "analytics",
-    path: "/analytics",
-  },
-  {
-    icon: <DocsIcon />,
-    key: "notes",
-    path: "/notes",
-  },
-  {
-    icon: <CalenderIcon />,
-    key: "calendar",
-    path: "/calendar",
-  },
-  {
-    icon: <UserCircleIcon />,
-    key: "userProfile",
-    path: "/profile",
-  },
-  {
-    key: "forms",
-    icon: <ListIcon />,
-    subItems: [{ key: "formElements", path: "/form-elements", pro: false }],
-  },
-  {
-    key: "tables",
-    icon: <TableIcon />,
-    subItems: [{ key: "basicTables", path: "/basic-tables", pro: false }],
-  },
-  {
-    key: "pages",
-    icon: <PageIcon />,
-    subItems: [
-      { key: "blankPage", path: "/blank" },
-      { key: "error404", path: "/error-404" },
-    ],
-  },
-];
-
-const othersItems: NavItem[] = [
-  {
-    icon: <PieChartIcon />,
-    key: "charts",
-    subItems: [
-      { key: "lineChart", path: "/line-chart", pro: false },
-      { key: "barChart", path: "/bar-chart", pro: false },
-    ],
-  },
-  {
-    icon: <BoxCubeIcon />,
-    key: "uiElements",
-    subItems: [
-      { key: "alerts", path: "/alerts" },
-      { key: "avatar", path: "/avatars" },
-      { key: "badge", path: "/badge" },
-      { key: "buttons", path: "/buttons" },
-      { key: "images", path: "/images" },
-      { key: "videos", path: "/videos" },
-    ],
-  },
-  {
-    icon: <PlugInIcon />,
-    key: "authentication",
-    subItems: [
-      { key: "signIn", path: "/signin", pro: false },
-      { key: "signUp", path: "/signup", pro: false },
-    ],
-  },
+  { icon: <GridIcon />, key: "dashboard", path: "/" },
+  { icon: <CheckCircleIcon />, key: "habits", path: "/habits" },
+  { icon: <TimeIcon />, key: "schedule", path: "/schedule" },
+  { icon: <ShootingStarIcon />, key: "goals", path: "/goals" },
+  { icon: <PieChartIcon />, key: "analytics", path: "/analytics" },
+  { icon: <DocsIcon />, key: "notes", path: "/notes" },
+  { icon: <UserCircleIcon />, key: "userProfile", path: "/profile" },
 ];
 
 const AppSidebar: React.FC = () => {
@@ -162,29 +41,22 @@ const AppSidebar: React.FC = () => {
   const t = useTranslations("sidebar");
   const tCommon = useTranslations("common");
 
-  const renderMenuItems = (
-    navItems: NavItem[],
-    menuType: "main" | "support" | "others",
-  ) => (
+  const renderMenuItems = (items: NavItem[]) => (
     <ul className="flex flex-col gap-1">
-      {navItems.map((nav, index) => (
+      {items.map((nav) => (
         <li key={nav.key}>
-          {nav.subItems ? (
-            <button
-              onClick={() => handleSubmenuToggle(index, menuType)}
+          {nav.path && (
+            <Link
+              href={nav.path}
+              target={nav.target}
               className={cn(
-                "group menu-item cursor-pointer",
-                openSubmenu?.type === menuType && openSubmenu?.index === index
-                  ? "menu-item-active"
-                  : "menu-item-inactive",
-                !isExpanded && !isHovered
-                  ? "lg:justify-center"
-                  : "lg:justify-start",
+                "group menu-item",
+                isActive(nav.path) ? "menu-item-active" : "menu-item-inactive",
               )}
             >
               <span
                 className={cn(
-                  openSubmenu?.type === menuType && openSubmenu?.index === index
+                  isActive(nav.path)
                     ? "menu-item-icon-active"
                     : "menu-item-icon-inactive",
                 )}
@@ -192,268 +64,104 @@ const AppSidebar: React.FC = () => {
                 {nav.icon}
               </span>
               {(isExpanded || isHovered || isMobileOpen) && (
-                <span className="menu-item-text">{t(`items.${nav.key}`)}</span>
+                <span>{t(`items.${nav.key}`)}</span>
               )}
-              {nav.new && (isExpanded || isHovered || isMobileOpen) && (
-                <span
-                  className={cn(
-                    "inset-e-10 absolute ms-auto",
-                    openSubmenu?.type === menuType &&
-                      openSubmenu?.index === index
-                      ? "menu-dropdown-badge-active"
-                      : "menu-dropdown-badge-inactive",
-                    "menu-dropdown-badge",
-                  )}
-                >
-                  {t("badges.new")}
-                </span>
-              )}
-              {(isExpanded || isHovered || isMobileOpen) && (
-                <ChevronDownIcon
-                  className={cn(
-                    "ms-auto h-5 w-5 transition-transform duration-200",
-                    openSubmenu?.type === menuType &&
-                      openSubmenu?.index === index
-                      ? "rotate-180 text-brand-500"
-                      : "",
-                  )}
-                />
-              )}
-            </button>
-          ) : (
-            nav.path && (
-              <Link
-                href={nav.path}
-                target={nav.target}
-                className={cn(
-                  "group menu-item",
-                  isActive(nav.path)
-                    ? "menu-item-active"
-                    : "menu-item-inactive",
-                )}
-              >
-                <span
-                  className={cn(
-                    isActive(nav.path)
-                      ? "menu-item-icon-active"
-                      : "menu-item-icon-inactive",
-                  )}
-                >
-                  {nav.icon}
-                </span>
-                {(isExpanded || isHovered || isMobileOpen) && (
-                  <span className="menu-item-text">
-                    {t(`items.${nav.key}`)}
-                  </span>
-                )}
-              </Link>
-            )
-          )}
-          {nav.subItems && (isExpanded || isHovered || isMobileOpen) && (
-            <div
-              ref={(el) => {
-                subMenuRefs.current[`${menuType}-${index}`] = el;
-              }}
-              className="overflow-hidden transition-all duration-300"
-              style={{
-                height:
-                  openSubmenu?.type === menuType && openSubmenu?.index === index
-                    ? `${subMenuHeight[`${menuType}-${index}`]}px`
-                    : "0px",
-              }}
-            >
-              <ul className="ms-9 mt-2 space-y-1">
-                {nav.subItems.map((subItem) => (
-                  <li key={subItem.key}>
-                    <Link
-                      href={subItem.path}
-                      target={subItem.target}
-                      className={`menu-dropdown-item ${
-                        isActive(subItem.path)
-                          ? "menu-dropdown-item-active"
-                          : "menu-dropdown-item-inactive"
-                      }`}
-                    >
-                      {t(`items.${subItem.key}`)}
-                      <span className="ms-auto flex items-center gap-1">
-                        {subItem.new && (
-                          <span
-                            className={`ms-auto ${
-                              isActive(subItem.path)
-                                ? "menu-dropdown-badge-active"
-                                : "menu-dropdown-badge-inactive"
-                            } menu-dropdown-badge`}
-                          >
-                            {t("badges.new")}
-                          </span>
-                        )}
-                        {subItem.pro && (
-                          <span
-                            className={`ms-auto ${
-                              isActive(subItem.path)
-                                ? "menu-dropdown-badge-pro-active"
-                                : "menu-dropdown-badge-pro-inactive"
-                            } menu-dropdown-badge-pro`}
-                          >
-                            {t("badges.pro")}
-                          </span>
-                        )}
-                      </span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            </Link>
           )}
         </li>
       ))}
     </ul>
   );
 
-  const [subMenuHeight, setSubMenuHeight] = useState<Record<string, number>>(
-    {},
-  );
-  const subMenuRefs = useRef<Record<string, HTMLDivElement | null>>({});
-
-  // const isActive = (path: string) => path === pathname;
-
   const isActive = useCallback((path: string) => path === pathname, [pathname]);
 
-  // The submenu the current route belongs to. Derived from `pathname` during
-  // render instead of being copied into state from an effect, so a navigation
-  // opens (or closes) it in the same pass — no extra render, no flicker.
-  const routeSubmenu = findRouteSubmenu(pathname);
-
-  /**
-   * A manual toggle is remembered per route: navigating away drops it and the
-   * route's own submenu wins again, which is how the old pathname effect
-   * behaved.
-   */
-  const [toggledSubmenu, setToggledSubmenu] = useState<{
-    path: string;
-    submenu: SubmenuTarget | null;
-  } | null>(null);
-
-  const openSubmenu =
-    toggledSubmenu?.path === pathname ? toggledSubmenu.submenu : routeSubmenu;
-
-  useEffect(() => {
-    // Set the height of the submenu items when the submenu is opened
-    if (openSubmenu !== null) {
-      const key = `${openSubmenu.type}-${openSubmenu.index}`;
-      if (subMenuRefs.current[key]) {
-        setSubMenuHeight((prevHeights) => ({
-          ...prevHeights,
-          [key]: subMenuRefs.current[key]?.scrollHeight || 0,
-        }));
-      }
-    }
-  }, [openSubmenu]);
-
-  const handleSubmenuToggle = (
-    index: number,
-    menuType: SubmenuTarget["type"],
-  ) => {
-    const isOpen = openSubmenu?.type === menuType && openSubmenu.index === index;
-
-    setToggledSubmenu({
-      path: pathname,
-      submenu: isOpen ? null : { type: menuType, index },
-    });
-  };
-
   return (
-    <aside
-      className={`fixed top-0 left-0 z-50 flex h-full flex-col border-r border-gray-200 bg-white px-5 text-gray-900 transition-all duration-300 ease-in-out xl:mt-0 rtl:right-0 rtl:left-auto rtl:border-r-0 rtl:border-l dark:border-gray-800 dark:bg-gray-900 ${
-        isExpanded || isMobileOpen ? "w-72.5" : isHovered ? "w-72.5" : "w-22.5"
-      } ${
-        isMobileOpen
-          ? "translate-x-0"
-          : "-translate-x-full rtl:translate-x-full"
-      } xl:translate-x-0 xl:rtl:translate-x-0`}
-      onMouseEnter={() => !isExpanded && setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      <div
-        className={`flex py-8 ${
-          !isExpanded && !isHovered ? "xl:justify-center" : "justify-start"
-        }`}
+    <>
+      {/* Close button visible inside the mobile drawer — xl:hidden because on
+          desktop the sidebar is always visible and has no close affordance. */}
+      {isMobileOpen && (
+        <button
+          onClick={() => setIsHovered(false)}
+          className="fixed top-4 right-4 z-[51] flex h-11 w-11 items-center justify-center rounded-full bg-white text-gray-500 shadow-md xl:hidden dark:bg-gray-900 dark:text-gray-400"
+          aria-label={tCommon("close")}
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path fillRule="evenodd" clipRule="evenodd" d="M6.04289 16.5413C5.65237 16.9318 5.65237 17.565 6.04289 17.9555C6.43342 18.346 7.06658 18.346 7.45711 17.9555L11.9987 13.4139L16.5408 17.956C16.9313 18.3466 17.5645 18.3466 17.955 17.956C18.3455 17.5655 18.3455 16.9323 17.955 16.5418L13.4129 11.9997L17.955 7.4576C18.3455 7.06707 18.3455 6.43391 17.955 6.04338C17.5645 5.65286 16.9313 5.65286 16.5408 6.04338L11.9987 10.5855L7.45711 6.0439C7.06658 5.65338 6.43342 5.65338 6.04289 6.0439C5.65237 6.43442 5.65237 7.06759 6.04289 7.45811L10.5845 11.9997L6.04289 16.5413Z" fill="currentColor" />
+          </svg>
+        </button>
+      )}
+      <aside
+        className={cn(
+          "fixed top-0 left-0 z-50 flex h-full flex-col border-r border-gray-200 bg-white px-5 text-gray-900 transition-all duration-300 ease-in-out xl:mt-0",
+          "dark:border-gray-800 dark:bg-gray-900",
+          isExpanded || isMobileOpen ? "w-72.5" : isHovered ? "w-72.5" : "w-22.5",
+          isMobileOpen ? "translate-x-0" : "-translate-x-full",
+          "xl:translate-x-0",
+        )}
+        aria-hidden={!isMobileOpen}
+        inert={!isMobileOpen ? true : undefined}
       >
-        <Link href="/">
-          {isExpanded || isHovered || isMobileOpen ? (
-            <>
-              <Image
-                className="dark:hidden"
-                src="/images/logo/logo.svg"
-                alt={tCommon("logoAlt")}
-                width={150}
-                height={40}
-                priority
-                style={{ width: "auto", height: "auto" }}
-              />
-              <Image
-                className="hidden dark:block"
-                src="/images/logo/logo-dark.svg"
-                alt={tCommon("logoAlt")}
-                width={150}
-                height={40}
-                priority
-                style={{ width: "auto", height: "auto" }}
-              />
-            </>
-          ) : (
-            <Image
-              src="/images/logo/logo-icon.svg"
-              alt={tCommon("logoAlt")}
-              width={32}
-              height={32}
-              priority
-              style={{ width: "auto", height: "auto" }}
-            />
+        <div
+          className={cn(
+            "flex py-8",
+            !isExpanded && !isHovered ? "xl:justify-center" : "justify-start",
           )}
-        </Link>
-      </div>
-      <div className="no-scrollbar flex flex-col overflow-y-auto duration-300 ease-linear">
-        <nav className="mb-6">
-          <div className="flex flex-col gap-4">
-            <div>
-              <h2
-                className={`mb-4 flex text-xs leading-5 text-gray-400 uppercase ${
-                  !isExpanded && !isHovered
-                    ? "xl:justify-center"
-                    : "justify-start"
-                }`}
-              >
-                {isExpanded || isHovered || isMobileOpen ? (
-                  t("groups.menu")
-                ) : (
-                  <HorizontaLDots />
-                )}
-              </h2>
-              {renderMenuItems(navItems, "main")}
+        >
+          <Link href="/">
+            {isExpanded || isHovered || isMobileOpen ? (
+              <>
+                <Image
+                  className="dark:hidden"
+                  src="/images/logo/logo.svg"
+                  alt={tCommon("logoAlt")}
+                  width={150}
+                  height={40}
+                  priority
+                  style={{ width: "auto", height: "auto" }}
+                />
+                <Image
+                  className="hidden dark:block"
+                  src="/images/logo/logo-dark.svg"
+                  alt={tCommon("logoAlt")}
+                  width={150}
+                  height={40}
+                  priority
+                  style={{ width: "auto", height: "auto" }}
+                />
+              </>
+            ) : (
+              <Image
+                src="/images/logo/logo-icon.svg"
+                alt={tCommon("logoAlt")}
+                width={32}
+                height={32}
+                priority
+                style={{ width: "auto", height: "auto" }}
+              />
+            )}
+          </Link>
+        </div>
+        <div className="no-scrollbar flex flex-col overflow-y-auto duration-300 ease-linear">
+          <nav className="mb-6">
+            <div className="flex flex-col gap-4">
+              <div>
+                <h2
+                  className={cn(
+                    "mb-4 flex text-xs leading-5 text-gray-400 uppercase",
+                    !isExpanded && !isHovered ? "xl:justify-center" : "justify-start",
+                  )}
+                >
+                  {isExpanded || isHovered || isMobileOpen
+                    ? t("groups.menu")
+                    : <HorizontaLDots />}
+                </h2>
+                {renderMenuItems(navItems)}
+              </div>
             </div>
-
-            <div>
-              <h2
-                className={`mb-4 flex text-xs leading-5 text-gray-400 uppercase ${
-                  !isExpanded && !isHovered
-                    ? "xl:justify-center"
-                    : "justify-start"
-                }`}
-              >
-                {isExpanded || isHovered || isMobileOpen ? (
-                  t("groups.others")
-                ) : (
-                  <HorizontaLDots />
-                )}
-              </h2>
-              {renderMenuItems(othersItems, "others")}
-            </div>
-          </div>
-        </nav>
-        {isExpanded || isHovered || isMobileOpen ? <SidebarWidget /> : null}
-      </div>
-    </aside>
+          </nav>
+        </div>
+      </aside>
+    </>
   );
 };
 
