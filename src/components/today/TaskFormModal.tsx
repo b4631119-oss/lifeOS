@@ -1,33 +1,49 @@
 "use client";
 
 import { Modal } from "@/components/ui/modal";
-import type { LifeTask } from "@/types/lifeos";
+import type { Goal, LifeTask } from "@/types/lifeos";
 import { useTranslations } from "next-intl";
+import { useId } from "react";
 import TaskForm, { type TaskFormValues } from "./TaskForm";
 
 interface TaskFormModalProps {
   isOpen: boolean;
   onClose: () => void;
   task: LifeTask | null;
+  /** The user's goals, offered by the form's optional goal field. */
+  goals: Goal[];
   onSubmit: (values: TaskFormValues) => Promise<void>;
   /** Pre-fills the time fields when creating a task from a specific slot. */
   defaultStartTime?: string;
   defaultEndTime?: string;
+  /** Puts a dropped task back on the plan (see `TaskForm`). */
+  onRestore?: () => Promise<void>;
 }
 
 export default function TaskFormModal({
   isOpen,
   onClose,
   task,
+  goals,
   onSubmit,
   defaultStartTime,
   defaultEndTime,
+  onRestore,
 }: TaskFormModalProps) {
   const t = useTranslations("today");
+  const headingId = useId();
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} className="m-4 max-w-lg p-6 sm:p-8">
-      <h3 className="mb-6 text-title-sm font-semibold text-gray-800 dark:text-white/90">
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      labelledBy={headingId}
+      className="m-4 max-w-lg p-6 sm:p-8"
+    >
+      <h3
+        id={headingId}
+        className="mb-6 text-title-sm font-semibold text-gray-800 dark:text-white/90"
+      >
         {task ? t("editTask") : t("newTask")}
       </h3>
 
@@ -38,8 +54,10 @@ export default function TaskFormModal({
       <TaskForm
         key={task?.id ?? (defaultStartTime || "new")}
         task={task}
+        goals={goals}
         onSubmit={onSubmit}
         onCancel={onClose}
+        onRestore={onRestore}
         defaultStartTime={defaultStartTime}
         defaultEndTime={defaultEndTime}
       />
