@@ -1,6 +1,5 @@
 "use client";
 
-import { todayKey } from "@/lib/date";
 import {
   deleteNote as deleteNoteDoc,
   getNotes,
@@ -8,7 +7,7 @@ import {
 } from "@/lib/firestore";
 import { previousNotes } from "@/lib/notes";
 import type { Note } from "@/types/lifeos";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 /** Idle time after the last keystroke before the note is written. */
 export const AUTOSAVE_DELAY_MS = 1500;
@@ -47,10 +46,15 @@ export type NotesUser = { uid: string } | null | undefined;
  * while writes are debounced. A Firestore subscription is deliberately *not*
  * used here — the snapshot would echo every save back mid-keystroke and fight
  * the user's cursor.
+ *
+ * `today` comes in as a parameter rather than being read here, because the
+ * caller remounts this hook when the calendar day changes (`NotesView` keys its
+ * inner component by the day). A remount gives the new day a genuinely fresh
+ * editor — no state from yesterday survives — while the unmount flush writes
+ * any pending keystrokes to the day they were typed on, not to the new one.
  */
-export function useNotes(user: NotesUser): UseNotesResult {
+export function useNotes(user: NotesUser, today: string): UseNotesResult {
   const uid = user?.uid;
-  const today = useMemo(() => todayKey(), []);
 
   const [content, setContentState] = useState("");
   const [notes, setNotes] = useState<Note[]>([]);
