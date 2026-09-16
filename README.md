@@ -1,33 +1,24 @@
 # LifeOS
 
 A personal life management system: plan the day hour by hour, keep habit
-streaks alive, break goals into subtasks and see whether any of it is actually
-working — all behind one Google sign-in, with every document owner-scoped in
-Firestore.
+streaks alive, link the day's tasks to long-term goals and see whether any of it
+is actually working — all behind one Google sign-in, with every document
+owner-scoped in Firestore.
 
 **Live demo:** <https://os-life-one.vercel.app>
-
-<!--
-Screenshots: drop the files into `docs/screenshots/` and uncomment the block
-below. Keep them around 1600px wide, light theme, browser chrome cropped away.
-
-![Today](docs/screenshots/today.png)
-![Habits](docs/screenshots/habits.png)
-![Schedule](docs/screenshots/schedule.png)
-![Analytics](docs/screenshots/analytics.png)
--->
 
 ## Modules
 
 | Module | What it does |
 | --- | --- |
-| **Today** | The day's tasks as a list: quick add, edit, complete, delete, and a progress bar that says how much of the plan is done. |
+| **Today** | Capture first: a one-field quick add creates a task from its title alone, and a time can be added later (or never). Day arrows reach any date, `Now`/`Next` read the clock, and unfinished work from the last 14 days is offered for recovery — carry to tomorrow, reschedule, or drop it off the plan. Shows the day's planned time in hours and minutes. |
+| **Week** | The same tasks as Today, seven days at a time and read as one bounded week: a card per day (priority, goal, timed or not), a review counted from those tasks alone, and the two planning decisions — move a task to another day or take it off the plan, one at a time or for a whole selection. A leftover carried forward lands on the next week's first day, and its report outlives the selection so a partial write is visible. No week document, no weekly entity. |
 | **Habits** | Repeating habits with a month activity grid, current/best streak badges, and archive instead of delete. |
-| **Schedule** | An hour-by-hour day timeline with drag & drop: dragging a block moves `startTime`/`endTime` (15-minute snap), keeping its duration. The "now" line ticks every minute, and clicking empty space opens the task form pre-filled with that hour. |
-| **Goals** | Goals with subtasks, progress bars and optional deadlines, all edited inline. |
-| **Analytics** | Completion rate per day (7/30-day range), the hours of the day tasks actually get finished in, and a compact streak overview for every active habit. Charts are hand-rolled SVG — no charting library in the bundle. |
+| **Schedule** | The same selected day as Today, as an hour-by-hour timeline: dragging a block moves `startTime`/`endTime` (15-minute snap), keeping its duration — mouse, touch (press and hold) and arrow keys all work. The "now" line ticks every minute, clicking empty space opens the task form pre-filled with that hour, and tasks without a time are listed above the grid instead of being given an hour they never had. |
+| **Goals** | Long-term directions, moved by ordinary tasks: a task can optionally carry a `goalId`, and a goal's page shows *task progress* (`3 / 6`), its next actionable task, and every linked task — open and completed. Goals have three states (active, completed, archived), and no state ever touches the work linked to it. A goal's pre-task checklist, where a goal still has one, can be converted into real tasks in one step; completed steps stay behind as history. |
+| **Analytics** | Completion rate per day (7/30-day range), the hours of the day tasks actually get finished in, and a compact streak overview for every active habit. Dropped tasks are excluded from both the rate and the totals — they were taken off the plan, so they are neither a success nor a failure. Charts are hand-rolled SVG — no charting library in the bundle. |
 | **Notes** | Free-form daily notes that save as you type, with a dated history and per-day status. |
-| **Profile** | Personal details, address and security/account section. |
+| **Profile** | The Google identity you are signed in with (avatar, name, email) and a way to sign out. Nothing else — the module only offers actions the backend actually performs. |
 
 ## Tech stack
 
@@ -81,8 +72,8 @@ src/
 ├── components/              # Feature components: today, habits, schedule, goals, analytics, notes
 ├── layout/                  # App shell — sidebar, header, backdrop
 ├── context/                 # Sidebar and auth providers
-├── hooks/                   # Firestore subscriptions (useTodayTasks, useHabits, useGoals, useNotes)
-├── lib/                     # firestore.ts (data layer), date.ts, analytics.ts, authActions.ts
+├── hooks/                   # Firestore subscriptions (useDayTasks, useHabits, useGoals, useGoalTasks, useGoalDetail, useNotes)
+├── lib/                     # firestore.ts (data layer), taskSchedule.ts + goals.ts + week.ts (pure rules), date.ts, analytics.ts, authActions.ts
 ├── i18n/                    # Routing and navigation wrappers
 └── messages/                # en.json / ru.json dictionaries
 ```
