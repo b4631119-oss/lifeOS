@@ -1,32 +1,25 @@
 "use client";
 
-import { getFirebaseAuth, isFirebaseConfigured } from "@/lib/firebase";
+import { subscribeToAuthState } from "@/lib/authActions";
+import { isFirebaseConfigured } from "@/lib/firebaseConfig";
 import { ensureUserProfile } from "@/lib/firestore";
-import {
-  GoogleAuthProvider,
-  onAuthStateChanged,
-  signInWithPopup,
-  signOut,
-  type User,
-} from "firebase/auth";
+import type { User } from "firebase/auth";
 import type React from "react";
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
+/**
+ * Who is signed in.
+ *
+ * The context exposes the Firebase `User` and nothing more: the identity the UI
+ * shows (name, email, avatar) is derived from that object through
+ * `@/lib/identity`, and every auth *action* lives in `@/lib/authActions` so
+ * that `firebase/auth` is never part of a public page's bundle.
+ */
 type AuthContextType = {
   /** The signed-in Firebase user, or `null` when signed out. */
   user: User | null;
   /** True until the initial auth state has been resolved. */
   loading: boolean;
-  /** Opens the Google popup and signs the user in. */
-  loginWithGoogle: () => Promise<User>;
-  /** Signs the current user out. */
-  logout: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -44,8 +37,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       return;
     }
 
-    const auth = getFirebaseAuth();
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+    // The subscription resolves a tick late (the SDK is imported on demand), so
+    // an unmount before then has to be able to cancel it.
+    let cancelled = false;
+    let unsubscribe: (() => void) | undefined;
+
+    void subscribeToAuthState(async (firebaseUser) => {
       if (firebaseUser) {
         // Keep users/{uid} in sync on every sign-in.
         try {
@@ -58,27 +55,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           // A failed profile write (e.g. offline) must not block sign-in.
         }
       }
+
+      if (cancelled) return;
       setUser(firebaseUser);
       setLoading(false);
+    }).then((stop) => {
+      if (cancelled) {
+        stop();
+        return;
+      }
+      unsubscribe = stop;
     });
 
-    return unsubscribe;
-  }, []);
-
-  const loginWithGoogle = useCallback(async () => {
-    const provider = new GoogleAuthProvider();
-    provider.setCustomParameters({ prompt: "select_account" });
-
-    const credential = await signInWithPopup(getFirebaseAuth(), provider);
-    return credential.user;
-  }, []);
-
-  const logout = useCallback(async () => {
-    await signOut(getFirebaseAuth());
+    return () => {
+      cancelled = true;
+      unsubscribe?.();
+    };
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading, loginWithGoogle, logout }}>
+    <AuthContext.Provider value={{ user, loading }}>
       {children}
     </AuthContext.Provider>
   );
