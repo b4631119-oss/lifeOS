@@ -32,7 +32,15 @@ export default function GoalForm({
     setTitleError(false);
     setSubmitting(true);
     try {
-      await onSubmit({ title: trimmedTitle, description, deadline, subtasks: [] });
+      // A new goal starts active, with no legacy steps — the only work that
+      // moves it forward is a task linked to it.
+      await onSubmit({
+        title: trimmedTitle,
+        description,
+        deadline,
+        status: "active",
+        subtasks: [],
+      });
     } finally {
       setSubmitting(false);
     }
