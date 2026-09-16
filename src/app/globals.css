@@ -296,6 +296,22 @@
   background-color: #344054;
 }
 
+/*
+ * Anyone who asked their system for less motion gets less motion: the progress
+ * bars, the modal fades and the drawer transitions all stop animating. The
+ * transitions are decoration here, never information.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 @layer utilities {
   /* For Remove Date Icon */
   input[type="date"]::-webkit-inner-spin-button,
