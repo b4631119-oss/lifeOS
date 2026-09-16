@@ -75,7 +75,10 @@ export default function ScheduleTaskBlock({
         transform: transform ? `translate3d(0, ${transform.y}px, 0)` : undefined,
       }}
       className={cn(
-        "absolute z-10 cursor-grab touch-none rounded-lg border px-2 py-1 text-start transition-colors select-none focus:ring-3 focus:ring-brand-500/20 focus:outline-hidden active:cursor-grabbing",
+        // Touch-action is left at `manipulation`, not fully suppressed: the
+        // block has to stay swipeable so the day can be scrolled by dragging
+        // over it, and the drag itself waits out the TouchSensor's 250ms delay.
+        "absolute z-10 cursor-grab touch-manipulation rounded-lg border px-2 py-1 text-start transition-colors select-none focus:ring-3 focus:ring-brand-500/20 focus:outline-hidden active:cursor-grabbing",
         "flex flex-col justify-center overflow-hidden",
         STATUS_STYLES[task.status],
         task.status === "done" && "opacity-70",

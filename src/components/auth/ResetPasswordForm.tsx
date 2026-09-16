@@ -121,7 +121,7 @@ export default function ResetPasswordForm() {
                     </p>
                   )}
                   <div>
-                    <Button className="w-full" size="sm" disabled={isLoading}>
+                    <Button className="w-full" size="sm" type="submit" disabled={isLoading}>
                       {isLoading ? t("sendingResetLink") : t("sendResetLink")}
                     </Button>
                   </div>

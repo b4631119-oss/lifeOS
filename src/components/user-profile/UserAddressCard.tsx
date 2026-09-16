@@ -88,7 +88,9 @@ export default function UserAddressCard() {
               {t("editPersonalInfoHint")}
             </p>
           </div>
-          <form className="flex flex-col">
+          {/* A plain container: there was never a `submit` here, so the
+              <form> only made Enter reload the page. */}
+          <div className="flex flex-col">
             <div className="custom-scrollbar overflow-y-auto px-2">
               <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
                 <div>
@@ -120,7 +122,7 @@ export default function UserAddressCard() {
                 {tCommon("saveChanges")}
               </Button>
             </div>
-          </form>
+          </div>
         </div>
       </Modal>
     </>

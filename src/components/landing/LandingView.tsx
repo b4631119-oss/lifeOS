@@ -125,7 +125,10 @@ export default function LandingView() {
 
         {/* The dark decorative panel mirrors the auth pages. */}
         <aside className="hidden w-1/2 items-center justify-center rounded-3xl bg-brand-950 p-10 lg:flex dark:bg-white/5">
-          <div className="relative flex items-center justify-center">
+          {/* `z-1` makes this a stacking context, like the auth pages: without
+              it the `-z-1` grid shape is painted behind the panel's background
+              and the decoration never appears. */}
+          <div className="relative z-1 flex items-center justify-center">
             <GridShape />
             <p className="max-w-xs text-center text-gray-400 dark:text-white/60">
               {tAuth("tagline")}

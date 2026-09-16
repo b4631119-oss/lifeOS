@@ -30,7 +30,7 @@ export default function UserMetaCard() {
                     width={80}
                     height={80}
                     className="size-20"
-                    alt="user"
+                    alt=""
                   />
                 </div>
                 <div className="text-start">
@@ -194,7 +194,9 @@ export default function UserMetaCard() {
               {t("editPersonalInfoHint")}
             </p>
           </div>
-          <form className="flex flex-col">
+          {/* A plain container: there was never a `submit` here, so the
+              <form> only made Enter reload the page. */}
+          <div className="flex flex-col">
             <div className="custom-scrollbar h-[450px] overflow-y-auto px-2 pb-3">
               <div>
                 <h4 className="mb-6 text-lg font-medium text-gray-800 dark:text-white/90">
@@ -204,7 +206,7 @@ export default function UserMetaCard() {
                   <div className="relative size-20 shrink-0 rounded-full sm:size-25">
                     <Image
                       src="/images/user/owner.png"
-                      alt="Profile Picture"
+                      alt=""
                       width={100}
                       height={100}
                       className="size-20 rounded-full object-cover sm:size-25"
@@ -328,7 +330,7 @@ export default function UserMetaCard() {
                 {tCommon("saveChanges")}
               </Button>
             </div>
-          </form>
+          </div>
         </div>
       </Modal>
     </>

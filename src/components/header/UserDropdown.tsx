@@ -56,7 +56,8 @@ export default function UserDropdown() {
             width={44}
             height={44}
             src="/images/user/owner.png"
-            alt="User"
+            // Decorative: the user's name sits right next to it.
+            alt=""
           />
         </span>
 

@@ -54,7 +54,7 @@ export default function HabitForm({ onSubmit }: HabitFormProps) {
             error={Boolean(error)}
           />
         </div>
-        <Button size="sm" disabled={isSubmitting}>
+        <Button size="sm" type="submit" disabled={isSubmitting}>
           {t("addHabit")}
         </Button>
       </div>

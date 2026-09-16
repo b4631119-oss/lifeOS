@@ -38,14 +38,18 @@ export default async function Error404({ params }: Error404PageProps) {
 
         <Image
           src="/images/error/404.svg"
-          alt="404"
+          // Decorative: the heading above already announces the error, so an
+          // English "404" alt only added noise to screen readers.
+          alt=""
           className="dark:hidden"
           width={472}
           height={152}
         />
         <Image
           src="/images/error/404-dark.svg"
-          alt="404"
+          // Decorative: the heading above already announces the error, so an
+          // English "404" alt only added noise to screen readers.
+          alt=""
           className="hidden dark:block"
           width={472}
           height={152}
