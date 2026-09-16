@@ -1,8 +1,9 @@
 "use client";
 
 import { useDraggable } from "@dnd-kit/core";
+import { ShootingStarIcon } from "@/icons";
 import { formatTimeRange } from "@/lib/date";
-import type { LifeTask } from "@/types/lifeos";
+import type { Goal, LifeTask } from "@/types/lifeos";
 import { cn } from "@/utils";
 import { useLocale, useTranslations } from "next-intl";
 import { minutesToOffset, PX_PER_MINUTE, type PositionedTask } from "./timeGrid";
@@ -11,6 +12,8 @@ import { minutesToOffset, PX_PER_MINUTE, type PositionedTask } from "./timeGrid"
 const MIN_BLOCK_HEIGHT = 24;
 /** Below this the time range is dropped and only the title fits. */
 const COMPACT_BLOCK_HEIGHT = 44;
+/** Below this the block is too short for a third line, so the goal is left out. */
+const GOAL_LINE_MIN_HEIGHT = 62;
 /** Gap between neighbouring columns / the track edge. */
 const CARD_GAP_PX = 4;
 
@@ -23,6 +26,8 @@ const STATUS_STYLES: Record<LifeTask["status"], string> = {
 
 interface ScheduleTaskBlockProps {
   row: PositionedTask;
+  /** The goal this task moves forward, when it is linked and still exists. */
+  goal?: Goal;
   onEdit: (task: LifeTask) => void;
 }
 
@@ -37,6 +42,7 @@ interface ScheduleTaskBlockProps {
  */
 export default function ScheduleTaskBlock({
   row,
+  goal,
   onEdit,
 }: ScheduleTaskBlockProps) {
   const t = useTranslations("schedule");
@@ -51,6 +57,7 @@ export default function ScheduleTaskBlock({
     MIN_BLOCK_HEIGHT,
   );
   const compact = blockHeight < COMPACT_BLOCK_HEIGHT;
+  const showGoal = Boolean(goal) && blockHeight >= GOAL_LINE_MIN_HEIGHT;
   const timeRange = formatTimeRange(task.startTime, task.endTime, locale);
 
   return (
@@ -64,7 +71,17 @@ export default function ScheduleTaskBlock({
         event.stopPropagation();
         onEdit(task);
       }}
-      aria-label={t("blockLabel", { title: task.title, range: timeRange })}
+      // The goal is part of the accessible name, not only of the drawn text:
+      // an `aria-label` overrides the block's content for a screen reader.
+      aria-label={
+        showGoal && goal
+          ? t("blockLabelGoal", {
+              title: task.title,
+              range: timeRange,
+              goal: goal.title,
+            })
+          : t("blockLabel", { title: task.title, range: timeRange })
+      }
       style={{
         top: minutesToOffset(row.startMinutes),
         height: blockHeight,
@@ -77,7 +94,8 @@ export default function ScheduleTaskBlock({
       className={cn(
         // Touch-action is left at `manipulation`, not fully suppressed: the
         // block has to stay swipeable so the day can be scrolled by dragging
-        // over it, and the drag itself waits out the TouchSensor's 250ms delay.
+        // over it, while a press-and-hold is what starts the drag on touch
+        // (see the TouchSensor in `ScheduleView`).
         "absolute z-10 cursor-grab touch-manipulation rounded-lg border px-2 py-1 text-start transition-colors select-none focus:ring-3 focus:ring-brand-500/20 focus:outline-hidden active:cursor-grabbing",
         "flex flex-col justify-center overflow-hidden",
         STATUS_STYLES[task.status],
@@ -94,6 +112,12 @@ export default function ScheduleTaskBlock({
         {task.title}
       </p>
       {!compact && <p className="truncate text-[11px] opacity-80">{timeRange}</p>}
+      {showGoal && goal && (
+        <p className="flex items-center gap-1 truncate text-[11px] opacity-70">
+          <ShootingStarIcon className="h-2.5 w-2.5 shrink-0" />
+          <span className="truncate">{goal.title}</span>
+        </p>
+      )}
     </div>
   );
 }
