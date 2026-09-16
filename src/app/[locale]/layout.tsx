@@ -3,6 +3,7 @@ import { SidebarProvider } from "@/context/SidebarContext";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { isRtl } from "@/i18n/languages";
 import { type Locale, routing } from "@/i18n/routing";
+import { SITE_URL } from "@/lib/seo";
 import type { Metadata, Viewport } from "next";
 
 import { NextIntlClientProvider } from "next-intl";
@@ -38,6 +39,9 @@ export function generateStaticParams() {
  * for the home screen icon — it ignores SVG and the manifest on older versions.
  */
 export const metadata: Metadata = {
+  // Absolute URLs are required for canonical, hreflang and OG tags; every one of
+  // them is resolved against this base.
+  metadataBase: new URL(SITE_URL),
   applicationName: "LifeOS",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
