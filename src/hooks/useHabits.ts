@@ -1,6 +1,6 @@
 "use client";
 
-import { addDays, dateKey, todayKey } from "@/lib/date";
+import { addDays, dateKey, parseDateKey } from "@/lib/date";
 import {
   addHabit,
   addHabitLog,
@@ -15,6 +15,7 @@ import {
 import { indexDoneDates, STREAK_LOOKBACK_DAYS } from "@/lib/habits";
 import type { Habit, HabitLog } from "@/types/lifeos";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTodayKey } from "./useTodayKey";
 
 type UseHabitsResult = {
   activeHabits: Habit[];
@@ -42,10 +43,13 @@ type UseHabitsResult = {
  * lookback, so the page never issues per-habit queries.
  */
 export function useHabits(uid: string | undefined): UseHabitsResult {
-  const today = useMemo(() => todayKey(), []);
+  // Both the check-in day and the window the logs are read for follow the
+  // calendar: after midnight the toggle writes the new day and the grid and
+  // streaks shift with it, without a reload.
+  const today = useTodayKey();
   const fromDate = useMemo(
-    () => dateKey(addDays(new Date(), -(STREAK_LOOKBACK_DAYS - 1))),
-    [],
+    () => dateKey(addDays(parseDateKey(today), -(STREAK_LOOKBACK_DAYS - 1))),
+    [today],
   );
 
   const [habits, setHabits] = useState<Habit[]>([]);
