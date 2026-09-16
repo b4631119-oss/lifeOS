@@ -1,51 +1,96 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
+import { useTranslations } from "next-intl";
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   className?: string;
-  children: React.ReactNode;
-  showCloseButton?: boolean; // New prop to control close button visibility
-  isFullscreen?: boolean; // Default to false for backwards compatibility
+  children: ReactNode;
+  showCloseButton?: boolean;
+  isFullscreen?: boolean;
 }
 
+/**
+ * Shared dialog wrapper used by every module.  Handles:
+ *  - `role="dialog"` / `aria-modal` for assistive technology
+ *  - Focus trap (Tab / Shift+Tab) while open
+ *  - Restores focus to the previously focused element on close
+ *  - Blocks background scroll via `body.overflow: hidden`
+ *  - Escape to close
+ */
 export const Modal: React.FC<ModalProps> = ({
   isOpen,
   onClose,
   children,
   className,
-  showCloseButton = true, // Default to true for backwards compatibility
+  showCloseButton = true,
   isFullscreen = false,
 }) => {
   const modalRef = useRef<HTMLDivElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+  const t = useTranslations("common");
 
+  // Focus trap + Escape
   useEffect(() => {
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
+    if (!isOpen) return;
+
+    previousFocusRef.current = document.activeElement as HTMLElement | null;
+
+    // Move focus into the panel after the browser finishes layout.
+    const raf = requestAnimationFrame(() => {
+      modalRef.current?.focus();
+    });
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
         onClose();
+        return;
+      }
+
+      if (e.key !== "Tab" || !modalRef.current) return;
+
+      const focusable = modalRef.current.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      );
+
+      if (focusable.length === 0) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
       }
     };
 
-    if (isOpen) {
-      document.addEventListener("keydown", handleEscape);
-    }
-
+    document.addEventListener("keydown", handleKeyDown);
     return () => {
-      document.removeEventListener("keydown", handleEscape);
+      document.removeEventListener("keydown", handleKeyDown);
+      cancelAnimationFrame(raf);
     };
   }, [isOpen, onClose]);
 
+  // Restore focus to the trigger element that was active before the dialog
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "unset";
-    }
+    if (isOpen) return;
+    previousFocusRef.current?.focus();
+  }, [isOpen]);
 
+  // Block background scroll while the dialog is open.  Store the previous
+  // value so we can restore it (instead of unconditionally resetting to
+  // "unset" which would break scroll locks held by other components).
+  useEffect(() => {
+    if (!isOpen) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
     return () => {
-      document.body.style.overflow = "unset";
+      document.body.style.overflow = previous || "";
     };
   }, [isOpen]);
 
@@ -53,25 +98,31 @@ export const Modal: React.FC<ModalProps> = ({
 
   const contentClasses = isFullscreen
     ? "w-full h-full"
-    : "relative w-full rounded-3xl bg-white  dark:bg-gray-900";
+    : "relative w-full max-w-md rounded-3xl bg-white dark:bg-gray-900";
 
   return (
-    <div className="modal fixed inset-0 z-99999 flex items-center justify-center overflow-y-auto">
+    <div
+      className="fixed inset-0 z-99999 flex items-start justify-center py-4 overflow-y-auto"
+      role="dialog"
+      aria-modal="true"
+    >
       {!isFullscreen && (
         <div
           className="fixed inset-0 h-full w-full bg-gray-400/50 backdrop-blur-[32px]"
           onClick={onClose}
-        ></div>
+        />
       )}
       <div
         ref={modalRef}
-        className={`${contentClasses} ${className}`}
+        className={`${contentClasses} ${className ?? ""}`}
+        tabIndex={-1}
         onClick={(e) => e.stopPropagation()}
       >
         {showCloseButton && (
           <button
             onClick={onClose}
-            className="inset-e-3 sm:inset-e-6 absolute top-3 z-999 flex h-9.5 w-9.5 items-center justify-center rounded-full bg-gray-100 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-700 sm:top-6 sm:h-11 sm:w-11 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
+            className="absolute inset-e-3 top-3 z-999 flex h-11 w-11 items-center justify-center rounded-full bg-gray-100 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
+            aria-label={t("close")}
           >
             <svg
               width="24"
