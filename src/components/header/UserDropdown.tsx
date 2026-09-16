@@ -2,7 +2,7 @@
 
 import { useClickOutside } from "@/hooks/useClickOutside";
 import { getLanguage, languages } from "@/i18n/languages";
-import { Link, usePathname, useRouter } from "@/i18n/navigation";
+import { usePathname, useRouter } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { ChevronDownIcon } from "@/icons";
 import { cn } from "@/utils";
@@ -245,12 +245,20 @@ export default function UserDropdown() {
             )}
           </li>
         </ul>
-        <Link
-          href="/signin"
-          className="group mt-3 flex items-center justify-center gap-3 rounded-lg border border-gray-200 px-3 py-2 text-theme-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-700 dark:border-gray-800 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
+        <button
+          type="button"
+          onClick={async () => {
+            const [{ getFirebaseApp }, { getAuth, signOut }] = await Promise.all([
+              import("@/lib/firebase"),
+              import("firebase/auth"),
+            ]);
+            await signOut(getAuth(getFirebaseApp()));
+            router.replace("/signin");
+          }}
+          className="group mt-3 flex w-full items-center justify-center gap-3 rounded-lg border border-gray-200 px-3 py-2 text-theme-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-700 dark:border-gray-800 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
         >
           {t("signOut")}
-        </Link>
+        </button>
       </Dropdown>
     </div>
   );
