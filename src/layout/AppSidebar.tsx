@@ -1,6 +1,7 @@
 "use client";
 
 import { Link, usePathname } from "@/i18n/navigation";
+import { isDrawerHidden } from "@/lib/sidebar";
 import { cn } from "@/utils";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
@@ -24,7 +25,8 @@ type NavItem = {
 };
 
 const AppSidebar: React.FC = () => {
-  const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
+  const { isExpanded, isMobile, isMobileOpen, isHovered, setIsHovered } =
+    useSidebar();
   const pathname = usePathname();
   const t = useTranslations();
   const tCommon = useTranslations("common");
@@ -42,6 +44,8 @@ const AppSidebar: React.FC = () => {
     { icon: <DocsIcon />, label: t("notes.title"), path: "/notes" },
     { icon: <UserCircleIcon />, label: t("profile.title"), path: "/profile" },
   ];
+
+  const drawerHidden = isDrawerHidden(isMobile, isMobileOpen);
 
   const renderMenuItems = (items: NavItem[]) => (
     <ul className="flex flex-col gap-1">
@@ -93,8 +97,8 @@ const AppSidebar: React.FC = () => {
           isMobileOpen ? "translate-x-0" : "-translate-x-full",
           "xl:translate-x-0",
         )}
-        aria-hidden={!isMobileOpen}
-        inert={!isMobileOpen ? true : undefined}
+        aria-hidden={drawerHidden || undefined}
+        inert={drawerHidden || undefined}
       >
         <div
           className={cn(

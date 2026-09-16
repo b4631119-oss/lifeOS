@@ -13,15 +13,12 @@ const AppHeader: React.FC = () => {
   const t = useTranslations("header");
   const tCommon = useTranslations("common");
 
-  const { isMobileOpen, toggleSidebar, toggleMobileSidebar } = useSidebar();
+  const { isMobile, isMobileOpen, toggleSidebar, toggleMobileSidebar } =
+    useSidebar();
 
-  const handleToggle = () => {
-    if (window.innerWidth >= 1280) {
-      toggleSidebar();
-    } else {
-      toggleMobileSidebar();
-    }
-  };
+  // Collapses the rail on desktop, opens the drawer on mobile — the same
+  // breakpoint the drawer itself uses, instead of re-reading the window here.
+  const handleToggle = isMobile ? toggleMobileSidebar : toggleSidebar;
 
   return (
     <header className="sticky top-0 z-30 flex w-full border-gray-200 bg-white xl:border-b dark:border-gray-800 dark:bg-gray-900">
