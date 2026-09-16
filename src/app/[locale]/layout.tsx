@@ -1,20 +1,14 @@
 import ServiceWorkerRegistrar from "@/components/common/ServiceWorkerRegistrar";
-import { AuthProvider } from "@/context/AuthContext";
 import { SidebarProvider } from "@/context/SidebarContext";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { isRtl } from "@/i18n/languages";
 import { type Locale, routing } from "@/i18n/routing";
-import "flatpickr/dist/flatpickr.css";
 import type { Metadata, Viewport } from "next";
 
 import { NextIntlClientProvider } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import { Inter, Outfit } from "next/font/google";
 import { notFound } from "next/navigation";
-// No `swiper/css/bundle` or `simplebar-react` stylesheet here: no component
-// imports those libraries any more, and a global import shipped their CSS on
-// every route (only the demo carousel rules in globals.css remain, and those
-// are plain CSS with no dependency).
 import "../globals.css";
 
 const outfit = Outfit({
@@ -68,6 +62,24 @@ export const viewport: Viewport = {
   ],
 };
 
+/**
+ * Inline script that runs before React hydration to apply the saved theme
+ * immediately, preventing a flash of the wrong colour scheme.
+ */
+const themeScript = `
+(function(){
+  try {
+    var t = localStorage.getItem('theme');
+    var d = document.documentElement;
+    if (t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      d.classList.add('dark');
+    } else {
+      d.classList.remove('dark');
+    }
+  } catch(e) {}
+})();
+`;
+
 export default async function RootLayout({
   children,
   params,
@@ -88,13 +100,15 @@ export default async function RootLayout({
       lang={locale}
       dir={isRtl(locale as Locale) ? "rtl" : "ltr"}
       className={`${outfit.variable} ${inter.variable}`}
+      suppressHydrationWarning
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body className="dark:bg-gray-900">
         <NextIntlClientProvider>
           <ThemeProvider>
-            <AuthProvider>
-              <SidebarProvider>{children}</SidebarProvider>
-            </AuthProvider>
+            <SidebarProvider>{children}</SidebarProvider>
           </ThemeProvider>
         </NextIntlClientProvider>
         <ServiceWorkerRegistrar />
