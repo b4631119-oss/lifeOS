@@ -3,8 +3,18 @@
 import GridShape from "@/components/common/GridShape";
 import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
-import Image from "next/image";
 
+/**
+ * The in-app 404, for a `notFound()` thrown inside the locale tree.
+ *
+ * It used to render two illustrations from `/images/error/404.svg`, which are
+ * not in the repository — the page showed a broken-image icon on every visit.
+ * The artwork is gone rather than re-drawn: the heading and the message already
+ * say everything, and the only meaningful action is the way back home.
+ *
+ * URLs that match no route at all never reach this file — Next renders
+ * `app/global-not-found.tsx` for those.
+ */
 export default function NotFound() {
   const t = useTranslations("notFound");
 
@@ -15,23 +25,6 @@ export default function NotFound() {
         <h1 className="mb-8 text-title-md font-bold text-gray-800 xl:text-title-2xl dark:text-white/90">
           {t("error")}
         </h1>
-
-        <Image
-          src="/images/error/404.svg"
-          // Decorative: the heading above already announces the error.
-          alt=""
-          className="dark:hidden"
-          width={472}
-          height={152}
-        />
-        <Image
-          src="/images/error/404-dark.svg"
-          // Decorative: the heading above already announces the error.
-          alt=""
-          className="hidden dark:block"
-          width={472}
-          height={152}
-        />
 
         <p className="mt-10 mb-6 text-base text-gray-700 sm:text-lg dark:text-gray-400">
           {t("message")}
