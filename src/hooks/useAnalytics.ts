@@ -18,7 +18,7 @@ type UseAnalyticsResult = {
 /**
  * One-shot read of the task history the analytics page needs.
  *
- * Deliberately not a subscription: `useTodayTasks` only ever holds today, and
+ * Deliberately not a subscription: `useDayTasks` holds one day at a time, and
  * an analytics view is an aggregation over a period rather than a mirror of the
  * current day, so there is no need to keep a 30 day snapshot open. Habit data
  * comes from the existing real-time `useHabits` instead of a second query here.

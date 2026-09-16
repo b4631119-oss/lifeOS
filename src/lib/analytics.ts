@@ -4,6 +4,7 @@ import {
   computeCurrentStreak,
   EMPTY_DATES,
 } from "@/lib/habits";
+import { tasksInPlan } from "@/lib/taskSchedule";
 import type { Habit, LifeTask } from "@/types/lifeos";
 
 /**
@@ -63,7 +64,9 @@ export function buildDailyCompletionSeries(
 ): DailyCompletion[] {
   const byDate = new Map<string, { total: number; done: number }>();
 
-  for (const task of tasks) {
+  // Dropped tasks are off the plan for that day, so they are not part of the
+  // day's rate either — see `tasksInPlan`.
+  for (const task of tasksInPlan(tasks)) {
     const bucket = byDate.get(task.date) ?? { total: 0, done: 0 };
     bucket.total += 1;
     if (task.status === "done") bucket.done += 1;
@@ -139,8 +142,10 @@ export function summarizeTasks(
   tasks: LifeTask[],
   buckets: HourBucket[],
 ): TaskSummary {
-  const total = tasks.length;
-  const done = tasks.filter((task) => task.status === "done").length;
+  // Same rule as the daily series: a dropped task is not a failure.
+  const plan = tasksInPlan(tasks);
+  const total = plan.length;
+  const done = plan.filter((task) => task.status === "done").length;
 
   let peakHour: number | null = null;
   let peakCount = 0;
@@ -201,5 +206,5 @@ export function summarizeHabits(
 
 /** True when there is something worth charting at all. */
 export function hasAnyData(tasks: LifeTask[], activeHabits: Habit[]): boolean {
-  return tasks.length > 0 || activeHabits.length > 0;
+  return tasksInPlan(tasks).length > 0 || activeHabits.length > 0;
 }
