@@ -1,7 +1,14 @@
 "use client";
 
 import { usePathname } from "@/i18n/navigation";
-import { createContext, useContext, useEffect, useState } from "react";
+import { nextDrawerPath } from "@/lib/sidebar";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 
 type SidebarContextType = {
   isExpanded: boolean;
@@ -11,6 +18,8 @@ type SidebarContextType = {
   isHovered: boolean;
   toggleSidebar: () => void;
   toggleMobileSidebar: () => void;
+  /** Closes the drawer unconditionally — the close button, backdrop and Escape. */
+  closeMobileSidebar: () => void;
   setIsHovered: (isHovered: boolean) => void;
 };
 
@@ -64,19 +73,37 @@ export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({
     setIsExpanded((prev) => !prev);
   };
 
-  const toggleMobileSidebar = () => {
-    setMobileOpenAtPath((prev) => (prev === pathname ? null : pathname));
-  };
+  // Both actions go through the same pure rule (`lib/sidebar.ts`), so "close"
+  // cannot drift from what the drawer is actually storing.
+  const toggleMobileSidebar = useCallback(() => {
+    setMobileOpenAtPath((previous) =>
+      nextDrawerPath("toggle", pathname, previous),
+    );
+  }, [pathname]);
 
-  // Lock body scroll when the mobile drawer is open.
+  const closeMobileSidebar = useCallback(() => {
+    setMobileOpenAtPath((previous) =>
+      nextDrawerPath("close", pathname, previous),
+    );
+  }, [pathname]);
+
+  // While the drawer is open: lock body scroll, and let Escape close it.
   useEffect(() => {
     if (!isMobileOpen) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") closeMobileSidebar();
+    };
+    document.addEventListener("keydown", onKeyDown);
+
     const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+
     return () => {
+      document.removeEventListener("keydown", onKeyDown);
       document.body.style.overflow = previous || "";
     };
-  }, [isMobileOpen]);
+  }, [isMobileOpen, closeMobileSidebar]);
 
   return (
     <SidebarContext.Provider
@@ -87,6 +114,7 @@ export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({
         isHovered,
         toggleSidebar,
         toggleMobileSidebar,
+        closeMobileSidebar,
         setIsHovered,
       }}
     >
