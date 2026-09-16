@@ -3,7 +3,12 @@
 import { TaskIcon } from "@/icons";
 import { useTranslations } from "next-intl";
 
-export default function TodayEmptyState() {
+interface TodayEmptyStateProps {
+  /** Only today can be "added to first" — another day gets different wording. */
+  isToday: boolean;
+}
+
+export default function TodayEmptyState({ isToday }: TodayEmptyStateProps) {
   const t = useTranslations("today");
 
   return (
@@ -15,7 +20,7 @@ export default function TodayEmptyState() {
         {t("emptyTitle")}
       </h3>
       <p className="mt-2 max-w-sm text-theme-sm text-gray-500 dark:text-gray-400">
-        {t("emptyMessage")}
+        {isToday ? t("emptyMessage") : t("emptyMessageOtherDay")}
       </p>
     </div>
   );
