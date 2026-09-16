@@ -1,43 +1,66 @@
 "use client";
 
-import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "@/i18n/navigation";
 import { GoogleIcon } from "@/icons";
 import { authErrorKey, currentHost, firebaseAuthCode } from "@/lib/authErrors";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useCallback, useRef, useState } from "react";
+
+/** Lazy-load Firebase Auth SDK and sign in with Google popup. */
+async function signInWithGoogle() {
+  const [{ getFirebaseApp }, { getAuth, GoogleAuthProvider, signInWithPopup }] =
+    await Promise.all([import("@/lib/firebase"), import("firebase/auth")]);
+  const auth = getAuth(getFirebaseApp());
+  const provider = new GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: "select_account" });
+  return signInWithPopup(auth, provider);
+}
 
 export default function GoogleSignInButton() {
   const t = useTranslations("auth");
-  const { loginWithGoogle } = useAuth();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
-  const handleSignIn = async () => {
+  const handleSignIn = useCallback(async () => {
     setIsLoading(true);
     setError(null);
 
     try {
-      await loginWithGoogle();
+      await signInWithGoogle();
       router.replace("/");
-    } catch (cause) {
-      // Firebase's own message is English and cryptic
-      // (`Firebase: Error (auth/unauthorized-domain)`), so it is mapped to a
-      // translated one; the domain case also names the host to allow-list,
-      // which is the only way to act on it without reading Firebase docs.
-      console.error("Google sign-in failed:", firebaseAuthCode(cause) ?? cause);
-      setError(t(`errors.${authErrorKey(cause)}`, { host: currentHost() }));
+    } catch (cause: unknown) {
+      // popup-blocked errors have no code — show a translated message
+      if (
+        cause instanceof Error &&
+        cause.message.includes("popup-blocked")
+      ) {
+        setError(t("errors.popupBlocked"));
+      } else {
+        console.error("Google sign-in failed:", firebaseAuthCode(cause) ?? cause);
+        setError(t(`errors.${authErrorKey(cause)}`, { host: currentHost() }));
+      }
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [router, t]);
+
+  // Prefetch Firebase SDK on hover / focus so the click doesn't wait for network.
+  const prefetch = useCallback(() => {
+    if (abortRef.current) return;
+    const ac = new AbortController();
+    abortRef.current = ac;
+    import("@/lib/firebase").catch(() => {});
+  }, []);
 
   return (
     <div className="flex flex-col gap-2">
       <button
         type="button"
         onClick={handleSignIn}
+        onMouseEnter={prefetch}
+        onFocus={prefetch}
         disabled={isLoading}
         className="inline-flex w-full items-center justify-center gap-3 rounded-lg bg-gray-100 px-7 py-3 text-sm font-normal text-gray-700 transition-colors hover:bg-gray-200 hover:text-gray-800 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10"
       >
