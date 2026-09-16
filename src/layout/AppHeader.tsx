@@ -43,7 +43,7 @@ const AppHeader: React.FC = () => {
             )}
           </button>
 
-          <Link href="/" className="xl:hidden">
+          <Link href="/today" className="xl:hidden">
             <Image
               width={154}
               height={32}
