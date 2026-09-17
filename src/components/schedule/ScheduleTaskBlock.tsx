@@ -6,7 +6,11 @@ import { formatTimeRange } from "@/lib/date";
 import type { Goal, LifeTask } from "@/types/lifeos";
 import { cn } from "@/utils";
 import { useLocale, useTranslations } from "next-intl";
-import { minutesToOffset, PX_PER_MINUTE, type PositionedTask } from "./timeGrid";
+import {
+  minutesToOffset,
+  PX_PER_MINUTE,
+  type PositionedTask,
+} from "./timeGrid";
 
 /** Very short tasks (15 min ≈ 14px) would be unreadable — and undraggable. */
 const MIN_BLOCK_HEIGHT = 24;
@@ -89,7 +93,9 @@ export default function ScheduleTaskBlock({
         // Shave the column gap off the inline size instead of using padding, so
         // neighbouring cards keep a visible gutter without touching borders.
         inlineSize: `calc(${100 / row.columnCount}% - ${CARD_GAP_PX}px)`,
-        transform: transform ? `translate3d(0, ${transform.y}px, 0)` : undefined,
+        transform: transform
+          ? `translate3d(0, ${transform.y}px, 0)`
+          : undefined,
       }}
       className={cn(
         // Touch-action is left at `manipulation`, not fully suppressed: the
@@ -100,7 +106,7 @@ export default function ScheduleTaskBlock({
         "flex flex-col justify-center overflow-hidden",
         STATUS_STYLES[task.status],
         task.status === "done" && "opacity-70",
-        isDragging && "z-30 cursor-grabbing shadow-theme-lg opacity-95",
+        isDragging && "z-30 cursor-grabbing opacity-95 shadow-theme-lg",
       )}
     >
       <p
@@ -111,7 +117,9 @@ export default function ScheduleTaskBlock({
       >
         {task.title}
       </p>
-      {!compact && <p className="truncate text-[11px] opacity-80">{timeRange}</p>}
+      {!compact && (
+        <p className="truncate text-[11px] opacity-80">{timeRange}</p>
+      )}
       {showGoal && goal && (
         <p className="flex items-center gap-1 truncate text-[11px] opacity-70">
           <ShootingStarIcon className="h-2.5 w-2.5 shrink-0" />
