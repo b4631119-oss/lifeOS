@@ -80,6 +80,22 @@ export function formatDayLabel(
 }
 
 /**
+ * A compact day heading, e.g. "Mon, 21 Sep" / "пн, 21 сент.".
+ *
+ * Shorter on purpose than {@link formatDayLabel}, which is what a day control
+ * prints: a page that is showing another day names that day in its heading
+ * while the day navigation right below it prints the date in full, and two
+ * identical lines in a row read as a mistake rather than as a title.
+ */
+export function formatDayHeading(key: string, locale?: string): string {
+  return new Intl.DateTimeFormat(locale, {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  }).format(parseDateKey(key));
+}
+
+/**
  * How far through the scheduled day we are, as a percentage.
  *
  * Uses the scheduled window (earliest start -> latest end) when any task has a
@@ -158,6 +174,23 @@ export function dayKeyFor(today: string, offset: number): string {
 }
 
 /**
+ * The closed window of the last `days` days, ending on `today`.
+ *
+ * Exists as a pair of bounds rather than as a length because every read of the
+ * task history has to *name its last day*: a range query with no upper bound on
+ * `date` is a query for the user's entire future, which is what planning ahead
+ * puts there. Both ends are inclusive, so `days: 1` is just today.
+ */
+export function recentDayRange(
+  today: string,
+  days: number,
+): { from: string; to: string } {
+  const span = Math.max(1, Math.floor(days));
+
+  return { from: dayKeyFor(today, -(span - 1)), to: today };
+}
+
+/**
  * True for a well-formed `YYYY-MM-DD` key that names a real calendar day.
  *
  * Checked by round-tripping through `parseDateKey`, so impossible dates are
@@ -201,6 +234,16 @@ export function parseDateKey(key: string): Date {
 /** True when `next` is the local calendar day right after `previous`. */
 export function isNextDay(previous: string, next: string): boolean {
   return dateKey(addDays(parseDateKey(previous), 1)) === next;
+}
+
+/**
+ * A one-word weekday label, e.g. "Mon" / "пн".
+ *
+ * Used where a column has room for a label but not for a date: the habit
+ * history cells print the weekday above the day number.
+ */
+export function formatWeekdayShort(date: Date, locale?: string): string {
+  return new Intl.DateTimeFormat(locale, { weekday: "short" }).format(date);
 }
 
 /** A short, localized day label, e.g. "14 Sep". */

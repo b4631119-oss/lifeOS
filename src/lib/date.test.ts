@@ -5,10 +5,14 @@ import {
   dateKey,
   dayElapsedPercent,
   dayKeyFor,
+  formatDayHeading,
+  formatDayLabel,
   formatRelativeDay,
+  parseDateKey,
   isValidDateKey,
   msUntilNextLocalDay,
   nextDayKey,
+  recentDayRange,
   toMinutes,
   todayKey,
 } from "./date.ts";
@@ -112,6 +116,22 @@ test("formatRelativeDay names the neighbouring days", () => {
 
 /* ------------------------------------- clock ------------------------------------- */
 
+test("a day heading names the day without repeating the day control", () => {
+  const key = "2026-09-21";
+  const heading = formatDayHeading(key, "en");
+
+  // Which day it is, and the date — but not the year, and not the same string
+  // the day navigation prints right underneath it.
+  assert.ok(heading.includes("Mon"), `missing the weekday in "${heading}"`);
+  assert.ok(heading.includes("21"), `missing the day in "${heading}"`);
+  assert.ok(!heading.includes("2026"), `unexpected year in "${heading}"`);
+  assert.notEqual(heading, formatDayLabel(parseDateKey(key), "en"));
+
+  const russian = formatDayHeading(key, "ru");
+  assert.ok(russian.includes("21"), `missing the day in "${russian}"`);
+  assert.notEqual(russian, heading);
+});
+
 test("toMinutes reads HH:mm and rejects everything else", () => {
   assert.equal(toMinutes("00:00"), 0);
   assert.equal(toMinutes("09:30"), 570);
@@ -149,4 +169,43 @@ test("the elapsed-day bar measures the plan, not the clock", () => {
     ),
     50,
   );
+});
+
+/* --------------------------------- windows ---------------------------------- */
+
+test("a recent-day window ends on today and never runs past it", () => {
+  // The point of the upper bound: a query that ends today cannot return the work
+  // a user has planned for next month, which is what an open range did.
+  assert.deepEqual(recentDayRange("2026-09-17", 7), {
+    from: "2026-09-11",
+    to: "2026-09-17",
+  });
+
+  const thirty = recentDayRange("2026-09-17", 30);
+  assert.equal(thirty.to, "2026-09-17");
+  assert.equal(thirty.from, "2026-08-19");
+  assert.ok(thirty.from < thirty.to);
+});
+
+test("a one-day window is just today, and a nonsensical span still ends today", () => {
+  assert.deepEqual(recentDayRange("2026-09-17", 1), {
+    from: "2026-09-17",
+    to: "2026-09-17",
+  });
+  assert.deepEqual(recentDayRange("2026-09-17", 0), {
+    from: "2026-09-17",
+    to: "2026-09-17",
+  });
+  assert.equal(recentDayRange("2026-09-17", -5).from, "2026-09-17");
+});
+
+test("a window crosses month and year boundaries as real calendar days", () => {
+  assert.deepEqual(recentDayRange("2026-10-02", 3), {
+    from: "2026-09-30",
+    to: "2026-10-02",
+  });
+  assert.deepEqual(recentDayRange("2027-01-01", 2), {
+    from: "2026-12-31",
+    to: "2027-01-01",
+  });
 });
