@@ -5,6 +5,8 @@
     "close": "Close",
     "retry": "Retry",
     "toggleTheme": "Toggle theme",
+    "save": "Save",
+    "cancel": "Cancel",
     "accountNameFallback": "Your account",
     "emailMissing": "Email unavailable",
     "priorities": {
@@ -27,16 +29,15 @@
   },
   "sidebar": {
     "groups": {
-      "menu": "Menu"
+      "plan": "Plan",
+      "review": "Review",
+      "account": "Account"
     }
   },
   "header": {
     "toggleSidebar": "Toggle Sidebar"
   },
   "userDropdown": {
-    "editProfile": "Edit profile",
-    "accountSettings": "Account settings",
-    "support": "Support",
     "language": "Language",
     "signOut": "Sign out"
   },
@@ -76,13 +77,14 @@
       "schedule": "The selected day as an hour-by-hour timeline: drag a task to another hour, or click an empty slot to plan one.",
       "habits": "Track streaks on a 12-week grid and see which habits hold up.",
       "goals": "Connect a goal to the tasks that move it forward and see how many are done.",
-      "analytics": "Completion rate, productive hours and a habit overview on one screen.",
+      "analytics": "What you captured, what you put on the clock and what you finished, day by day.",
       "notes": "A daily note that saves as you type, with a dated history you can scroll back through."
     },
     "privacyNote": "Google sign-in only — everything stays under your own account.",
     "openApp": "Open the dashboard",
     "signInPrompt": "Already have an account?",
-    "signInLink": "Sign in"
+    "signInLink": "Sign in",
+    "modulesTitle": "What is inside"
   },
   "today": {
     "title": "Today",
@@ -107,7 +109,7 @@
     "markTodo": "Mark as to do",
     "loading": "Loading your tasks…",
     "emptyTitle": "No tasks yet",
-    "emptyMessage": "Add your first task for today and start planning your day.",
+    "emptyMessage": "Type a title in the field above and press Enter — nothing else is needed to start.",
     "progressTitle": "Tasks completed",
     "timeElapsed": "Time elapsed",
     "ofTasks": "{done} of {total} tasks",
@@ -121,13 +123,15 @@
     "current": "Now",
     "next": "Next",
     "quickAdd": "Add",
-    "quickAddPlaceholder": "Add a task…",
     "quickAddHint": "Type a title and press Enter — no time needed.",
+    "quickAddHintOtherDay": "Type a title and press Enter — the task goes to {date}.",
+    "addWithDetails": "Add with details",
+    "taskAdded": "Task added",
     "timeAdd": "Add a time",
     "timeRemove": "Remove the time",
     "timeOptionalLabel": "Time (optional)",
     "timeOptionalHint": "Optional — without a time the task simply has no slot in the day.",
-    "emptyMessageOtherDay": "Nothing was planned for this day. Add a task if you want to.",
+    "emptyMessageOtherDay": "Nothing was planned for this day. Add one in the field above if you want to.",
     "recovery": {
       "title": "Unfinished from earlier days",
       "hint": "Nothing moves forward by itself: carry a task to tomorrow, give it a new date, or take it off the plan.",
@@ -177,8 +181,13 @@
     "bestStreak": "Best streak",
     "days": "{count, plural, one {# day} other {# days}}",
     "activityTitle": "Last {weeks} weeks",
+    "historyTitle": "Last {days, plural, one {# day} other {# days}}",
+    "earlierDays": "Earlier days",
+    "laterDays": "Later days",
+    "backToToday": "Back to today",
     "legendDone": "Done",
     "legendMissed": "Missed",
+    "dayCellAria": "{name}: {date} — {state}",
     "archive": "Archive",
     "archived": "Archived",
     "archivedHint": "Inactive habits. Your history is kept and can be restored any time.",
@@ -291,29 +300,52 @@
   },
   "analytics": {
     "title": "Analytics",
-    "metaDescription": "Your productivity at a glance — task completion, focus hours, and habit streaks",
-    "subtitle": "How the last weeks actually went, based on the tasks and habits you logged.",
+    "metaDescription": "What you captured, what you put on the clock and what you finished — and what to adapt",
+    "basis": "{from} – {to} · tasks are counted by the day they are set for, completion by the moment a task was marked done",
     "rangeLabel": "Chart range",
     "rangeLast7": "7 days",
     "rangeLast30": "30 days",
     "loading": "Crunching your numbers…",
     "stats": {
-      "completionRate": "Completion rate",
-      "tasksDone": "Tasks done",
-      "ofTotal": "{done} of {total}",
-      "bestHour": "Most productive hour",
-      "noPeak": "Not enough data",
-      "activeHabits": "Active habits"
+      "captured": "Captured",
+      "planned": "Planned",
+      "timed": "With a time",
+      "completed": "Completed",
+      "completion": "Plan completion",
+      "completionOf": "{done} of {planned}",
+      "completionHint": "Counts every task planned in this period, today's still-open ones included.",
+      "noData": "No data yet"
     },
-    "taskChart": {
-      "title": "Task completion",
-      "subtitle": "Share of each day's tasks you finished"
+    "notes": {
+      "emptyWindow": "Nothing was recorded in this period — try 30 days.",
+      "nothingPlanned": "No planned work in this period.",
+      "dropped": "{count, plural, one {# task was taken off the plan — it is not counted as completed.} other {# tasks were taken off the plan — they are not counted as completed.}}"
     },
-    "hoursChart": {
-      "title": "Productive hours",
-      "subtitle": "When you usually mark tasks as done",
-      "noDataTitle": "Not enough data yet",
-      "noDataMessage": "This chart fills in as you complete tasks — a task's completion time is only recorded from now on."
+    "daily": {
+      "title": "Day by day",
+      "desc": "Planned · with a time · completed, for every day in the period.",
+      "counts": "{planned} · {timed} · {done}",
+      "rowAria": "{label}: {planned} planned, {timed} with a time, {done} completed"
+    },
+    "hours": {
+      "title": "When you finish tasks",
+      "desc": "Based on the moment each task was marked done — a task's planned time is not used.",
+      "peak": "Most often at {hour}: {count} of {samples} completions.",
+      "spread": "Your completions are spread across the day — no hour stands out ({samples} in total).",
+      "insufficientTitle": "Not enough data yet",
+      "insufficient": "An hour is named from {needed} completions with a time — there are {samples} so far.",
+      "insufficientHint": "A completion time is only recorded from the moment a task is marked done, so this fills in gradually."
+    },
+    "goals": {
+      "title": "Goals",
+      "desc": "Work in this period that is linked to a goal.",
+      "progress": "{done} of {planned} completed",
+      "none": "No task in this period is linked to a goal."
+    },
+    "next": {
+      "title": "Adapt the plan",
+      "message": "Carry unfinished work forward, give it a new date, or take it off the plan — in the week and its review.",
+      "cta": "Open the week"
     },
     "habits": {
       "title": "Habit streaks",
@@ -336,12 +368,17 @@
     "title": "Notes",
     "metaDescription": "Write a short note about your day and keep a dated history of it.",
     "subtitle": "A few lines about today — everything saves as you type.",
+    "subtitleOtherDay": "You are editing another day's note. Pick a day in the history below or go back to today.",
     "todayTitle": "Today's note",
+    "otherDayTitle": "Note for this day",
+    "editingOtherDay": "Editing {date}",
+    "backToToday": "Back to today",
+    "deleteCurrent": "Delete this note",
     "placeholder": "How did today go?",
     "delete": "Delete",
     "deleteTitle": "Delete note",
     "deleteMessage": "Delete the note from {date}? This can't be undone.",
-    "loading": "Loading your notes…",
+    "loading": "Loading today's note…",
     "status": {
       "idle": "Changes save automatically",
       "saving": "Saving…",
@@ -353,6 +390,9 @@
       "count": "{count, plural, =0 {No notes yet} one {# note} other {# notes}}",
       "empty": "Your earlier notes will show up here.",
       "noText": "Empty note",
+      "loading": "Loading earlier notes…",
+      "showMore": "Show earlier notes",
+      "openNote": "Open the note from {date}",
       "deleteNote": "Delete the note from {date}"
     },
     "errors": {
@@ -363,10 +403,26 @@
   },
   "profile": {
     "title": "Profile",
-    "metaDescription": "The account you are signed in with.",
-    "googleAccountNote": "Your name, email and photo come from the Google account you signed in with.",
+    "metaDescription": "Your account, and the name LifeOS calls you by.",
+    "nameTitle": "Display name",
+    "nameHint": "This is the name LifeOS shows you. It is stored in your LifeOS account and your Google account is not changed.",
+    "nameLabel": "Name shown in LifeOS",
+    "nameSaved": "Saved.",
+    "saving": "Saving…",
+    "useGoogleName": "Use my Google name ({name})",
+    "useGoogleNameFallback": "Use my Google name",
+    "identityTitle": "Sign-in details",
+    "emailLabel": "Email",
+    "googleNameLabel": "Name in Google",
+    "identityHint": "Your email and your Google name come from the account you signed in with, so they can only be changed in Google.",
+    "avatarHint": "Your photo also comes from Google. LifeOS stores no images.",
     "sessionTitle": "Session",
-    "sessionHint": "Signing out ends this session on this device."
+    "sessionHint": "Signing out ends this session on this device.",
+    "errors": {
+      "load": "We couldn't load your profile. Please refresh the page.",
+      "save": "We couldn't save your name. Please try again.",
+      "nameInvalid": "Enter a name of up to 60 characters."
+    }
   },
   "error": {
     "title": "Something went wrong",
@@ -390,6 +446,9 @@
     "noTasks": "Nothing planned",
     "openDay": "Open day",
     "openDayAria": "Open {date} in Today",
+    "addToDay": "Add to this day",
+    "addToDayAria": "Add a task to {date}",
+    "added": "Task added",
     "tasksDoneOf": "{done} / {total}",
     "selectTask": "Select “{title}”",
     "moveTask": "Move",
@@ -402,8 +461,9 @@
     },
     "review": {
       "title": "Week review",
-      "completion": "Done of what was due",
+      "completion": "Done of what was due by now",
       "completionOf": "{done} of {due} tasks",
+      "completionHint": "Counts only work that was already due — tasks still open for today or later are not, because the week is not over yet.",
       "nothingDue": "Nothing was due in this week yet.",
       "futureHint": "This week has not started — everything here is still a plan.",
       "planned": "Planned",
