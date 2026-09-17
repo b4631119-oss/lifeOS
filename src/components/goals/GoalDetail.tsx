@@ -137,7 +137,11 @@ export default function GoalDetail({
         </>
       )}
       {status === "archived" && (
-        <Button size="sm" variant="outline" onClick={() => onSetStatus("active")}>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => onSetStatus("active")}
+        >
           {t("restore")}
         </Button>
       )}
@@ -174,7 +178,9 @@ export default function GoalDetail({
 
           {/* The goal's own lifecycle. Changing it never touches the tasks
               linked to it, so archiving a direction cannot erase a day of work. */}
-          <div className="flex flex-wrap items-center gap-2">{statusActions}</div>
+          <div className="flex flex-wrap items-center gap-2">
+            {statusActions}
+          </div>
         </div>
 
         {actionError && (
@@ -241,7 +247,11 @@ export default function GoalDetail({
             </p>
             <p className="text-theme-xs text-gray-400 dark:text-gray-500">
               {isScheduled(nextAction)
-                ? formatTimeRange(nextAction.startTime, nextAction.endTime, locale)
+                ? formatTimeRange(
+                    nextAction.startTime,
+                    nextAction.endTime,
+                    locale,
+                  )
                 : t("noTimeSet")}
             </p>
           </div>
@@ -253,8 +263,9 @@ export default function GoalDetail({
           {t("addTask")}
         </h2>
         {/* The same capture-first field as Today: turning a goal into work must
-            not be a form the user has to think about. */}
-        <QuickAddTask onCreate={onCreateTask} />
+            not be a form the user has to think about. The heading above already
+            names it, so the field does not repeat it. */}
+        <QuickAddTask onCreate={onCreateTask} showLabel={false} />
       </section>
 
       <section className="mt-2">
