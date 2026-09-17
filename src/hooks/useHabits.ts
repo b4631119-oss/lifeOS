@@ -1,18 +1,22 @@
 "use client";
 
-import { addDays, dateKey, parseDateKey } from "@/lib/date";
+import { recentDayRange } from "@/lib/date";
 import {
   addHabit,
   addHabitLog,
   deleteHabit as deleteHabitDoc,
-  deleteHabitLog,
-  getHabitLogs,
+  deleteHabitLogs,
   subscribeToHabitLogs,
   subscribeToHabits,
   updateHabit,
   updateHabitLog,
 } from "@/lib/firestore";
-import { indexDoneDates, STREAK_LOOKBACK_DAYS } from "@/lib/habits";
+import {
+  habitLogAction,
+  indexDoneDates,
+  isMarkable,
+  STREAK_LOOKBACK_DAYS,
+} from "@/lib/habits";
 import type { Habit, HabitLog } from "@/types/lifeos";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTodayKey } from "./useTodayKey";
@@ -29,7 +33,14 @@ type UseHabitsResult = {
   createHabit: (name: string) => Promise<void>;
   renameHabit: (habitId: string, name: string) => Promise<void>;
   setHabitActive: (habitId: string, active: boolean) => Promise<void>;
-  toggleHabit: (habitId: string) => Promise<void>;
+  /**
+   * Flips one habit's check-in for an explicit day.
+   *
+   * The date is a parameter, not "today": the history strip marks any day the
+   * user can see, and backfilling yesterday is as ordinary as today. A day in the
+   * future is refused (`isMarkable`) — there is nothing to have done yet.
+   */
+  toggleHabit: (habitId: string, date: string) => Promise<void>;
   /** Permanently removes a habit together with all of its logs. */
   deleteHabit: (habitId: string) => Promise<void>;
   /** Re-opens both subscriptions after they failed. */
@@ -47,8 +58,11 @@ export function useHabits(uid: string | undefined): UseHabitsResult {
   // calendar: after midnight the toggle writes the new day and the grid and
   // streaks shift with it, without a reload.
   const today = useTodayKey();
-  const fromDate = useMemo(
-    () => dateKey(addDays(parseDateKey(today), -(STREAK_LOOKBACK_DAYS - 1))),
+  // The log window: a closed range ending today. One subscription serves the
+  // streak lookback, the 12 week overview and the history strip, whatever week
+  // that strip is showing.
+  const logRange = useMemo(
+    () => recentDayRange(today, STREAK_LOOKBACK_DAYS),
     [today],
   );
 
@@ -82,7 +96,7 @@ export function useHabits(uid: string | undefined): UseHabitsResult {
 
     return subscribeToHabitLogs(
       uid,
-      fromDate,
+      logRange,
       (nextLogs) => {
         setLogs(nextLogs);
         setError(null);
@@ -93,7 +107,7 @@ export function useHabits(uid: string | undefined): UseHabitsResult {
         setLogsLoaded(true);
       },
     );
-  }, [uid, fromDate, attempt]);
+  }, [uid, logRange, attempt]);
 
   const reload = useCallback(() => {
     setError(null);
@@ -147,12 +161,9 @@ export function useHabits(uid: string | undefined): UseHabitsResult {
     (habitId: string) => {
       if (!uid) return Promise.resolve();
       return run(async () => {
-        // Read the full log history (not just the loaded window) so no orphaned
-        // habitLogs survive the delete.
-        const allLogs = await getHabitLogs(uid);
-        const relatedLogs = allLogs.filter((log) => log.habitId === habitId);
-
-        await Promise.all(relatedLogs.map((log) => deleteHabitLog(uid, log.id)));
+        // Delete the habit's logs first, so an interruption leaves logs without
+        // their habit rather than a habit whose history has vanished.
+        await deleteHabitLogs(uid, habitId);
         await deleteHabitDoc(uid, habitId);
       });
     },
@@ -160,19 +171,18 @@ export function useHabits(uid: string | undefined): UseHabitsResult {
   );
 
   const toggleHabit = useCallback(
-    (habitId: string) => {
+    (habitId: string, date: string) => {
       if (!uid) return Promise.resolve();
+      if (!isMarkable(date, today)) return Promise.resolve();
 
       // One log per habit per day: flip the existing row, or create it.
-      const existing = logs.find(
-        (log) => log.habitId === habitId && log.date === today,
-      );
+      const action = habitLogAction(logs, habitId, date);
 
       return run(async () => {
-        if (existing) {
-          await updateHabitLog(uid, existing.id, { done: !existing.done });
+        if (action.type === "update") {
+          await updateHabitLog(uid, action.logId, { done: action.done });
         } else {
-          await addHabitLog(uid, { habitId, date: today, done: true });
+          await addHabitLog(uid, { habitId, date, done: true });
         }
       });
     },
