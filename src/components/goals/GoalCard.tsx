@@ -4,11 +4,7 @@ import Badge from "@/components/ui/badge/Badge";
 import { ShootingStarIcon } from "@/icons";
 import { Link, useRouter } from "@/i18n/navigation";
 import { formatTimeRange } from "@/lib/date";
-import {
-  goalProgressOf,
-  goalStatusOf,
-  nextActionFor,
-} from "@/lib/goals";
+import { goalProgressOf, goalStatusOf, nextActionFor } from "@/lib/goals";
 import { isScheduled } from "@/lib/taskSchedule";
 import type { Goal, GoalStatus, LifeTask } from "@/types/lifeos";
 import { useLocale, useTranslations } from "next-intl";
@@ -108,7 +104,7 @@ export default function GoalCard({
           ];
 
   return (
-    <li className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
+    <li className="app-card app-card-pad">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
