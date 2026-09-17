@@ -197,7 +197,10 @@
 }
 
 @utility menu-item {
-  @apply relative flex w-full items-center gap-3 rounded-lg px-3 py-2 text-theme-sm font-medium;
+  /* 44px tall, like `.app-icon-button` is wide: a navigation row is pressed with
+     a thumb on a phone, and the row was 36–40px depending on which icon it
+     happened to carry. */
+  @apply relative flex min-h-11 w-full items-center gap-3 rounded-lg px-3 py-2 text-theme-sm font-medium;
 }
 
 @utility menu-item-active {
@@ -309,6 +312,43 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/*
+ * The shared recipes the screens are built from.
+ *
+ * They exist so the same card, page title, section heading and icon button are
+ * not re-typed with slightly different padding, radius or border in every file:
+ * the product should read as one system, and a change here changes the whole
+ * interface consistently.
+ */
+@layer components {
+  .app-card {
+    @apply rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03];
+  }
+
+  /* Cards carry less padding on a phone: content, not chrome, needs the room. */
+  .app-card-pad {
+    @apply p-4 sm:p-5;
+  }
+
+  .app-page-title {
+    @apply text-lg font-semibold text-gray-800 sm:text-xl dark:text-white/90;
+  }
+
+  .app-section-title {
+    @apply text-theme-sm font-semibold text-gray-800 dark:text-white/90;
+  }
+
+  .app-label {
+    @apply text-theme-xs font-medium text-gray-500 dark:text-gray-400;
+  }
+
+  /* 44px is the smallest comfortable touch target; icon buttons are built from
+     this so they are never smaller than a thumb. */
+  .app-icon-button {
+    @apply flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 focus:ring-3 focus:ring-brand-500/20 focus:outline-hidden dark:hover:bg-white/5 dark:hover:text-gray-200;
   }
 }
 
