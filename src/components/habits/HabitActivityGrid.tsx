@@ -30,7 +30,7 @@ export default function HabitActivityGrid({
                 key={date}
                 title={formatShortDay(parseDateKey(date), locale)}
                 className={cn(
-                  "h-3 w-3 rounded-[3px]",
+                  "h-3.5 w-3.5 rounded-[3px] sm:h-3 sm:w-3",
                   doneDates.has(date)
                     ? "bg-brand-500"
                     : "bg-gray-200 dark:bg-gray-800",
@@ -41,7 +41,7 @@ export default function HabitActivityGrid({
             ) : (
               <span
                 key={`empty-${weekIndex}-${dayIndex}`}
-                className="h-3 w-3"
+                className="h-3.5 w-3.5 sm:h-3 sm:w-3"
               />
             ),
           )}
