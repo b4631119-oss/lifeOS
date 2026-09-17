@@ -8,6 +8,9 @@ import { useTranslations } from "next-intl";
 import { useMemo } from "react";
 import HabitActionsMenu from "./HabitActionsMenu";
 import HabitActivityGrid from "./HabitActivityGrid";
+import HabitHistoryStrip, {
+  type HabitHistoryControls,
+} from "./HabitHistoryStrip";
 import StreakBadge from "./StreakBadge";
 
 interface HabitCardProps {
@@ -15,7 +18,8 @@ interface HabitCardProps {
   doneDates: ReadonlySet<string>;
   gridDates: string[];
   today: string;
-  onToggle: (habitId: string) => Promise<void>;
+  history: HabitHistoryControls;
+  onToggleDate: (habitId: string, date: string) => Promise<void>;
   onArchive: (habitId: string) => Promise<void>;
   onRename: (habit: Habit) => void;
   onDelete: (habit: Habit) => void;
@@ -26,7 +30,8 @@ export default function HabitCard({
   doneDates,
   gridDates,
   today,
-  onToggle,
+  history,
+  onToggleDate,
   onArchive,
   onRename,
   onDelete,
@@ -48,8 +53,14 @@ export default function HabitCard({
     }
   };
 
+  const handleToggleToday = () => {
+    void Promise.resolve(onToggleDate(habit.id, today)).catch(() => {
+      // The hook surfaces the error on the page.
+    });
+  };
+
   return (
-    <li className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
+    <li className="app-card app-card-pad">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <h3 className="text-theme-sm font-semibold text-gray-800 dark:text-white/90">
@@ -63,10 +74,12 @@ export default function HabitCard({
         <div className="flex items-center gap-1">
           <button
             type="button"
-            onClick={() => onToggle(habit.id)}
+            onClick={handleToggleToday}
             aria-pressed={isDoneToday}
             className={cn(
-              "inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium transition-colors",
+              // 44px tall: the daily check-in is the button a thumb reaches for,
+              // and it was a few pixels short of a comfortable target.
+              "inline-flex min-h-11 items-center gap-2 rounded-lg px-3.5 text-sm font-medium transition-colors",
               isDoneToday
                 ? "bg-success-500 text-white hover:bg-success-600"
                 : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-white/5 dark:text-gray-300 dark:hover:bg-white/10",
@@ -100,13 +113,30 @@ export default function HabitCard({
         </div>
       </div>
 
-      <div className="mt-4 overflow-x-auto">
+      {/* The 12 week overview: density at a glance, nothing to press. Hidden from
+          assistive technology because it is 84 unlabelled squares that only
+          restate what the cells below say properly. */}
+      <div className="mt-4 overflow-x-auto" aria-hidden="true">
         <HabitActivityGrid
           dates={gridDates}
           doneDates={doneDates}
           today={today}
         />
       </div>
+
+      {/* ...and the part that is used: one pressable row of days, at the bottom
+          of the card where a thumb actually reaches. */}
+      <HabitHistoryStrip
+        habitName={habit.name}
+        dates={history.dates}
+        doneDates={doneDates}
+        today={today}
+        isCurrent={history.isCurrent}
+        canGoBack={history.canGoBack}
+        onShift={history.shift}
+        onToday={history.showToday}
+        onToggle={(date) => onToggleDate(habit.id, date)}
+      />
     </li>
   );
 }
