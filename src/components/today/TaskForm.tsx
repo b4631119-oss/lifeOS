@@ -45,6 +45,11 @@ interface TaskFormProps {
    */
   defaultStartTime?: string;
   defaultEndTime?: string;
+  /**
+   * Draft title carried over from the capture field (never used while editing,
+   * where the task's own title wins).
+   */
+  defaultTitle?: string;
 }
 
 /**
@@ -64,11 +69,12 @@ export default function TaskForm({
   onRestore,
   defaultStartTime = "",
   defaultEndTime = "",
+  defaultTitle = "",
 }: TaskFormProps) {
   const t = useTranslations("today");
   const tCommon = useTranslations("common");
 
-  const [title, setTitle] = useState(task?.title ?? "");
+  const [title, setTitle] = useState(task?.title ?? defaultTitle);
   const [startTime, setStartTime] = useState(
     task?.startTime ?? defaultStartTime,
   );
