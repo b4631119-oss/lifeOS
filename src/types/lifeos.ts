@@ -7,11 +7,28 @@ import type { Timestamp } from "firebase/firestore";
  * rules can scope access to the owner (see `firestore.rules`).
  */
 
-/** users/{uid} */
+/**
+ * users/{uid} — the account, as far as LifeOS knows it.
+ *
+ * Two owners share this document, and the split is the point:
+ *
+ * - `displayName`, `email` and `photoURL` are **Firebase's** — a cached copy of
+ *   what Google reports, refreshed on every sign-in, because that identity is
+ *   read from the client SDK and could otherwise disagree with it.
+ * - `preferredName` is **LifeOS's** — the name the user chose inside this app.
+ *   The Google sync never writes it, so it survives every login; `null` means
+ *   "no local choice", and the UI falls back to the Google name.
+ *
+ * `email` is identity-owned either way: it is shown read-only and never
+ * editable, because changing it here would only desynchronise the document from
+ * the account it describes.
+ */
 export type UserProfile = {
   displayName: string | null;
   email: string | null;
   photoURL: string | null;
+  /** Local override for the displayed name; `null` = use the Google one. */
+  preferredName: string | null;
   createdAt: Timestamp | null;
 };
 
@@ -133,16 +150,32 @@ export type Goal = {
  */
 export type GoalStatus = "active" | "completed" | "archived";
 
-/** users/{uid}/notes/{noteId} — the document id is the date. */
+/**
+ * users/{uid}/notes/{noteId} — the document id **is** the date.
+ *
+ * The id is the source of truth for which day a note belongs to: a note is read
+ * by id (`notes/2026-09-17`), never by querying a `date` field, so a document
+ * written by an older build (with no `date` field at all) still opens on the
+ * right day instead of looking like a lost note. The field is still written for
+ * newly saved notes, but nothing depends on it.
+ */
 export type Note = {
   id: string;
-  /** YYYY-MM-DD */
+  /** YYYY-MM-DD — equal to `id`. */
   date: string;
   content: string;
   createdAt: Timestamp | null;
 };
 
 /** Payloads accepted when creating new documents (`id`/`createdAt` are set by Firestore). */
+/**
+ * The Google-owned half of the profile, and the *only* shape the sign-in sync
+ * accepts.
+ *
+ * Deliberately a `Pick` of three fields rather than `Partial<UserProfile>`: a
+ * caller physically cannot hand the sync a `preferredName`, so the local name
+ * cannot be overwritten by a login even by mistake (see `lib/profile.ts`).
+ */
 export type NewUserProfile = Pick<
   UserProfile,
   "displayName" | "email" | "photoURL"
@@ -151,4 +184,3 @@ export type NewTask = Omit<LifeTask, "id" | "createdAt">;
 export type NewHabit = Omit<Habit, "id" | "createdAt">;
 export type NewHabitLog = Omit<HabitLog, "id">;
 export type NewGoal = Omit<Goal, "id" | "createdAt">;
-export type NewNote = Omit<Note, "id" | "createdAt">;
