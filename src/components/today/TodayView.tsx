@@ -7,11 +7,12 @@ import { useDay } from "@/context/DayContext";
 import { useDayTasks } from "@/hooks/useDayTasks";
 import { useGoals } from "@/hooks/useGoals";
 import { useModal } from "@/hooks/useModal";
+import { formatDayLabel, parseDateKey } from "@/lib/date";
+import { captureDraft } from "@/lib/taskSchedule";
 import type { TaskFormValues } from "./TaskForm";
 import type { Goal, LifeTask } from "@/types/lifeos";
-import { useTranslations } from "next-intl";
-import { useMemo, useState } from "react";
-import CurrentNextStrip from "./CurrentNextStrip";
+import { useLocale, useTranslations } from "next-intl";
+import { useEffect, useMemo, useState } from "react";
 import DayProgress from "./DayProgress";
 import QuickAddTask from "./QuickAddTask";
 import TaskFormModal from "./TaskFormModal";
@@ -27,8 +28,12 @@ import UnfinishedTasksPanel from "./UnfinishedTasksPanel";
  */
 const HISTORY_DAYS = 14;
 
+/** How long a freshly created task stays marked in the list. */
+const HIGHLIGHT_MS = 4000;
+
 export default function TodayView() {
   const t = useTranslations("today");
+  const locale = useLocale();
   const { user } = useAuth();
   const { date, isToday } = useDay();
   const {
@@ -56,9 +61,35 @@ export default function TodayView() {
   const deleteModal = useModal();
   const [editingTask, setEditingTask] = useState<LifeTask | null>(null);
   const [taskToDelete, setTaskToDelete] = useState<LifeTask | null>(null);
+  /**
+   * What the capture field held when the detailed dialog was opened, so typing a
+   * title and then deciding to give it a time does not start over.
+   */
+  const [draftTitle, setDraftTitle] = useState("");
+  /**
+   * The task the last write created. A capture field clears itself the instant
+   * the write lands, so without this the only evidence of success is a row
+   * somewhere below the fold.
+   */
+  const [justCreatedId, setJustCreatedId] = useState<string | null>(null);
 
-  const handleCreate = () => {
+  useEffect(() => {
+    if (!justCreatedId) return;
+
+    const timer = window.setTimeout(() => setJustCreatedId(null), HIGHLIGHT_MS);
+    return () => window.clearTimeout(timer);
+  }, [justCreatedId]);
+
+  /** Title only — the whole point of the quick-capture field. */
+  const handleQuickAdd = async (title: string) => {
+    const id = await createTask(captureDraft(title));
+    if (id) setJustCreatedId(id);
+  };
+
+  /** The same capture, with the optional fields open from the start. */
+  const handleOpenDetails = (title: string) => {
     setEditingTask(null);
+    setDraftTitle(title);
     formModal.openModal();
   };
 
@@ -72,24 +103,14 @@ export default function TodayView() {
     deleteModal.openModal();
   };
 
-  /** Title only — the whole point of the quick-capture field. */
-  const handleQuickAdd = (title: string) =>
-    createTask({
-      title,
-      startTime: "",
-      endTime: "",
-      status: "todo",
-      // No goal, medium priority: the two decisions the field exists to avoid.
-      priority: "medium",
-    });
-
   const handleSubmit = async (values: TaskFormValues) => {
     if (editingTask) {
       // A partial patch: only the fields the form actually carries, so nothing
       // the user did not touch (the day, the completion time) is rewritten.
       await editTask(editingTask.id, values);
     } else {
-      await createTask(values);
+      const id = await createTask(values);
+      if (id) setJustCreatedId(id);
     }
     formModal.closeModal();
   };
@@ -109,7 +130,7 @@ export default function TodayView() {
 
   return (
     <div>
-      <TodayHeader onAddTask={handleCreate} />
+      <TodayHeader />
 
       {error && (
         <ErrorBanner
@@ -120,21 +141,16 @@ export default function TodayView() {
         />
       )}
 
-      <QuickAddTask onCreate={handleQuickAdd} />
+      {/* The one way a task is added: capture first, details only if wanted. */}
+      <QuickAddTask
+        onCreate={handleQuickAdd}
+        onOpenDetails={handleOpenDetails}
+        dayLabel={
+          isToday ? undefined : formatDayLabel(parseDateKey(date), locale)
+        }
+      />
 
-      <CurrentNextStrip tasks={tasks} isToday={isToday} />
-
-      <div className="mb-6">
-        <DayProgress tasks={tasks} />
-      </div>
-
-      {unfinished.length > 0 && (
-        <UnfinishedTasksPanel
-          groups={unfinished}
-          dayKey={date}
-          onUpdate={editTask}
-        />
-      )}
+      <DayProgress tasks={tasks} />
 
       <TaskList
         tasks={tasks}
@@ -142,15 +158,32 @@ export default function TodayView() {
         isToday={isToday}
         goalsById={goalsById}
         goalsResolved={!goalsLoading}
+        highlightedId={justCreatedId}
         onToggle={toggleTaskDone}
         onEdit={handleEdit}
         onDelete={handleDeleteRequest}
       />
 
+      {/* Spoken confirmation of a write the user cannot always see happen. */}
+      <p aria-live="polite" className="sr-only">
+        {justCreatedId ? t("taskAdded") : ""}
+      </p>
+
+      {unfinished.length > 0 && (
+        <div className="mt-8">
+          <UnfinishedTasksPanel
+            groups={unfinished}
+            dayKey={date}
+            onUpdate={editTask}
+          />
+        </div>
+      )}
+
       <TaskFormModal
         isOpen={formModal.isOpen}
         onClose={formModal.closeModal}
         task={editingTask}
+        defaultTitle={draftTitle}
         goals={goals}
         onSubmit={handleSubmit}
         onRestore={handleRestore}
