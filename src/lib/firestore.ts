@@ -2,10 +2,14 @@ import {
   addDoc,
   collection,
   deleteDoc,
+  deleteField,
   doc,
+  documentId,
   getDoc,
   getDocs,
+  limit,
   onSnapshot,
+  orderBy,
   query,
   serverTimestamp,
   setDoc,
@@ -26,7 +30,6 @@ import type {
   NewGoal,
   NewHabit,
   NewHabitLog,
-  NewNote,
   NewTask,
   NewUserProfile,
   Note,
@@ -36,10 +39,9 @@ import type {
 
 import { withCompletionStamp } from "./completionStamp";
 import { getFirestoreDb } from "./firebase";
-import {
-  DEFAULT_PRIORITY,
-  compareDayTasks,
-} from "./taskSchedule.ts";
+import { isEmptyNote, noteFromDocument } from "./notes.ts";
+import { googleIdentityFields, normalizePreferredName } from "./profile.ts";
+import { DEFAULT_PRIORITY, compareDayTasks } from "./taskSchedule.ts";
 import { newTaskDoc, taskPatch } from "./taskPatch.ts";
 import {
   legacySubtaskTaskDrafts,
@@ -126,66 +128,93 @@ function mapGoal(snap: DocSnap): Goal {
   };
 }
 
-function mapNote(snap: Snap): Note {
-  const data = snap.data();
-  return {
-    id: snap.id,
-    date: (data.date as string) ?? "",
-    content: (data.content as string) ?? "",
-    createdAt: (data.createdAt as Timestamp | null) ?? null,
-  };
+/**
+ * A note, mapped with the document id as its date.
+ *
+ * Shared by every note read so there is exactly one answer to "which day does
+ * this note belong to" — see `noteFromDocument`.
+ */
+function mapNote(snap: DocSnap): Note {
+  return noteFromDocument(snap.id, snap.data());
 }
 
 /* ------------------------------- user profile ------------------------------- */
 
-/** Creates `users/{uid}` on first sign-in and refreshes the public fields afterwards. */
-export async function ensureUserProfile(
-  uid: string,
-  profile: NewUserProfile,
-): Promise<void> {
-  const ref = doc(getFirestoreDb(), "users", uid);
-  const snapshot = await getDoc(ref);
-
-  if (!snapshot.exists()) {
-    await setDoc(ref, { ...profile, createdAt: serverTimestamp() });
-    return;
-  }
-
-  await setDoc(ref, profile, { merge: true });
-}
-
-export async function getUserProfile(uid: string): Promise<UserProfile | null> {
-  const snapshot = await getDoc(doc(getFirestoreDb(), "users", uid));
-  if (!snapshot.exists()) return null;
-
-  const data = snapshot.data();
+/** Maps raw `users/{uid}` data, defaulting every field. */
+function mapUserProfile(data: DocumentData): UserProfile {
   return {
     displayName: (data.displayName as string | null) ?? null,
     email: (data.email as string | null) ?? null,
     photoURL: (data.photoURL as string | null) ?? null,
+    // Absent on every document written before the local name existed, and an
+    // absent local name means "use the Google one".
+    preferredName: normalizePreferredName(data.preferredName as string | null),
     createdAt: (data.createdAt as Timestamp | null) ?? null,
   };
 }
 
-/* ----------------------------------- tasks ---------------------------------- */
+/** The account document as stored, or `null` when it does not exist yet. */
+export async function getUserProfile(uid: string): Promise<UserProfile | null> {
+  const snapshot = await getDoc(doc(getFirestoreDb(), "users", uid));
+  if (!snapshot.exists()) return null;
+
+  return mapUserProfile(snapshot.data() ?? {});
+}
 
 /**
- * Returns tasks scheduled on or after `fromDate` (`YYYY-MM-DD`), oldest first.
+ * Creates `users/{uid}` on first sign-in, refreshes the Google-owned fields on
+ * every later one, and returns what is stored.
  *
- * `YYYY-MM-DD` sorts chronologically as a string, so this stays a single-field
- * range query and needs no composite index (same shape as
- * {@link subscribeToHabitLogs}).
+ * **The Google sync cannot touch `preferredName`.** The payload comes from
+ * {@link googleIdentityFields}, whose type does not carry the field at all, and
+ * the merge only writes what it is given — so a name the user set inside LifeOS
+ * survives every future login. That is the whole reason the profile document
+ * exists instead of the UI reading `user.displayName` directly.
+ *
+ * Returning the profile is not a convenience: the read is already made here to
+ * know whether `createdAt` has to be stamped, so the caller gets the stored
+ * value without a second round trip on the sign-in path.
  */
-export async function getTasksSince(
+export async function ensureUserProfile(
   uid: string,
-  fromDate: string,
-): Promise<LifeTask[]> {
-  const snapshot = await getDocs(
-    query(userCollection(uid, TASKS), where("date", ">=", fromDate)),
-  );
+  google: NewUserProfile,
+): Promise<UserProfile> {
+  const ref = doc(getFirestoreDb(), "users", uid);
+  const googleFields = googleIdentityFields(google);
+  const existing = await getUserProfile(uid);
 
-  return snapshot.docs.map(mapTask).sort(byDateThenTime);
+  if (!existing) {
+    await setDoc(ref, { ...googleFields, createdAt: serverTimestamp() });
+    // `createdAt` is a server timestamp and only resolves once the write lands,
+    // so it is reported as unknown here rather than as this device's clock.
+    return { ...googleFields, preferredName: null, createdAt: null };
+  }
+
+  await setDoc(ref, googleFields, { merge: true });
+  return { ...existing, ...googleFields };
 }
+
+/**
+ * Stores the name the user chose inside LifeOS, or clears it.
+ *
+ * `null` deletes the field instead of writing an empty string, so "reset to my
+ * Google name" genuinely leaves no local choice behind — a stored `""` would be
+ * indistinguishable from a name that failed to save.
+ */
+export async function setPreferredName(
+  uid: string,
+  name: string | null,
+): Promise<void> {
+  const preferredName = normalizePreferredName(name);
+
+  await setDoc(
+    doc(getFirestoreDb(), "users", uid),
+    { preferredName: preferredName ?? deleteField() },
+    { merge: true },
+  );
+}
+
+/* ----------------------------------- tasks ---------------------------------- */
 
 /**
  * Chronological across days, then by time within a day (unscheduled tasks last
@@ -196,15 +225,54 @@ function byDateThenTime(a: LifeTask, b: LifeTask): number {
 }
 
 /**
- * Returns tasks, optionally filtered to a single day, sorted by start time.
+ * A **closed** range of `YYYY-MM-DD` days.
+ *
+ * Both ends are required, and that is the point: an open upper bound means "every
+ * task this user will ever create", because `date` is in the future as soon as a
+ * user plans ahead. Any read of a dated collection therefore has to name the last
+ * day it cares about — a day view, a week view, an analytics window and the habit
+ * history all know theirs.
  */
-export async function getTasks(uid: string, date?: string): Promise<LifeTask[]> {
-  const source = date
-    ? query(userCollection(uid, TASKS), where("date", "==", date))
-    : userCollection(uid, TASKS);
+export type DateRange = { from: string; to: string };
 
-  const snapshot = await getDocs(source);
-  return snapshot.docs.map(mapTask).sort(compareDayTasks);
+/**
+ * The one range query shape, shared by the read and the subscription.
+ *
+ * Both bounds sit on the same field (`date`), so this is a single-field range
+ * scan: no composite index, and the result is exactly the days asked for.
+ */
+function taskRangeQuery(uid: string, range: DateRange) {
+  return query(
+    userCollection(uid, TASKS),
+    where("date", ">=", range.from),
+    where("date", "<=", range.to),
+  );
+}
+
+/** One-shot read of the tasks dated inside `range`, oldest first. */
+export async function getTaskRange(
+  uid: string,
+  range: DateRange,
+): Promise<LifeTask[]> {
+  const snapshot = await getDocs(taskRangeQuery(uid, range));
+  return snapshot.docs.map(mapTask).sort(byDateThenTime);
+}
+
+/**
+ * Subscribes to a day's tasks and pushes a sorted snapshot on every change.
+ * Returns the Firestore unsubscribe function.
+ */
+export function subscribeToTasks(
+  uid: string,
+  date: string,
+  onNext: (tasks: LifeTask[]) => void,
+  onError?: (error: Error) => void,
+): Unsubscribe {
+  return onSnapshot(
+    query(userCollection(uid, TASKS), where("date", "==", date)),
+    (snapshot) => onNext(snapshot.docs.map(mapTask).sort(compareDayTasks)),
+    (error) => onError?.(error),
+  );
 }
 
 export async function addTask(uid: string, task: NewTask): Promise<string> {
@@ -240,27 +308,6 @@ export async function deleteTask(uid: string, taskId: string): Promise<void> {
 }
 
 /**
- * Subscribes to a day's tasks and pushes a sorted snapshot on every change.
- * Returns the Firestore unsubscribe function.
- */
-export function subscribeToTasks(
-  uid: string,
-  date: string | undefined,
-  onNext: (tasks: LifeTask[]) => void,
-  onError?: (error: Error) => void,
-): Unsubscribe {
-  const source = date
-    ? query(userCollection(uid, TASKS), where("date", "==", date))
-    : userCollection(uid, TASKS);
-
-  return onSnapshot(
-    source,
-    (snapshot) => onNext(snapshot.docs.map(mapTask).sort(compareDayTasks)),
-    (error) => onError?.(error),
-  );
-}
-
-/**
  * Subscribes to the tasks linked to one goal.
  *
  * A single-field equality query on `goalId`: no composite index, no second
@@ -281,33 +328,21 @@ export function subscribeToGoalTasks(
   );
 }
 
-/** A closed range of `YYYY-MM-DD` days; either end may be open. */
-export type TaskDateRange = { from: string; to?: string };
-
 /**
- * Subscribes to the tasks dated inside a range of days.
+ * Subscribes to the tasks dated inside a **closed** range of days.
  *
- * Bounds are on the same field (`date`), which is a single-field range scan —
- * no composite index, no second query. Used by the Today view (from a day
- * backwards, unbounded above) and by the Week view, where the upper bound is
- * what keeps a week's read to that week instead of to the whole future.
+ * Used by the Today view (a window of past days up to the day on screen) and by
+ * the Week view (exactly its seven days). The upper bound is what keeps a day's
+ * read to that day instead of to the user's whole future plan.
  */
 export function subscribeToTaskRange(
   uid: string,
-  range: TaskDateRange,
+  range: DateRange,
   onNext: (tasks: LifeTask[]) => void,
   onError?: (error: Error) => void,
 ): Unsubscribe {
-  const source = range.to
-    ? query(
-        userCollection(uid, TASKS),
-        where("date", ">=", range.from),
-        where("date", "<=", range.to),
-      )
-    : query(userCollection(uid, TASKS), where("date", ">=", range.from));
-
   return onSnapshot(
-    source,
+    taskRangeQuery(uid, range),
     (snapshot) => onNext(snapshot.docs.map(mapTask).sort(byDateThenTime)),
     (error) => onError?.(error),
   );
@@ -362,16 +397,38 @@ export function subscribeToHabits(
 
 /* -------------------------------- habit logs -------------------------------- */
 
-export async function getHabitLogs(
-  uid: string,
-  date?: string,
-): Promise<HabitLog[]> {
-  const source = date
-    ? query(userCollection(uid, HABIT_LOGS), where("date", "==", date))
-    : userCollection(uid, HABIT_LOGS);
+/** How many logs one delete pass collects — keeps each read bounded. */
+const HABIT_LOG_PAGE = 300;
 
-  const snapshot = await getDocs(source);
-  return snapshot.docs.map(mapHabitLog);
+/**
+ * Deletes every log of one habit, in bounded pages.
+ *
+ * Firestore has no "delete where", so the rows do have to be read first — but
+ * not all at once: each pass collects at most {@link HABIT_LOG_PAGE} rows of
+ * *this* habit, through a single-field equality query that needs no index, and
+ * deletes them. Neither the read nor the write batch then grows with the length
+ * of a user's history, and because a full page is followed by another pass, the
+ * delete is complete: nothing is orphaned behind the removed habit.
+ */
+export async function deleteHabitLogs(
+  uid: string,
+  habitId: string,
+): Promise<void> {
+  for (;;) {
+    const snapshot = await getDocs(
+      query(
+        userCollection(uid, HABIT_LOGS),
+        where("habitId", "==", habitId),
+        limit(HABIT_LOG_PAGE),
+      ),
+    );
+
+    if (snapshot.empty) return;
+
+    const batch = writeBatch(getFirestoreDb());
+    for (const row of snapshot.docs) batch.delete(row.ref);
+    await batch.commit();
+  }
 }
 
 export async function addHabitLog(
@@ -390,28 +447,25 @@ export async function updateHabitLog(
   await updateDoc(userDoc(uid, HABIT_LOGS, logId), data);
 }
 
-export async function deleteHabitLog(
-  uid: string,
-  logId: string,
-): Promise<void> {
-  await deleteDoc(userDoc(uid, HABIT_LOGS, logId));
-}
-
 /**
- * Subscribes to habit logs on or after `fromDate` (`YYYY-MM-DD`).
+ * Subscribes to the habit logs dated inside a **closed** range of days.
  *
  * `YYYY-MM-DD` sorts chronologically as a string, so this stays a single-field
- * range query and needs no composite index.
+ * range query and needs no composite index. The upper bound matters as much as it
+ * does for tasks: the habit screen reads a bounded history — a year of streaks —
+ * and neither its checks nor its streak computation may grow with the age of the
+ * account.
  */
 export function subscribeToHabitLogs(
   uid: string,
-  fromDate: string,
+  range: DateRange,
   onNext: (logs: HabitLog[]) => void,
   onError?: (error: Error) => void,
 ): Unsubscribe {
   const source = query(
     userCollection(uid, HABIT_LOGS),
-    where("date", ">=", fromDate),
+    where("date", ">=", range.from),
+    where("date", "<=", range.to),
   );
 
   return onSnapshot(
@@ -529,23 +583,67 @@ export async function moveLegacySubtasksToTasks(
 
 /* ----------------------------------- notes ---------------------------------- */
 
-export async function getNotes(uid: string, date?: string): Promise<Note[]> {
-  const source = date
-    ? query(userCollection(uid, NOTES), where("date", "==", date))
-    : userCollection(uid, NOTES);
+/**
+ * One day's note, read **by its document id**.
+ *
+ * A note lives at `users/{uid}/notes/{YYYY-MM-DD}`, so today's note needs no
+ * query at all — its address is already known. This is deliberately not the
+ * "read every note and find the one whose `date` field matches" that came
+ * before: that also pulled the entire history over the wire to open a single
+ * day, and it missed any document without a `date` field, which made an existing
+ * note look like it had been lost.
+ *
+ * Returns `null` for a day with no note yet, which is the normal first-use case
+ * rather than an error.
+ */
+export async function getNote(uid: string, date: string): Promise<Note | null> {
+  const snapshot = await getDoc(userDoc(uid, NOTES, date));
+  if (!snapshot.exists()) return null;
 
-  const snapshot = await getDocs(source);
+  return mapNote(snapshot);
+}
+
+/**
+ * The newest notes, newest first, at most `max` of them.
+ *
+ * Ordered by **document id** rather than by a `date` field, which is the same
+ * thing for a note (`2026-09-17` sorts chronologically as a string) but has two
+ * real advantages: it needs no index, and it lists documents written before the
+ * `date` field existed, which an equality/range query on that field would have
+ * skipped. Since ids are dates, descending id order is newest-first.
+ *
+ * Bounded on purpose — the history is a page of recent entries, not the user's
+ * whole journal in memory.
+ */
+export async function getRecentNotes(
+  uid: string,
+  max: number,
+): Promise<Note[]> {
+  const snapshot = await getDocs(
+    query(
+      userCollection(uid, NOTES),
+      orderBy(documentId(), "desc"),
+      limit(max),
+    ),
+  );
+
   return snapshot.docs.map(mapNote);
 }
 
 /**
- * Creates or updates the note for `date`.
+ * Creates, updates or **deletes** the note for `date`.
  *
  * The document id *is* the date (`users/{uid}/notes/2026-09-15`), so there can
  * only ever be one note per day: a save can never race a second document into
- * existence, and today's note needs no query to be found — its id is known.
+ * existence, and the day's note needs no query to be found — its id is known.
  *
- * `merge: true` keeps the write additive — it never clobbers a field it does not
+ * Empty text deletes the document instead of storing `content: ""`. An emptied
+ * editor means "no note", and an empty document cannot be shown, read or
+ * removed anywhere: it would sit in the history for ever as "Empty note". So
+ * this is the one write whose result is a deletion, and the caller is expected
+ * to treat existence as following the text (see `useNotes`).
+ *
+ * `merge: true` keeps a write additive — it never clobbers a field it does not
  * carry, which also means a save stays harmless if the initial read failed and
  * left us unsure whether the note already exists. Pass `isNew` only when that
  * note is known to be absent, so it gets its creation time; later saves must not
@@ -557,6 +655,11 @@ export async function saveNote(
   content: string,
   isNew = false,
 ): Promise<void> {
+  if (isEmptyNote(content)) {
+    await deleteDoc(userDoc(uid, NOTES, date));
+    return;
+  }
+
   await setDoc(
     userDoc(uid, NOTES, date),
     {
@@ -566,14 +669,6 @@ export async function saveNote(
     },
     { merge: true },
   );
-}
-
-export async function updateNote(
-  uid: string,
-  noteId: string,
-  data: Partial<NewNote>,
-): Promise<void> {
-  await updateDoc(userDoc(uid, NOTES, noteId), data);
 }
 
 export async function deleteNote(uid: string, noteId: string): Promise<void> {
