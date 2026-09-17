@@ -9,6 +9,11 @@
  * the same way, and none of them can ever show a value that did not come from
  * the authenticated account.
  *
+ * The one value that does *not* come from the Firebase user is the local
+ * `preferredName` the user chose inside LifeOS. It is an explicit parameter
+ * rather than something read here, so this module stays pure — and every caller
+ * that passes it renders the same name the profile page saved.
+ *
  * Deliberately free of runtime imports so it can be unit-tested through Node's
  * native test runner, which cannot resolve the project's `@/*` aliases (see
  * `notes.test.ts` / `completionStamp.ts` for the same pattern).
@@ -45,14 +50,25 @@ export function localPartOf(email: string | null | undefined): string {
 }
 
 /**
- * The best available human name.
+ * The best available human name, in the order the product promises:
  *
- * `displayName` wins when it carries anything other than whitespace; otherwise
- * the email's local part is a better label than an empty header (`ivan.petrov`
- * beats `—`), and an account with neither yields `""` so the caller can use a
- * translated fallback.
+ * 1. the name the user chose inside LifeOS (`preferredName` on `users/{uid}`);
+ * 2. the Google display name;
+ * 3. the email's local part, which beats an empty header (`ivan.petrov` > `—`);
+ * 4. `""`, so the caller can use a translated fallback.
+ *
+ * The local name comes first because it is the only one the user set *here*: a
+ * Google name is what the account is called, not what the user asked LifeOS to
+ * call them.
  */
-export function displayNameOf(user: IdentityUser): string {
+export function displayNameOf(
+  user: IdentityUser,
+  preferredName?: string | null,
+): string {
+  const preferred =
+    typeof preferredName === "string" ? preferredName.trim() : "";
+  if (preferred) return preferred;
+
   const displayName =
     typeof user?.displayName === "string" ? user.displayName.trim() : "";
   if (displayName) return displayName;
@@ -90,8 +106,11 @@ export function initialOf(name: string): string {
 }
 
 /** Everything the identity UI needs, in one pass. */
-export function resolveIdentity(user: IdentityUser): Identity {
-  const name = displayNameOf(user);
+export function resolveIdentity(
+  user: IdentityUser,
+  preferredName?: string | null,
+): Identity {
+  const name = displayNameOf(user, preferredName);
 
   return {
     name,

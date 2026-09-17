@@ -97,6 +97,39 @@ test("resolveIdentity never throws on a partial or absent user", () => {
   });
 });
 
+/* ------------------------------- the local name ------------------------------ */
+
+test("the name chosen in LifeOS wins over the Google name", () => {
+  const google = {
+    displayName: "Astrid Lind",
+    email: "astrid@example.com",
+  };
+
+  assert.equal(displayNameOf(google, "Астрид"), "Астрид");
+  assert.equal(resolveIdentity(google, "Астрид").name, "Астрид");
+  assert.equal(resolveIdentity(google, "Астрид").initial, "А");
+  // Only the name is affected: the email and the photo stay the identity's.
+  assert.equal(resolveIdentity(google, "Астрид").email, "astrid@example.com");
+});
+
+test("clearing the local name falls back to Google, then to the email", () => {
+  const google = { displayName: "Astrid Lind", email: "a@example.com" };
+
+  // `null`, an empty string and whitespace all mean "no local choice" — which is
+  // what the reset action writes, so a reset must restore the Google name.
+  assert.equal(displayNameOf(google, null), "Astrid Lind");
+  assert.equal(displayNameOf(google, ""), "Astrid Lind");
+  assert.equal(displayNameOf(google, "   "), "Astrid Lind");
+
+  assert.equal(displayNameOf({ email: "a@example.com" }, null), "a");
+  assert.equal(displayNameOf(null, null), "");
+});
+
+test("a local name is trimmed before it is shown", () => {
+  assert.equal(displayNameOf(null, "  Астрид  "), "Астрид");
+  assert.equal(resolveIdentity(null, "  Астрид  ").initial, "А");
+});
+
 test("the email is passed through for display and never invented", () => {
   assert.equal(emailOf({ email: " ada@example.com " }), "ada@example.com");
   assert.equal(emailOf({}), "");
