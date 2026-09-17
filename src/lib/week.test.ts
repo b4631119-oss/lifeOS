@@ -3,6 +3,8 @@ import { test } from "node:test";
 
 import type { LifeTask } from "@/types/lifeos";
 
+import { dayKeyFor } from "./date.ts";
+import { captureDraft } from "./taskSchedule.ts";
 import { taskPatch } from "./taskPatch.ts";
 import {
   dayOffsetFor,
@@ -229,6 +231,83 @@ test("a day's tasks are ordered the way the day itself is", () => {
     wednesday.tasks.map((item) => item.id),
     ["early", "late", "free"],
   );
+});
+
+/* -------------------------------- planning ---------------------------------- */
+
+/** A task as the day card's capture writes it: a title and that card's date. */
+function captured(id: string, title: string, date: string): LifeTask {
+  return { id, ...captureDraft(title), date, createdAt: null };
+}
+
+test("a task captured into a day lands in that day's card and nowhere else", () => {
+  const days = weekDayKeys(WEEK_START);
+  const friday = days[4];
+  const written = captured("new", "Позвонить клиенту", friday);
+
+  const buckets = weekDayBuckets([written], days);
+
+  // The date is the card's, not today's — that is the whole point of planning a
+  // week: the user said which day once, by clicking in it.
+  assert.equal(written.date, friday);
+  assert.notEqual(written.date, TODAY);
+
+  assert.deepEqual(
+    buckets.map((bucket) => bucket.tasks.map((item) => item.id)),
+    [[], [], [], [], ["new"], [], []],
+  );
+
+  // The week's numbers are counted from the same tasks, so a new task is in
+  // them the moment it exists — there is no separate counter to update.
+  const summary = summarizeWeek([written], days, TODAY);
+  assert.equal(summary.planned, 1);
+  assert.equal(summary.upcoming, 1);
+  assert.equal(summary.completionPercent, null);
+});
+
+test("a captured task is a title and nothing else, whatever day it goes to", () => {
+  for (const day of weekDayKeys(WEEK_START)) {
+    const written = captured("new", "Купить молоко", day);
+
+    assert.equal(written.date, day);
+    assert.equal(written.status, "todo");
+    assert.equal(written.priority, "medium");
+    assert.equal(written.startTime, "");
+    assert.equal(written.endTime, "");
+    assert.equal(written.goalId, undefined);
+  }
+});
+
+test("planning works on every day of a week that crosses a year", () => {
+  const days = weekDayKeys("2026-12-28");
+
+  assert.equal(days[6], "2027-01-03");
+
+  const newYear = captured("ny", "С новым годом", "2027-01-01");
+  const buckets = weekDayBuckets([newYear], days);
+
+  assert.deepEqual(
+    buckets.map((bucket) => bucket.tasks.map((item) => item.id)),
+    [[], [], [], [], ["ny"], [], []],
+  );
+});
+
+test("opening a day from the week shows exactly that day", () => {
+  // The bridge: the card names a date, `DayContext` stores an offset from today,
+  // and the day view turns it back into a date. The round trip has to be exact,
+  // or "открыть день" would open a neighbour.
+  for (const day of weekDayKeys(WEEK_START)) {
+    assert.equal(dayKeyFor(TODAY, dayOffsetFor(TODAY, day)), day);
+  }
+
+  // And a day that is not today stays not-today, which is what makes the day
+  // view show its own date instead of claiming to be the calendar's today.
+  const future = "2026-09-21";
+  const offset = dayOffsetFor(TODAY, future);
+
+  assert.ok(offset > 0);
+  assert.equal(dayKeyFor(TODAY, offset), future);
+  assert.notEqual(dayKeyFor(TODAY, offset), TODAY);
 });
 
 test("moving a task to another day is a date patch and nothing more", () => {
