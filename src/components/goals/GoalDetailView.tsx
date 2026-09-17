@@ -50,7 +50,7 @@ export default function GoalDetailView({ goalId }: { goalId: string }) {
     return (
       <div>
         <PageBreadcrumb pageTitle={t("title")} />
-        <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
+        <div className="app-card app-card-pad">
           <h2 className="text-theme-sm font-semibold text-gray-800 dark:text-white/90">
             {t("notFoundTitle")}
           </h2>
