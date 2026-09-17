@@ -4,15 +4,18 @@ import { test } from "node:test";
 import type { LifeTask } from "@/types/lifeos";
 
 import {
+  captureDraft,
   carryTargetDate,
   compareDayTasks,
   currentAndNextTasks,
+  dayTaskRange,
   DROP_PATCH,
   groupUnfinishedByDay,
   isScheduled,
   limitGroups,
   plannedMinutes,
   splitDuration,
+  taskMarkers,
   timeRangeError,
   unscheduledTasks,
 } from "./taskSchedule.ts";
@@ -231,14 +234,72 @@ test("done and dropped tasks are neither current nor next", () => {
     next: null,
   });
 
-  // Before the day starts and after it ends there is nothing to show either —
-  // the strip simply does not render.
+  // Before the day starts and after it ends there is nothing to mark either —
+  // the list simply shows no "now" or "next" row.
   const one = [
     task({ id: "only", title: "Only", startTime: "14:00", endTime: "15:00" }),
   ];
   assert.equal(currentAndNextTasks(one, 9 * 60).current, null);
   assert.equal(currentAndNextTasks(one, 9 * 60).next?.id, "only");
   assert.equal(currentAndNextTasks(one, 20 * 60).next, null);
+});
+
+/* ------------------------------- row markers -------------------------------- */
+
+test("the clock marks exactly one current and one next row", () => {
+  const tasks = [
+    task({ id: "past", title: "Past", startTime: "08:00", endTime: "09:00" }),
+    task({ id: "now", title: "Now", startTime: "10:00", endTime: "11:30" }),
+    task({ id: "later", title: "Later", startTime: "14:00", endTime: "15:00" }),
+    task({ id: "free", title: "Free" }),
+  ];
+
+  // The day list is ordered by time already; the marker only points at the two
+  // rows the clock names, instead of repeating them in a card above the list.
+  assert.deepEqual(taskMarkers(tasks, 10 * 60 + 30), {
+    now: "current",
+    later: "next",
+  });
+});
+
+test("the marker never claims a row the clock cannot name", () => {
+  const tasks = [
+    task({
+      id: "done",
+      title: "Done",
+      startTime: "10:00",
+      endTime: "11:00",
+      status: "done",
+    }),
+    task({
+      id: "dropped",
+      title: "Dropped",
+      startTime: "10:00",
+      endTime: "11:00",
+      dropped: true,
+    }),
+    task({ id: "free", title: "Free" }),
+  ];
+
+  // An unfinished task with no hour is not "now" just because it is open, and a
+  // finished one is not "now" just because the clock is inside its window.
+  assert.deepEqual(taskMarkers(tasks, 10 * 60 + 30), {});
+});
+
+/* --------------------------------- capture ---------------------------------- */
+
+test("a captured task is a title and nothing else", () => {
+  const draft = captureDraft("Позвонить клиенту");
+
+  assert.deepEqual(draft, {
+    title: "Позвонить клиенту",
+    // The empty pair *is* "unscheduled": capture must never invent an hour.
+    startTime: "",
+    endTime: "",
+    status: "todo",
+    priority: "medium",
+  });
+  assert.equal(isScheduled(draft), false);
 });
 
 /* ------------------------------ planned minutes ------------------------------ */
@@ -266,4 +327,34 @@ test("a duration splits into hours and minutes", () => {
   assert.deepEqual(splitDuration(60), { hours: 1, minutes: 0 });
   assert.deepEqual(splitDuration(45), { hours: 0, minutes: 45 });
   assert.deepEqual(splitDuration(-5), { hours: 0, minutes: 0 });
+});
+
+/* ------------------------------- read bounds -------------------------------- */
+
+test("a day view reads its own day and the recovery window behind it", () => {
+  assert.deepEqual(dayTaskRange(TODAY, 14), {
+    from: "2026-09-02",
+    to: TODAY,
+  });
+});
+
+test("a day view never reads past the day on screen", () => {
+  // Both ends are required, and the upper one is the fix: an open range meant a
+  // day view subscribed to every task the user had planned for any future date,
+  // none of which it could display.
+  const range = dayTaskRange(TODAY, 14);
+
+  assert.equal(range.to, TODAY);
+  assert.ok(range.to < TOMORROW);
+
+  // Browsing a future day moves the whole window with it, still stopping there.
+  assert.deepEqual(dayTaskRange("2026-09-20", 14), {
+    from: "2026-09-06",
+    to: "2026-09-20",
+  });
+});
+
+test("a day view with no history window reads exactly one day", () => {
+  assert.deepEqual(dayTaskRange(TODAY, 0), { from: TODAY, to: TODAY });
+  assert.deepEqual(dayTaskRange(TODAY, -3), { from: TODAY, to: TODAY });
 });
