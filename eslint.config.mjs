@@ -47,6 +47,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // The archived QA harness (`qa/`): a local tool that is not part of the
+    // product, so it must not be able to fail the `prebuild` gate. When it is
+    // copied back into `src/app` for a QA pass, the rules apply again.
+    "qa/**",
   ]),
 ]);
 

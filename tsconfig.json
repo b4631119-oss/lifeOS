@@ -39,6 +39,11 @@
     ".next/dev/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    // The QA harness is a local tool, not part of the product: it lives outside
+    // `src/app` (so it cannot become a route — see `qa/README.md`) and outside
+    // the type-check, so an edit in the app can never fail a release build over
+    // a file the release does not ship.
+    "qa"
   ]
 }
