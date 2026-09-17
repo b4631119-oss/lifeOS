@@ -11,14 +11,11 @@ const PageBreadcrumb: React.FC<BreadcrumbProps> = ({ pageTitle }) => {
   const t = useTranslations("common");
 
   return (
-    <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-      <h2
-        className="text-xl font-semibold text-gray-800 dark:text-white/90"
-        x-text="pageName"
-      >
-        {pageTitle}
-      </h2>
-      <nav>
+    <div className="mb-4 flex flex-wrap items-center justify-between gap-3 sm:mb-6">
+      <h2 className="app-page-title">{pageTitle}</h2>
+      {/* The trail repeats the title that is already next to it, so it only
+          earns its place once there is width for it. */}
+      <nav className="hidden sm:block">
         <ol className="flex items-center gap-1.5">
           <li>
             <Link
