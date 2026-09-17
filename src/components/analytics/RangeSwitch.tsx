@@ -26,9 +26,13 @@ export default function RangeSwitch({ value, onChange }: RangeSwitchProps) {
           aria-pressed={value === days}
           onClick={() => onChange(days)}
           className={cn(
-            "rounded-md px-3 py-1.5 text-theme-sm font-medium transition-colors",
+            // 44px tall like every other control: the segmented switch is the
+            // page's main control on a phone, and it was a thumb-sized pill
+            // short of the target. The focus ring is the shared one, so the
+            // keyboard can see where it is.
+            "inline-flex min-h-11 items-center justify-center rounded-md px-4 text-theme-sm font-medium transition-colors focus:ring-3 focus:ring-brand-500/20 focus:outline-hidden",
             value === days
-              ? "shadow-theme-xs bg-white text-gray-900 dark:bg-gray-800 dark:text-white"
+              ? "bg-white text-gray-900 shadow-theme-xs dark:bg-gray-800 dark:text-white"
               : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white",
           )}
         >
