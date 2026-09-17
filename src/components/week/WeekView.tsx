@@ -23,7 +23,7 @@ import {
 } from "@/lib/week";
 import type { Goal, LifeTask } from "@/types/lifeos";
 import { useLocale, useTranslations } from "next-intl";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import WeekBulkBar from "./WeekBulkBar";
 import WeekDayCard from "./WeekDayCard";
 import WeekNavigator from "./WeekNavigator";
@@ -31,6 +31,9 @@ import WeekReview from "./WeekReview";
 
 /** Stable empty selection, so an untouched week keeps a stable identity. */
 const NO_SELECTION: string[] = [];
+
+/** How long a freshly created task stays marked in its day card. */
+const HIGHLIGHT_MS = 4000;
 
 /**
  * The week, as a view of the tasks that already exist.
@@ -63,6 +66,7 @@ export default function WeekView() {
     tasks,
     loading,
     error,
+    createTask,
     editTask,
     bulkMove,
     bulkDrop,
@@ -81,7 +85,10 @@ export default function WeekView() {
     () => summarizeWeek(tasks, dayKeys, today),
     [tasks, dayKeys, today],
   );
-  const buckets = useMemo(() => weekDayBuckets(tasks, dayKeys), [tasks, dayKeys]);
+  const buckets = useMemo(
+    () => weekDayBuckets(tasks, dayKeys),
+    [tasks, dayKeys],
+  );
   // Open work dated before today: what a decision is owed on. Passing the
   // week's own tasks means the list can only ever name days of this week, and
   // tomorrow as the bound keeps today's unfinished day out of it.
@@ -100,7 +107,8 @@ export default function WeekView() {
     week: startKey,
     ids: NO_SELECTION,
   });
-  const selectedIds = selection.week === startKey ? selection.ids : NO_SELECTION;
+  const selectedIds =
+    selection.week === startKey ? selection.ids : NO_SELECTION;
 
   const [bulkTarget, setBulkTarget] = useState<{
     week: string;
@@ -114,6 +122,28 @@ export default function WeekView() {
   const [result, setResult] = useState<BulkResult | null>(null);
   const [busy, setBusy] = useState(false);
   const [rescheduling, setRescheduling] = useState<LifeTask | null>(null);
+  /**
+   * The task the last capture created. The field empties itself as soon as the
+   * write lands, so without this the only evidence of success is a new row
+   * somewhere in one of seven cards.
+   */
+  const [justCreatedId, setJustCreatedId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!justCreatedId) return;
+
+    const timer = window.setTimeout(() => setJustCreatedId(null), HIGHLIGHT_MS);
+    return () => window.clearTimeout(timer);
+  }, [justCreatedId]);
+
+  /** Adds a title to a day of this week; the day comes from the card. */
+  const handleAddTask = useCallback(
+    async (date: string, title: string) => {
+      const id = await createTask(date, title);
+      if (id) setJustCreatedId(id);
+    },
+    [createTask],
+  );
 
   const handleToggleSelect = useCallback(
     (taskId: string) => {
@@ -215,7 +245,7 @@ export default function WeekView() {
         />
       </div>
 
-      <p className="mb-6 text-theme-sm text-gray-500 dark:text-gray-400">
+      <p className="mb-4 hidden text-theme-sm text-gray-500 sm:mb-6 sm:block dark:text-gray-400">
         {t("subtitle")}
       </p>
 
@@ -240,12 +270,15 @@ export default function WeekView() {
 
       <h2 className="sr-only">{t("daysTitle")}</h2>
 
+      {/* The column ladder starts at `xl`, not `lg`: from 1024 the sidebar is on
+          screen and takes its 290px out of this grid, so three columns at 1024
+          would be narrower than two. */}
       {loading ? (
         <p className="mt-4 text-theme-sm text-gray-500 dark:text-gray-400">
           {t("loading")}
         </p>
       ) : (
-        <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div className="mt-4 grid grid-cols-1 gap-3 sm:mt-6 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4 2xl:grid-cols-7">
           {buckets.map((bucket) => (
             <WeekDayCard
               key={bucket.date}
@@ -255,8 +288,10 @@ export default function WeekView() {
               goalsResolved={!goalsLoading}
               isToday={bucket.date === today}
               selectedIds={selectedIds}
+              highlightedId={justCreatedId}
               onToggleSelect={handleToggleSelect}
               onOpenDay={handleOpenDay}
+              onAddTask={handleAddTask}
               onMove={setRescheduling}
               onDrop={handleDrop}
               onRestore={handleRestore}
@@ -265,15 +300,18 @@ export default function WeekView() {
         </div>
       )}
 
+      {/* Spoken confirmation of a write the user cannot always see happen. */}
+      <p aria-live="polite" className="sr-only">
+        {justCreatedId ? t("added") : ""}
+      </p>
+
       {/* Kept mounted after the selection is spent, so a partial or failed bulk
           write is visible instead of vanishing with the bar. */}
       {(selectedIds.length > 0 || result !== null) && (
         <WeekBulkBar
           selectedCount={selectedIds.length}
           targetDate={targetDate}
-          onTargetDateChange={(date) =>
-            setBulkTarget({ week: startKey, date })
-          }
+          onTargetDateChange={(date) => setBulkTarget({ week: startKey, date })}
           onMove={() => runBulk("move")}
           onDrop={() => runBulk("drop")}
           onClear={handleClearSelection}
