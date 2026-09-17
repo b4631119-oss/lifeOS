@@ -5,10 +5,11 @@ import PriorityBadge from "@/components/common/PriorityBadge";
 import Badge from "@/components/ui/badge/Badge";
 import { CheckLineIcon, PencilIcon, TrashBinIcon } from "@/icons";
 import { formatTimeRange } from "@/lib/date";
-import { isScheduled } from "@/lib/taskSchedule";
+import { isScheduled, type TaskMarker } from "@/lib/taskSchedule";
 import type { Goal, LifeTask } from "@/types/lifeos";
 import { cn } from "@/utils";
 import { useLocale, useTranslations } from "next-intl";
+import { useEffect, useRef } from "react";
 import TaskStatusBadge from "./TaskStatusBadge";
 
 interface TaskItemProps {
@@ -17,6 +18,15 @@ interface TaskItemProps {
   goalsById: Record<string, Goal>;
   /** True once the goals list has answered at least once. */
   goalsResolved: boolean;
+  /**
+   * Whether this task is the one happening now or the next one to start.
+   *
+   * A reading of the task's own time fields at this minute (see `taskMarkers`),
+   * not a second list: the row that is marked is the row the user acts on.
+   */
+  marker?: TaskMarker;
+  /** The task just added to the day, so the write is visibly confirmed. */
+  highlighted?: boolean;
   onToggle: (task: LifeTask) => void;
   onEdit: (task: LifeTask) => void;
   onDelete: (task: LifeTask) => void;
@@ -26,6 +36,8 @@ export default function TaskItem({
   task,
   goalsById,
   goalsResolved,
+  marker,
+  highlighted = false,
   onToggle,
   onEdit,
   onDelete,
@@ -35,8 +47,25 @@ export default function TaskItem({
   const isDone = task.status === "done";
   const scheduled = isScheduled(task);
 
+  /**
+   * Brings a fresh task into view, but only when it landed below the fold:
+   * `nearest` scrolls the smallest distance that makes the row visible, and
+   * does nothing at all when it already is.
+   */
+  const itemRef = useRef<HTMLLIElement>(null);
+  useEffect(() => {
+    if (!highlighted) return;
+    itemRef.current?.scrollIntoView({ block: "nearest" });
+  }, [highlighted]);
+
   return (
-    <li className="flex flex-wrap items-center gap-3 rounded-xl border border-gray-200 bg-white p-4 transition-colors hover:border-brand-300 dark:border-gray-800 dark:bg-white/[0.03] dark:hover:border-brand-500/40">
+    <li
+      ref={itemRef}
+      className={cn(
+        "flex flex-wrap items-center gap-2.5 rounded-xl border border-gray-200 bg-white p-3.5 transition-colors hover:border-brand-300 sm:gap-3 sm:p-4 dark:border-gray-800 dark:bg-white/[0.03] dark:hover:border-brand-500/40",
+        highlighted && "border-brand-400 bg-brand-50/40 dark:border-brand-500/50",
+      )}
+    >
       <button
         type="button"
         onClick={() => onToggle(task)}
@@ -68,6 +97,23 @@ export default function TaskItem({
           {task.title}
         </p>
         <p className="text-theme-xs text-gray-500 dark:text-gray-400">
+          {/* The clock's two rows are named where their time is read, rather
+              than repeated in a card above the list. */}
+          {marker && (
+            <span
+              className={cn(
+                "font-semibold tracking-wide uppercase",
+                marker === "current"
+                  ? "text-brand-600 dark:text-brand-400"
+                  : "text-gray-600 dark:text-gray-300",
+              )}
+            >
+              {t(marker)}
+            </span>
+          )}
+          {/* A real space, so the row reads "Now 09:00 – 10:30" aloud too,
+              not "Now09:00". */}
+          {marker && " "}
           {/* A task without a time says so, rather than inventing one. */}
           {scheduled
             ? formatTimeRange(task.startTime, task.endTime, locale)
@@ -98,7 +144,7 @@ export default function TaskItem({
           type="button"
           onClick={() => onEdit(task)}
           aria-label={t("edit")}
-          className="flex h-11 w-11 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 focus:ring-3 focus:ring-brand-500/20 focus:outline-hidden dark:hover:bg-white/5 dark:hover:text-gray-200"
+          className="app-icon-button"
         >
           <PencilIcon className="h-4 w-4" />
         </button>
@@ -106,7 +152,7 @@ export default function TaskItem({
           type="button"
           onClick={() => onDelete(task)}
           aria-label={t("delete")}
-          className="flex h-11 w-11 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-error-50 hover:text-error-500 focus:ring-3 focus:ring-brand-500/20 focus:outline-hidden dark:hover:bg-error-500/10"
+          className="app-icon-button hover:bg-error-50 hover:text-error-500 dark:hover:bg-error-500/10"
         >
           <TrashBinIcon className="h-4 w-4" />
         </button>
