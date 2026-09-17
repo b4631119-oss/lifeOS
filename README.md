@@ -100,4 +100,4 @@ otherwise links drop the locale prefix — an ESLint rule enforces this.
 
 ## License
 
-GNU General Public License v3.0 — see [LICENSE](LICENSE).
+MIT License — see [LICENSE](LICENSE).
