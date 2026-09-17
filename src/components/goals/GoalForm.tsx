@@ -17,7 +17,9 @@ export default function GoalForm({
 }: GoalFormProps) {
   const t = useTranslations("goals");
   const [title, setTitle] = useState(initialData?.title ?? "");
-  const [description, setDescription] = useState(initialData?.description ?? "");
+  const [description, setDescription] = useState(
+    initialData?.description ?? "",
+  );
   const [deadline, setDeadline] = useState(initialData?.deadline ?? "");
   const [titleError, setTitleError] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -47,7 +49,10 @@ export default function GoalForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
+    <form
+      onSubmit={handleSubmit}
+      className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]"
+    >
       <h3 className="text-theme-sm font-semibold text-gray-800 dark:text-white/90">
         {isEditing ? t("edit") : t("addGoal")}
       </h3>
@@ -76,7 +81,9 @@ export default function GoalForm({
             disabled={submitting}
           />
           {titleError && (
-            <p className="mt-1.5 text-theme-xs text-error-500">{t("titleRequired")}</p>
+            <p className="mt-1.5 text-theme-xs text-error-500">
+              {t("titleRequired")}
+            </p>
           )}
         </div>
 
@@ -103,7 +110,8 @@ export default function GoalForm({
             htmlFor="goal-deadline"
             className="block text-theme-xs font-medium text-gray-700 dark:text-gray-300"
           >
-            {t("deadline")} <span className="text-gray-400">{t("deadlineOptional")}</span>
+            {t("deadline")}{" "}
+            <span className="text-gray-400">{t("deadlineOptional")}</span>
           </label>
           <input
             type="date"
