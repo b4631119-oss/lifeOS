@@ -1,10 +1,11 @@
 "use client";
 
 import {
+  addTask as createTaskDoc,
   subscribeToTaskRange,
   updateTask as updateTaskDoc,
 } from "@/lib/firestore";
-import { DROP_PATCH } from "@/lib/taskSchedule";
+import { DROP_PATCH, captureDraft } from "@/lib/taskSchedule";
 import type { LifeTask, NewTask } from "@/types/lifeos";
 import { useCallback, useEffect, useState } from "react";
 
@@ -29,6 +30,15 @@ type UseWeekTasksResult = {
   tasks: LifeTask[];
   loading: boolean;
   error: TaskError | null;
+  /**
+   * Adds one task to a day of the week, from a title alone.
+   *
+   * Resolves with the new task's id, or `null` when nobody is signed in. The
+   * week is planned in short bursts, so this is the capture every day card
+   * uses: the day is the caller's, the title is the user's, and everything else
+   * takes the defaults of `captureDraft` until the task is edited.
+   */
+  createTask: (date: string, title: string) => Promise<string | null>;
   /** Patches one task (move, drop, restore, mark done, …). */
   editTask: (taskId: string, data: Partial<NewTask>) => Promise<void>;
   /** Moves a task to another day, keeping everything else about it. */
@@ -99,9 +109,11 @@ export function useWeekTasks(
     setAttempt((value) => value + 1);
   }, []);
 
-  const run = useCallback(async (action: () => Promise<void>) => {
+  // Generic, so an action's result (the id of a newly created task) survives
+  // the shared error handling instead of being swallowed by it.
+  const run = useCallback(async <T,>(action: () => Promise<T>): Promise<T> => {
     try {
-      await action();
+      return await action();
     } catch (cause) {
       setError({
         kind: "action",
@@ -110,6 +122,15 @@ export function useWeekTasks(
       throw cause;
     }
   }, []);
+
+  const createTask = useCallback(
+    (date: string, title: string) => {
+      if (!uid) return Promise.resolve(null);
+      // Capture-first: a title and the day it was written into, nothing else.
+      return run(() => createTaskDoc(uid, { ...captureDraft(title), date }));
+    },
+    [uid, run],
+  );
 
   const editTask = useCallback(
     (taskId: string, data: Partial<NewTask>) => {
@@ -187,6 +208,7 @@ export function useWeekTasks(
     tasks,
     loading,
     error,
+    createTask,
     editTask,
     moveTask,
     bulkMove,
