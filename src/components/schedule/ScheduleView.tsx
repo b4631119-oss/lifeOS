@@ -28,6 +28,7 @@ import {
 } from "@dnd-kit/modifiers";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useMemo, useRef, useState } from "react";
+import ScheduleAgenda from "./ScheduleAgenda";
 import ScheduleGrid from "./ScheduleGrid";
 import ScheduleHeader from "./ScheduleHeader";
 import UnscheduledTasks from "./UnscheduledTasks";
@@ -80,7 +81,7 @@ export default function ScheduleView() {
   );
   // Only the goals' names are needed here: a scheduled task shows which goal it
   // moves forward, and the edit dialog offers the same optional field as Today.
-  const { goals } = useGoals(user?.uid);
+  const { goals, loading: goalsLoading } = useGoals(user?.uid);
   const goalsById = useMemo<Record<string, Goal>>(
     () => Object.fromEntries(goals.map((goal) => [goal.id, goal])),
     [goals],
@@ -303,30 +304,41 @@ export default function ScheduleView() {
 
           <UnscheduledTasks tasks={withoutTime} onEdit={openEdit} />
 
-          <p className="mb-3 text-theme-xs text-gray-500 dark:text-gray-400">
+          {/* Phones get the day as an agenda; the timeline needs the width of a
+              tablet and a pointer to drag in. */}
+          <ScheduleAgenda
+            tasks={scheduled}
+            goalsById={goalsById}
+            goalsResolved={!goalsLoading}
+            onEdit={openEdit}
+          />
+
+          <p className="mb-3 hidden text-theme-xs text-gray-500 md:block dark:text-gray-400">
             {t("dragHint")}
           </p>
 
-          <DndContext
-            sensors={sensors}
-            // Blocks move along the timeline only, and never past the day's
-            // edges — the drop handler clamps again for good measure.
-            modifiers={[restrictToVerticalAxis, restrictToParentElement]}
-            onDragStart={handleDragStart}
-            onDragEnd={handleDragEnd}
-            accessibility={{
-              announcements,
-              screenReaderInstructions: { draggable: t("dragInstructions") },
-            }}
-          >
-            <ScheduleGrid
-              rows={rows}
-              goalsById={goalsById}
-              onCreateAt={openCreate}
-              onEdit={openEdit}
-              isClickSuppressed={isClickSuppressed}
-            />
-          </DndContext>
+          <div className="hidden md:block">
+            <DndContext
+              sensors={sensors}
+              // Blocks move along the timeline only, and never past the day's
+              // edges — the drop handler clamps again for good measure.
+              modifiers={[restrictToVerticalAxis, restrictToParentElement]}
+              onDragStart={handleDragStart}
+              onDragEnd={handleDragEnd}
+              accessibility={{
+                announcements,
+                screenReaderInstructions: { draggable: t("dragInstructions") },
+              }}
+            >
+              <ScheduleGrid
+                rows={rows}
+                goalsById={goalsById}
+                onCreateAt={openCreate}
+                onEdit={openEdit}
+                isClickSuppressed={isClickSuppressed}
+              />
+            </DndContext>
+          </div>
         </>
       )}
 
