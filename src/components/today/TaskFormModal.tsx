@@ -16,6 +16,12 @@ interface TaskFormModalProps {
   /** Pre-fills the time fields when creating a task from a specific slot. */
   defaultStartTime?: string;
   defaultEndTime?: string;
+  /**
+   * Title the capture field already held, so opening the detailed dialog from
+   * it continues that draft instead of asking for the same words twice.
+   * Ignored while editing.
+   */
+  defaultTitle?: string;
   /** Puts a dropped task back on the plan (see `TaskForm`). */
   onRestore?: () => Promise<void>;
 }
@@ -28,6 +34,7 @@ export default function TaskFormModal({
   onSubmit,
   defaultStartTime,
   defaultEndTime,
+  defaultTitle,
   onRestore,
 }: TaskFormModalProps) {
   const t = useTranslations("today");
@@ -60,6 +67,7 @@ export default function TaskFormModal({
         onRestore={onRestore}
         defaultStartTime={defaultStartTime}
         defaultEndTime={defaultEndTime}
+        defaultTitle={defaultTitle}
       />
     </Modal>
   );
