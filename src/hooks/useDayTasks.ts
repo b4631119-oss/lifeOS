@@ -1,6 +1,5 @@
 "use client";
 
-import { addDays, dateKey, parseDateKey } from "@/lib/date";
 import {
   addTask as createTaskDoc,
   deleteTask as deleteTaskDoc,
@@ -10,6 +9,7 @@ import {
 } from "@/lib/firestore";
 import {
   compareDayTasks,
+  dayTaskRange,
   groupUnfinishedByDay,
   type DayGroup,
 } from "@/lib/taskSchedule";
@@ -43,9 +43,9 @@ export type UseDayTasksOptions = {
 const EMPTY_TASKS: LifeTask[] = [];
 const EMPTY_GROUPS: DayGroup[] = [];
 
-/** Identifies the day *and* the window a snapshot was read for. */
-function windowKeyOf(date: string, fromDate: string): string {
-  return `${date}|${fromDate}`;
+/** Identifies the exact window a snapshot was read for. */
+function windowKeyOf(from: string, to: string): string {
+  return `${from}|${to}`;
 }
 
 type UseDayTasksResult = {
@@ -55,7 +55,8 @@ type UseDayTasksResult = {
   unfinished: DayGroup[];
   loading: boolean;
   error: TaskError | null;
-  createTask: (task: TaskDraft) => Promise<void>;
+  /** Resolves with the new task's id, or `null` when nobody is signed in. */
+  createTask: (task: TaskDraft) => Promise<string | null>;
   editTask: (taskId: string, data: Partial<NewTask>) => Promise<void>;
   removeTask: (taskId: string) => Promise<void>;
   toggleTaskDone: (task: LifeTask) => Promise<void>;
@@ -77,8 +78,16 @@ export function useDayTasks(
   options: UseDayTasksOptions = {},
 ): UseDayTasksResult {
   const historyDays = options.historyDays ?? 0;
-  const fromDate =
-    historyDays > 0 ? dateKey(addDays(parseDateKey(date), -historyDays)) : date;
+  /**
+   * The days this hook reads: the day on screen plus the recovery window
+   * behind it. A bound at both ends — the upper one is what stops a day view
+   * from subscribing to every task the user has planned for the future, which
+   * it could not display anyway (see `dayTaskRange`).
+   */
+  const range = useMemo(
+    () => dayTaskRange(date, historyDays),
+    [date, historyDays],
+  );
 
   /**
    * The last snapshot, tagged with the day and window it was read for.
@@ -99,21 +108,24 @@ export function useDayTasks(
   useEffect(() => {
     if (!uid) return;
 
+    const key = windowKeyOf(range.from, range.to);
     const onNext = (nextTasks: LifeTask[]) => {
-      setSnapshot({ key: windowKeyOf(date, fromDate), tasks: nextTasks });
+      setSnapshot({ key, tasks: nextTasks });
       setError(null);
     };
     const onError = (subscriptionError: Error) => {
       setError({ kind: "load", message: subscriptionError.message });
     };
 
+    // Without a history window the day's own tasks are all this view needs, so
+    // the narrower equality query stays.
     return historyDays > 0
-      ? subscribeToTaskRange(uid, { from: fromDate }, onNext, onError)
+      ? subscribeToTaskRange(uid, range, onNext, onError)
       : subscribeToTasks(uid, date, onNext, onError);
-  }, [uid, date, fromDate, historyDays, attempt]);
+  }, [uid, date, range, historyDays, attempt]);
 
   const current =
-    snapshot && snapshot.key === windowKeyOf(date, fromDate)
+    snapshot && snapshot.key === windowKeyOf(range.from, range.to)
       ? snapshot.tasks
       : null;
 
@@ -143,9 +155,11 @@ export function useDayTasks(
     setAttempt((value) => value + 1);
   }, []);
 
-  const run = useCallback(async (action: () => Promise<void>) => {
+  // Generic, so an action's result (the id of a newly created task) survives
+  // the shared error handling instead of being swallowed by it.
+  const run = useCallback(async <T,>(action: () => Promise<T>): Promise<T> => {
     try {
-      await action();
+      return await action();
     } catch (cause) {
       setError({
         kind: "action",
@@ -157,10 +171,8 @@ export function useDayTasks(
 
   const createTask = useCallback(
     (task: TaskDraft) => {
-      if (!uid) return Promise.resolve();
-      return run(async () => {
-        await createTaskDoc(uid, { ...task, date });
-      });
+      if (!uid) return Promise.resolve(null);
+      return run(() => createTaskDoc(uid, { ...task, date }));
     },
     [uid, date, run],
   );
