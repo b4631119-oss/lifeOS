@@ -19,6 +19,8 @@ interface WeekTaskRowProps {
   goalsResolved: boolean;
   /** Whether the row is selected for a bulk action. */
   selected: boolean;
+  /** The task just added to this day, so the write is visibly confirmed. */
+  highlighted?: boolean;
   onToggleSelect: (taskId: string) => void;
   /** Opens the shared reschedule dialog for this task. */
   onMove: (task: LifeTask) => void;
@@ -45,6 +47,7 @@ export default function WeekTaskRow({
   goal,
   goalsResolved,
   selected,
+  highlighted = false,
   onToggleSelect,
   onMove,
   onDrop,
@@ -64,6 +67,10 @@ export default function WeekTaskRow({
         selected
           ? "border-brand-400 bg-brand-50/40 dark:border-brand-500/50"
           : "border-gray-200 dark:border-gray-800",
+        // A ring rather than the selection's border, so "just added" and
+        // "selected for a bulk action" cannot be read as the same state.
+        highlighted &&
+          "ring-2 ring-brand-400/50 dark:ring-brand-500/50",
       )}
     >
       {/* A real checkbox inside a padded label: the box stays small, the tap
@@ -91,7 +98,9 @@ export default function WeekTaskRow({
         >
           {/* Done is not colour-only: the check and the strike-through say it
               too, and `aria-hidden` keeps the icon out of the reading order. */}
-          {isDone && <CheckLineIcon className="h-3.5 w-3.5 shrink-0" aria-hidden />}
+          {isDone && (
+            <CheckLineIcon className="h-3.5 w-3.5 shrink-0" aria-hidden />
+          )}
           <span className="min-w-0 break-words">{task.title}</span>
         </p>
         <p className="text-theme-xs text-gray-500 dark:text-gray-400">
@@ -124,7 +133,7 @@ export default function WeekTaskRow({
           type="button"
           onClick={() => onMove(task)}
           aria-label={tWeek("moveTaskAria", { title: task.title })}
-          className="inline-flex h-11 items-center rounded-lg px-3 text-theme-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-300 transition-colors hover:bg-gray-50 focus:ring-3 focus:ring-brand-500/20 focus:outline-hidden dark:text-gray-300 dark:ring-gray-700 dark:hover:bg-white/5"
+          className="inline-flex h-11 items-center rounded-lg px-3 text-theme-xs font-medium text-gray-600 ring-1 ring-gray-300 transition-colors ring-inset hover:bg-gray-50 focus:ring-3 focus:ring-brand-500/20 focus:outline-hidden dark:text-gray-300 dark:ring-gray-700 dark:hover:bg-white/5"
         >
           {tWeek("moveTask")}
         </button>
@@ -136,7 +145,7 @@ export default function WeekTaskRow({
               ? tWeek("restoreTaskAria", { title: task.title })
               : tWeek("dropTaskAria", { title: task.title })
           }
-          className="inline-flex h-11 items-center rounded-lg px-3 text-theme-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-300 transition-colors hover:bg-gray-50 focus:ring-3 focus:ring-brand-500/20 focus:outline-hidden dark:text-gray-300 dark:ring-gray-700 dark:hover:bg-white/5"
+          className="inline-flex h-11 items-center rounded-lg px-3 text-theme-xs font-medium text-gray-600 ring-1 ring-gray-300 transition-colors ring-inset hover:bg-gray-50 focus:ring-3 focus:ring-brand-500/20 focus:outline-hidden dark:text-gray-300 dark:ring-gray-700 dark:hover:bg-white/5"
         >
           {task.dropped ? t("recovery.restore") : t("recovery.drop")}
         </button>
