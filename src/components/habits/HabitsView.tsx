@@ -7,10 +7,16 @@ import { useAuth } from "@/context/AuthContext";
 import { useHabits } from "@/hooks/useHabits";
 import { useModal } from "@/hooks/useModal";
 import { addDays, dateKey, parseDateKey } from "@/lib/date";
-import { GRID_DAYS, GRID_WEEKS } from "@/lib/habits";
+import {
+  clampHistoryOffset,
+  GRID_DAYS,
+  GRID_WEEKS,
+  historyDays,
+  MIN_HISTORY_OFFSET,
+} from "@/lib/habits";
 import type { Habit } from "@/types/lifeos";
 import { useTranslations } from "next-intl";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import ArchivedHabits from "./ArchivedHabits";
 import HabitForm from "./HabitForm";
 import HabitList from "./HabitList";
@@ -34,6 +40,18 @@ export default function HabitsView() {
     reload,
   } = useHabits(user?.uid);
 
+  /**
+   * Which strip of habit history is on screen, in whole strips back from today.
+   * One for the page, so every card shows the same days.
+   */
+  const [historyOffset, setHistoryOffset] = useState(0);
+
+  const shiftHistory = useCallback((delta: number) => {
+    setHistoryOffset((previous) => clampHistoryOffset(previous + delta));
+  }, []);
+
+  const showToday = useCallback(() => setHistoryOffset(0), []);
+
   const renameModal = useModal();
   const deleteModal = useModal();
   const [editingHabit, setEditingHabit] = useState<Habit | null>(null);
@@ -52,6 +70,20 @@ export default function HabitsView() {
 
     return dates;
   }, [today]);
+
+  // The days the strips show. Derived from the reactive day, so the current
+  // strip keeps ending on today across midnight. Only days that have been read
+  // can be marked, which is why the offset is clamped rather than free.
+  const history = useMemo(
+    () => ({
+      dates: historyDays(today, historyOffset),
+      isCurrent: historyOffset === 0,
+      canGoBack: historyOffset > MIN_HISTORY_OFFSET,
+      shift: shiftHistory,
+      showToday,
+    }),
+    [today, historyOffset, shiftHistory, showToday],
+  );
 
   const handleRenameRequest = (habit: Habit) => {
     setEditingHabit(habit);
@@ -81,7 +113,7 @@ export default function HabitsView() {
     <div>
       <PageBreadcrumb pageTitle={t("title")} />
 
-      <p className="mb-6 text-theme-sm text-gray-500 dark:text-gray-400">
+      <p className="mb-4 hidden text-theme-sm text-gray-500 sm:mb-6 sm:block dark:text-gray-400">
         {t("subtitle")}
       </p>
 
@@ -96,9 +128,9 @@ export default function HabitsView() {
           {t("activityTitle", { weeks: GRID_WEEKS })}
         </span>
         <span className="flex items-center gap-2 text-theme-xs text-gray-500 dark:text-gray-400">
-          <span className="h-3 w-3 rounded-[3px] bg-gray-200 dark:bg-gray-800" />
+          <span className="h-3.5 w-3.5 rounded-[3px] bg-gray-200 sm:h-3 sm:w-3 dark:bg-gray-800" />
           {t("legendMissed")}
-          <span className="h-3 w-3 rounded-[3px] bg-brand-500" />
+          <span className="h-3.5 w-3.5 rounded-[3px] bg-brand-500 sm:h-3 sm:w-3" />
           {t("legendDone")}
         </span>
       </div>
@@ -109,7 +141,8 @@ export default function HabitsView() {
         gridDates={gridDates}
         today={today}
         loading={loading}
-        onToggle={toggleHabit}
+        history={history}
+        onToggleDate={toggleHabit}
         onArchive={(habitId) => setHabitActive(habitId, false)}
         onRename={handleRenameRequest}
         onDelete={handleDeleteRequest}
