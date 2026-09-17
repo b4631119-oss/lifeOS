@@ -1,6 +1,6 @@
 import type { LifeTask, NewTask, TaskPriority } from "@/types/lifeos";
 
-import { nextDayKey, toMinutes } from "./date.ts";
+import { dayKeyFor, nextDayKey, toMinutes } from "./date.ts";
 
 /**
  * The scheduling rules of a LifeOS day, as plain functions.
@@ -133,6 +133,29 @@ export function compareDayTasks(a: LifeTask, b: LifeTask): number {
   return aStart - bStart;
 }
 
+/* --------------------------------- capture --------------------------------- */
+
+/**
+ * The draft that a title-only capture writes.
+ *
+ * Capture means *one* field: everything else is left at its default and can be
+ * filled in later (or never) through the day list. Having the shape in one place
+ * is what keeps "capture is fast" true — a second, slightly different set of
+ * defaults somewhere else is how a quick add turns into a form.
+ */
+export function captureDraft(
+  title: string,
+): Pick<NewTask, "title" | "startTime" | "endTime" | "status" | "priority"> {
+  return {
+    title,
+    // An empty pair is how an unscheduled task is spelled (see `isScheduled`).
+    startTime: "",
+    endTime: "",
+    status: "todo",
+    priority: DEFAULT_PRIORITY,
+  };
+}
+
 /* ------------------------------- current / next ------------------------------ */
 
 export type CurrentAndNext = {
@@ -141,6 +164,32 @@ export type CurrentAndNext = {
   /** The scheduled task that has not started yet and comes first. */
   next: LifeTask | null;
 };
+
+/** Where a task sits in the day's *clock*, if anywhere. */
+export type TaskMarker = "current" | "next";
+
+/**
+ * The tasks of a day that the clock singles out, keyed by id.
+ *
+ * The day list is ordered by start time, so "what am I on and what comes next"
+ * is already in it — the marker only points at the two rows instead of repeating
+ * them in a second card. Same fields, same rule as `currentAndNextTasks`: this is
+ * a projection of it, not a second definition of "now".
+ */
+export function taskMarkers(
+  tasks: LifeTask[],
+  nowMinutes: number,
+): Record<string, TaskMarker> {
+  const { current, next } = currentAndNextTasks(tasks, nowMinutes);
+  const markers: Record<string, TaskMarker> = {};
+
+  // Asserted rather than assigned in order, because the two are computed
+  // independently and "current" is the stronger of the two claims.
+  if (next) markers[next.id] = "next";
+  if (current) markers[current.id] = "current";
+
+  return markers;
+}
 
 /**
  * What the day is doing at `nowMinutes` (minutes since local midnight).
@@ -180,6 +229,21 @@ export function currentAndNextTasks(
 }
 
 /* ------------------------------ unfinished work ----------------------------- */
+
+/**
+ * The days a day view has to read: the day on screen and the window behind it.
+ *
+ * A bound at *both* ends, and the upper one matters most — "the day and the last
+ * N days" is what the recovery panel needs, whereas the same query without `to`
+ * also pulls in every task the user has planned for any future date, for a view
+ * that cannot display any of them.
+ */
+export function dayTaskRange(
+  date: string,
+  historyDays: number,
+): { from: string; to: string } {
+  return { from: dayKeyFor(date, -Math.max(0, Math.floor(historyDays))), to: date };
+}
 
 export type DayGroup = { date: string; tasks: LifeTask[] };
 
