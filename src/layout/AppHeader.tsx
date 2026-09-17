@@ -22,6 +22,11 @@ import Image from "next/image";
  * collapses to the icon (the page title already says where you are) and the
  * controls stay, because language, theme and the account menu are functions,
  * while the wordmark is decoration.
+ *
+ * From `lg` up the brand leaves the bar entirely. That is the same breakpoint at
+ * which the sidebar stops being a drawer and stands permanently beside the
+ * content, so the header would otherwise show a second LifeOS logo next to the
+ * one the sidebar is already showing.
  */
 const AppHeader: React.FC = () => {
   const t = useTranslations("header");
@@ -83,10 +88,13 @@ const AppHeader: React.FC = () => {
           )}
         </button>
 
-        {/* The brand: an icon on phones, the wordmark once there is room. */}
+        {/* The brand: an icon on phones, the wordmark once there is room, and
+            nothing from `lg` up, where the sidebar carries the same logo.
+            Hidden on the link rather than on each image, so the brand that is
+            not shown cannot stay in the tab order. */}
         <Link
           href="/today"
-          className="flex shrink-0 items-center rounded-lg focus:ring-3 focus:ring-brand-500/20 focus:outline-hidden"
+          className="flex shrink-0 items-center rounded-lg focus:ring-3 focus:ring-brand-500/20 focus:outline-hidden lg:hidden"
         >
           <Image
             src="/images/logo/logo-icon.svg"
