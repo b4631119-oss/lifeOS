@@ -3,6 +3,8 @@ import { test } from "node:test";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
+import { NAV_GROUPS } from "./sidebar.ts";
+
 /**
  * The two dictionaries are hand-written, so they drift. This test is the only
  * thing that notices: every leaf key of `en.json` must exist in `ru.json` and
@@ -37,6 +39,81 @@ test("the Russian and English dictionaries hold exactly the same keys", () => {
     [],
     "keys present in ru.json but missing from en.json",
   );
+});
+
+/** Reads a dotted key out of a dictionary, or `undefined` if it is absent. */
+function lookup(dictionary: Record<string, unknown>, key: string): unknown {
+  return key
+    .split(".")
+    .reduce<unknown>(
+      (node, part) => (node as Record<string, unknown> | undefined)?.[part],
+      dictionary,
+    );
+}
+
+test("every navigation label and destination has a message", () => {
+  // The sidebar is built from `NAV_GROUPS`, so a group or a module that is added
+  // there without a translation would render a raw key in the navigation — the
+  // one place a user is guaranteed to be looking.
+  const keys = NAV_GROUPS.flatMap((group) => [
+    group.labelKey,
+    ...group.items.map((item) => item.titleKey),
+  ]);
+
+  for (const locale of ["en", "ru"] as const) {
+    const dictionary = read(locale);
+    const missing = keys.filter(
+      (key) => typeof lookup(dictionary, key) !== "string",
+    );
+
+    assert.deepEqual(
+      missing,
+      [],
+      `${locale}.json is missing: ${missing.join(", ")}`,
+    );
+  }
+});
+
+test("the two completion percentages are named so neither reads as a bug", () => {
+  // The Week review divides completed by what was already due by now; Analytics
+  // divides completed by everything planned in its own window. The same week can
+  // honestly show 75% on one screen and 50% on the other, so each has to say
+  // which question it answers — a label *and* the basis it counts — and the two
+  // must not collapse into one sentence that fits both.
+  const keys = [
+    "week.review.completion",
+    "week.review.completionHint",
+    "analytics.stats.completion",
+    "analytics.stats.completionHint",
+  ];
+
+  for (const locale of ["en", "ru"] as const) {
+    const dictionary = read(locale);
+    const messages = keys.map((key) => lookup(dictionary, key));
+
+    for (const [index, message] of messages.entries()) {
+      assert.equal(
+        typeof message,
+        "string",
+        `${locale}.json is missing ${keys[index]}`,
+      );
+      assert.ok(
+        (message as string).trim().length > 0,
+        `${locale}.json has an empty ${keys[index]}`,
+      );
+    }
+
+    assert.notEqual(
+      messages[0],
+      messages[2],
+      `${locale}: Week and Analytics need different completion labels`,
+    );
+    assert.notEqual(
+      messages[1],
+      messages[3],
+      `${locale}: the two screens must state their own basis, not the same one`,
+    );
+  }
 });
 
 test("no message is left empty in either language", () => {
