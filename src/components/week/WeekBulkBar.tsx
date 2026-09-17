@@ -59,7 +59,9 @@ export default function WeekBulkBar({
   const resultMessage = () => {
     if (!result) return null;
     if (result.updated === 0) {
-      return result.action === "move" ? t("bulk.failedMove") : t("bulk.failedDrop");
+      return result.action === "move"
+        ? t("bulk.failedMove")
+        : t("bulk.failedDrop");
     }
     if (result.failed > 0) {
       return t("bulk.partial", { done: result.updated, total: result.total });
@@ -97,10 +99,20 @@ export default function WeekBulkBar({
             <Button size="sm" onClick={onMove} disabled={busy || !validDate}>
               {t("bulk.move")}
             </Button>
-            <Button size="sm" variant="outline" onClick={onDrop} disabled={busy}>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={onDrop}
+              disabled={busy}
+            >
               {tToday("recovery.drop")}
             </Button>
-            <Button size="sm" variant="outline" onClick={onClear} disabled={busy}>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={onClear}
+              disabled={busy}
+            >
               {t("bulk.clear")}
             </Button>
           </div>
