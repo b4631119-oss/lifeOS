@@ -38,7 +38,11 @@ export default function WeekReview({ summary, isFutureWeek }: WeekReviewProps) {
 
   const metrics: { key: string; label: string; value: string | number }[] = [
     { key: "planned", label: t("review.planned"), value: summary.planned },
-    { key: "completed", label: t("review.completed"), value: summary.completed },
+    {
+      key: "completed",
+      label: t("review.completed"),
+      value: summary.completed,
+    },
     {
       key: "unfinished",
       label: t("review.unfinished"),
@@ -103,6 +107,13 @@ export default function WeekReview({ summary, isFutureWeek }: WeekReviewProps) {
               due: summary.due,
             })}
           </p>
+          {/* This figure has a near-twin on Analytics, which divides by
+              everything planned in its own window. Saying which question each
+              one answers is the difference between two honest numbers and a
+              page that looks like it got one of them wrong. */}
+          <p className="mt-1 text-theme-xs text-gray-400 dark:text-gray-500">
+            {t("review.completionHint")}
+          </p>
         </div>
       ) : (
         <p className="mt-3 text-theme-xs text-gray-500 dark:text-gray-400">
@@ -110,7 +121,8 @@ export default function WeekReview({ summary, isFutureWeek }: WeekReviewProps) {
         </p>
       )}
 
-      <dl className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+      {/* Five across only once the sidebar is not eating the width. */}
+      <dl className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
         {metrics.map((metric) => (
           <div
             key={metric.key}
