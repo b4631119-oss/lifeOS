@@ -23,15 +23,8 @@ export default function GoalsView() {
   const t = useTranslations("goals");
   const { user } = useAuth();
   const today = useTodayKey();
-  const {
-    goals,
-    loading,
-    error,
-    createGoal,
-    updateGoal,
-    deleteGoal,
-    reload,
-  } = useGoals(user?.uid);
+  const { goals, loading, error, createGoal, updateGoal, deleteGoal, reload } =
+    useGoals(user?.uid);
 
   const goalIds = useMemo(() => goals.map((goal) => goal.id), [goals]);
   const { tasksByGoal, loading: tasksLoading } = useGoalTasks(
@@ -119,7 +112,7 @@ export default function GoalsView() {
         </button>
       </div>
 
-      <p className="mb-6 text-theme-sm text-gray-500 dark:text-gray-400">
+      <p className="mb-4 hidden text-theme-sm text-gray-500 sm:mb-6 sm:block dark:text-gray-400">
         {t("subtitle")}
       </p>
 
@@ -139,7 +132,9 @@ export default function GoalsView() {
         <GoalEmptyState onAddGoal={() => setShowForm(true)} />
       )}
 
-      {active.length > 0 && <ul className="space-y-4">{active.map(renderCard)}</ul>}
+      {active.length > 0 && (
+        <ul className="space-y-4">{active.map(renderCard)}</ul>
+      )}
 
       {finished.length > 0 && (
         <section className="mt-8">
