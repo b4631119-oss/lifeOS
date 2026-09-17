@@ -8,6 +8,7 @@ import type { Goal, LifeTask } from "@/types/lifeos";
 import { cn } from "@/utils";
 import { useLocale, useTranslations } from "next-intl";
 import { useId } from "react";
+import WeekDayCapture from "./WeekDayCapture";
 import WeekTaskRow from "./WeekTaskRow";
 
 interface WeekDayCardProps {
@@ -19,8 +20,12 @@ interface WeekDayCardProps {
   goalsResolved: boolean;
   isToday: boolean;
   selectedIds: string[];
+  /** The task just added to this day, so its row can confirm the write. */
+  highlightedId?: string | null;
   onToggleSelect: (taskId: string) => void;
   onOpenDay: (date: string) => void;
+  /** Writes a title into *this* day — the planning entry point of the card. */
+  onAddTask: (date: string, title: string) => Promise<unknown>;
   onMove: (task: LifeTask) => void;
   onDrop: (task: LifeTask) => void;
   onRestore: (task: LifeTask) => void;
@@ -37,6 +42,10 @@ interface WeekDayCardProps {
  * The card is also the way into the day: "открыть день" selects that date in the
  * shared day context and goes to Today, so the Week view never becomes a second
  * place where a day can be edited.
+ *
+ * What it *can* do is plan: "добавить в этот день" writes a task straight into
+ * this date, through the same capture as Today and the same `tasks` collection,
+ * so working out the week's distribution does not require leaving the view.
  */
 export default function WeekDayCard({
   date,
@@ -45,8 +54,10 @@ export default function WeekDayCard({
   goalsResolved,
   isToday,
   selectedIds,
+  highlightedId,
   onToggleSelect,
   onOpenDay,
+  onAddTask,
   onMove,
   onDrop,
   onRestore,
@@ -85,9 +96,7 @@ export default function WeekDayCard({
           {plan.length > 0 && (
             <>
               {" · "}
-              <span>
-                {t("tasksDoneOf", { done, total: plan.length })}
-              </span>
+              <span>{t("tasksDoneOf", { done, total: plan.length })}</span>
             </>
           )}
         </p>
@@ -112,6 +121,7 @@ export default function WeekDayCard({
               goal={task.goalId ? goalsById[task.goalId] : undefined}
               goalsResolved={goalsResolved}
               selected={selectedIds.includes(task.id)}
+              highlighted={task.id === highlightedId}
               onToggleSelect={onToggleSelect}
               onMove={onMove}
               onDrop={onDrop}
@@ -121,7 +131,15 @@ export default function WeekDayCard({
         </ul>
       )}
 
-      <div className="mt-4">
+      {/* One way to add, one way in. The capture comes first because planning
+          the week is what this card is for; the day itself stays one click
+          away and is where the work is actually done. */}
+      <div className="mt-4 space-y-2">
+        <WeekDayCapture
+          date={date}
+          onCreate={(title) => onAddTask(date, title)}
+        />
+
         <Button
           size="sm"
           variant="outline"
