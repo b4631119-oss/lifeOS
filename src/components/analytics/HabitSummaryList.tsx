@@ -36,7 +36,9 @@ export default function HabitSummaryList({ streaks }: HabitSummaryListProps) {
             aria-hidden="true"
             className={cn(
               "h-2.5 w-2.5 shrink-0 rounded-full",
-              streak.doneToday ? "bg-success-500" : "bg-gray-300 dark:bg-gray-600",
+              streak.doneToday
+                ? "bg-success-500"
+                : "bg-gray-300 dark:bg-gray-600",
             )}
           />
           <div className="min-w-0 flex-1">
