@@ -2,15 +2,22 @@
 
 import {
   deleteNote as deleteNoteDoc,
-  getNotes,
+  getNote,
+  getRecentNotes,
   saveNote,
 } from "@/lib/firestore";
-import { previousNotes } from "@/lib/notes";
+import { isEmptyNote, previousNotes } from "@/lib/notes";
 import type { Note } from "@/types/lifeos";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 /** Idle time after the last keystroke before the note is written. */
 export const AUTOSAVE_DELAY_MS = 1500;
+
+/** Notes listed before "show earlier notes" is offered. */
+export const NOTES_HISTORY_LIMIT = 20;
+
+/** How many more notes each press of that button loads. */
+export const NOTES_HISTORY_STEP = 20;
 
 export type SaveState = "idle" | "saving" | "saved" | "error";
 
@@ -22,13 +29,25 @@ type UseNotesResult = {
   savedAt: number | null;
   /** Writes pending text immediately — used on blur, page hide and unmount. */
   flush: () => void;
-  /** Every earlier day, newest first. */
+  /** Every other day's note, newest first. */
   notes: Note[];
+  /** True while the edited day's own note is being read. */
   loading: boolean;
+  /** True while the history list is still being read. */
+  historyLoading: boolean;
+  /** True when there are older notes than the ones listed. */
+  hasMoreHistory: boolean;
+  /** Loads the next page of older notes. */
+  loadMoreHistory: () => void;
+  /** True when the edited day has a note on the server. */
+  noteExists: boolean;
   /** The initial read failed. */
   error: string | null;
+  /** Deletes the note being edited and empties the editor. */
+  removeCurrentNote: () => Promise<void>;
+  /** Deletes an older day's note. */
   removeNote: (noteId: string) => Promise<void>;
-  /** Repeats the initial read after it failed. */
+  /** Repeats both reads after a failure. */
   reload: () => void;
 };
 
@@ -47,22 +66,32 @@ export type NotesUser = { uid: string } | null | undefined;
  * used here — the snapshot would echo every save back mid-keystroke and fight
  * the user's cursor.
  *
- * `today` comes in as a parameter rather than being read here, because the
- * caller remounts this hook when the calendar day changes (`NotesView` keys its
- * inner component by the day). A remount gives the new day a genuinely fresh
- * editor — no state from yesterday survives — while the unmount flush writes
- * any pending keystrokes to the day they were typed on, not to the new one.
+ * **The edited day and its history are two independent reads.** The note itself
+ * is fetched by document id (`notes/{date}`), which is one document, so the
+ * editor is usable as soon as that single read lands; the history is a separate,
+ * bounded query that fills in underneath it. Loading them together — as this
+ * hook used to — meant the editor waited on the user's whole journal.
+ *
+ * `date` comes in as a parameter rather than being read here, because the caller
+ * remounts this hook when the selected day changes (`NotesView` keys its inner
+ * component by the day). A remount gives the new day a genuinely fresh editor —
+ * no state from the previous one survives — while the unmount flush writes any
+ * pending keystrokes to the day they were typed on, not to the new one.
  */
-export function useNotes(user: NotesUser, today: string): UseNotesResult {
+export function useNotes(user: NotesUser, date: string): UseNotesResult {
   const uid = user?.uid;
 
   const [content, setContentState] = useState("");
   const [notes, setNotes] = useState<Note[]>([]);
-  const [loaded, setLoaded] = useState(false);
+  const [noteLoaded, setNoteLoaded] = useState(false);
+  const [historyLoaded, setHistoryLoaded] = useState(false);
+  const [noteExists, setNoteExists] = useState(false);
+  const [hasMoreHistory, setHasMoreHistory] = useState(false);
+  const [historyLimit, setHistoryLimit] = useState(NOTES_HISTORY_LIMIT);
   const [error, setError] = useState<string | null>(null);
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [savedAt, setSavedAt] = useState<number | null>(null);
-  // Bumping this repeats the one-shot read below.
+  // Bumping this repeats both reads below.
   const [attempt, setAttempt] = useState(0);
 
   const latestContentRef = useRef("");
@@ -77,41 +106,80 @@ export function useNotes(user: NotesUser, today: string): UseNotesResult {
     latestContentRef.current = content;
   }, [content]);
 
-  // One-shot read of today's note plus the history.
+  /** The edited day's own note — one document, awaited on its own. */
   useEffect(() => {
     if (!uid) return;
 
     let cancelled = false;
 
-    getNotes(uid)
-      .then((allNotes) => {
+    getNote(uid, date)
+      .then((note) => {
         if (cancelled) return;
 
-        const todayNote = allNotes.find((note) => note.date === today);
-
-        noteExistsRef.current = Boolean(todayNote);
-        lastSavedRef.current = todayNote?.content ?? "";
-        setNotes(previousNotes(allNotes, today));
-        if (!editedRef.current) setContentState(todayNote?.content ?? "");
+        // The refs are updated together with the state on purpose: a keystroke
+        // landing while this read is in flight must not be overwritten
+        // (`editedRef`), and the next save has to know whether the document
+        // already exists so it does not restamp `createdAt`.
+        noteExistsRef.current = Boolean(note);
+        lastSavedRef.current = note?.content ?? "";
+        setNoteExists(Boolean(note));
+        setSaveState("idle");
+        if (!editedRef.current) setContentState(note?.content ?? "");
         setError(null);
-        setLoaded(true);
+        setNoteLoaded(true);
       })
       .catch((cause: unknown) => {
         if (cancelled) return;
+        // A save after a failed read must not assume the note is new: keeping
+        // the creation time is the safer mistake than restamping it.
         noteExistsRef.current = true;
         setError(cause instanceof Error ? cause.message : "Unexpected error.");
-        setLoaded(true);
+        setNoteLoaded(true);
       });
 
     return () => {
       cancelled = true;
     };
-  }, [uid, today, attempt]);
+  }, [uid, date, attempt]);
+
+  /** The history, in its own bounded read that never blocks the editor. */
+  useEffect(() => {
+    if (!uid) return;
+
+    let cancelled = false;
+
+    // One row more than will be listed, so "there is more" is known without
+    // asking Firestore to count the collection.
+    getRecentNotes(uid, historyLimit + 1)
+      .then((recent) => {
+        if (cancelled) return;
+
+        const others = previousNotes(recent, date);
+        setNotes(others.slice(0, historyLimit));
+        setHasMoreHistory(others.length > historyLimit);
+        setError(null);
+        setHistoryLoaded(true);
+      })
+      .catch((cause: unknown) => {
+        if (cancelled) return;
+        setError(cause instanceof Error ? cause.message : "Unexpected error.");
+        setHistoryLoaded(true);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [uid, date, historyLimit, attempt]);
 
   const reload = useCallback(() => {
     setError(null);
-    setLoaded(false);
+    setNoteLoaded(false);
+    setHistoryLoaded(false);
     setAttempt((value) => value + 1);
+  }, []);
+
+  const loadMoreHistory = useCallback(() => {
+    setHistoryLimit((value) => value + NOTES_HISTORY_STEP);
   }, []);
 
   /** Writes one revision; resolves to whether it reached Firestore. */
@@ -120,8 +188,13 @@ export function useNotes(user: NotesUser, today: string): UseNotesResult {
       if (!uid) return true;
 
       try {
-        await saveNote(uid, today, value, !noteExistsRef.current);
-        noteExistsRef.current = true;
+        await saveNote(uid, date, value, !noteExistsRef.current);
+        // An emptied note is deleted rather than stored, so existence follows
+        // the text: the next non-empty save has to stamp `createdAt` again
+        // instead of believing the document is still there.
+        const exists = !isEmptyNote(value);
+        noteExistsRef.current = exists;
+        setNoteExists(exists);
 
         lastSavedRef.current = value;
         setSavedAt(Date.now());
@@ -132,7 +205,7 @@ export function useNotes(user: NotesUser, today: string): UseNotesResult {
         return false;
       }
     },
-    [uid, today],
+    [uid, date],
   );
 
   const writeContents = useCallback(
@@ -158,14 +231,14 @@ export function useNotes(user: NotesUser, today: string): UseNotesResult {
 
   /** Debounced autosave: every keystroke restarts the timer. */
   useEffect(() => {
-    if (!uid || !loaded || content === lastSavedRef.current) return;
+    if (!uid || !noteLoaded || content === lastSavedRef.current) return;
 
     const timer = setTimeout(() => {
       void writeContents(content);
     }, AUTOSAVE_DELAY_MS);
 
     return () => clearTimeout(timer);
-  }, [uid, loaded, content, writeContents]);
+  }, [uid, noteLoaded, content, writeContents]);
 
   const flush = useCallback(() => {
     void writeContents(latestContentRef.current);
@@ -186,7 +259,51 @@ export function useNotes(user: NotesUser, today: string): UseNotesResult {
     setContentState(value);
   }, []);
 
-  /** Rejects on failure so the confirmation modal can report it. */
+  /**
+   * Deletes the note being edited, clearing the editor **first**.
+   *
+   * The order is what makes this safe: clearing the text and the saved
+   * reference is what stops the debounced autosave from writing the note
+   * straight back — a pending timer fires into an early return because the text
+   * now equals what was last saved. If the delete fails, the editor is put back
+   * exactly as it was, so nothing is silently lost either way.
+   *
+   * Rejects on failure so the confirmation modal can report it.
+   */
+  const removeCurrentNote = useCallback(async () => {
+    if (!uid) return;
+
+    const previous = {
+      content: latestContentRef.current,
+      saved: lastSavedRef.current,
+      exists: noteExistsRef.current,
+    };
+
+    editedRef.current = true;
+    lastSavedRef.current = "";
+    noteExistsRef.current = false;
+    setNoteExists(false);
+    setContentState("");
+    setSavedAt(null);
+    setSaveState("idle");
+
+    try {
+      await deleteNoteDoc(uid, date);
+    } catch (cause) {
+      lastSavedRef.current = previous.saved;
+      noteExistsRef.current = previous.exists;
+      setNoteExists(previous.exists);
+      setContentState(previous.content);
+      setSaveState("error");
+      throw cause;
+    }
+  }, [uid, date]);
+
+  /**
+   * Deletes an older day's note from the history.
+   *
+   * Rejects on failure so the confirmation modal can report it.
+   */
   const removeNote = useCallback(
     async (noteId: string) => {
       if (!uid) return;
@@ -204,8 +321,13 @@ export function useNotes(user: NotesUser, today: string): UseNotesResult {
     savedAt,
     flush,
     notes,
-    loading: Boolean(uid) && !loaded,
+    loading: Boolean(uid) && !noteLoaded,
+    historyLoading: Boolean(uid) && !historyLoaded,
+    hasMoreHistory,
+    loadMoreHistory,
+    noteExists,
     error,
+    removeCurrentNote,
     removeNote,
     reload,
   };
