@@ -32,6 +32,12 @@ export default function DayProgress({ tasks }: DayProgressProps) {
   const scheduled = plan.filter(isScheduled);
   const planned = plannedMinutes(tasks);
   const { hours, minutes } = splitDuration(planned);
+  const plannedLabel =
+    hours > 0 && minutes > 0
+      ? t("durationHoursMinutes", { hours, minutes })
+      : hours > 0
+        ? t("durationHours", { hours })
+        : t("durationMinutes", { minutes });
 
   // "Time elapsed" compares now against the day's scheduled window, which only
   // means something for today (and needs a window to measure against at all).
@@ -39,45 +45,88 @@ export default function DayProgress({ tasks }: DayProgressProps) {
   const elapsedPercent = dayElapsedPercent(tasks);
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-6 lg:grid-cols-3">
-      <ProgressCard
-        label={t("progressTitle")}
-        percent={completedPercent}
-        caption={t("ofTasks", { done, total })}
-        barClassName="bg-success-500"
-      />
-
-      {showElapsed && (
-        <ProgressCard
-          label={t("timeElapsed")}
-          percent={elapsedPercent}
-          caption={`${elapsedPercent}%`}
-          barClassName="bg-brand-500"
-        />
-      )}
-
-      {planned > 0 && (
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
-          <p className="text-theme-sm font-medium text-gray-700 dark:text-gray-300">
-            {t("plannedTime")}
-          </p>
-          <p className="mt-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
-            {hours > 0 && minutes > 0
-              ? t("durationHoursMinutes", { hours, minutes })
-              : hours > 0
-                ? t("durationHours", { hours })
-                : t("durationMinutes", { minutes })}
-          </p>
-          {/* No "available time" figure: LifeOS has no working-hours setting, so
-              a capacity warning would be invented precision. What is left
-              unscheduled is stated instead, which is a fact. */}
-          <p className="mt-2 text-theme-xs text-gray-500 dark:text-gray-400">
-            {withoutTime > 0
-              ? t("withoutTime", { count: withoutTime })
-              : t("allScheduled")}
-          </p>
+    <div className="mb-4 sm:mb-6">
+      {/*
+       * A phone gets one summary line and a bar. Three full cards is 280px of
+       * chrome before the user reaches a single task, and on that screen the
+       * question is only "how much of today is left" — the figures are still
+       * here, they just do not each need their own box.
+       */}
+      <div className="app-card app-card-pad sm:hidden">
+        <div className="flex items-baseline justify-between gap-3">
+          <span className="app-label">{t("progressTitle")}</span>
+          <span className="text-theme-sm font-semibold text-gray-800 dark:text-white/90">
+            {completedPercent}%
+          </span>
         </div>
-      )}
+
+        <div
+          className="mt-2 h-2 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800"
+          role="progressbar"
+          aria-label={t("progressTitle")}
+          aria-valuenow={completedPercent}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuetext={t("ofTasks", { done, total })}
+        >
+          <div
+            className="h-full rounded-full bg-success-500 transition-all duration-500"
+            style={{ width: `${completedPercent}%` }}
+          />
+        </div>
+
+        <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-theme-xs text-gray-500 dark:text-gray-400">
+          <span>{t("ofTasks", { done, total })}</span>
+          {planned > 0 && (
+            <span>
+              {t("plannedTime")}: {plannedLabel}
+            </span>
+          )}
+          {showElapsed && (
+            <span>
+              {t("timeElapsed")}: {elapsedPercent}%
+            </span>
+          )}
+        </p>
+      </div>
+
+      {/* Tablet and desktop: the same numbers, each with room to breathe. */}
+      <div className="hidden gap-4 sm:grid sm:grid-cols-2 md:gap-6 lg:grid-cols-3">
+        <ProgressCard
+          label={t("progressTitle")}
+          percent={completedPercent}
+          caption={t("ofTasks", { done, total })}
+          barClassName="bg-success-500"
+        />
+
+        {showElapsed && (
+          <ProgressCard
+            label={t("timeElapsed")}
+            percent={elapsedPercent}
+            caption={`${elapsedPercent}%`}
+            barClassName="bg-brand-500"
+          />
+        )}
+
+        {planned > 0 && (
+          <div className="app-card app-card-pad">
+            <p className="text-theme-sm font-medium text-gray-700 dark:text-gray-300">
+              {t("plannedTime")}
+            </p>
+            <p className="mt-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
+              {plannedLabel}
+            </p>
+            {/* No "available time" figure: LifeOS has no working-hours setting,
+                so a capacity warning would be invented precision. What is left
+                unscheduled is stated instead, which is a fact. */}
+            <p className="app-label mt-2">
+              {withoutTime > 0
+                ? t("withoutTime", { count: withoutTime })
+                : t("allScheduled")}
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -96,7 +145,7 @@ function ProgressCard({
   barClassName,
 }: ProgressCardProps) {
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
+    <div className="app-card app-card-pad">
       <div className="mb-3 flex items-center justify-between gap-3">
         <span className="text-theme-sm font-medium text-gray-700 dark:text-gray-300">
           {label}
@@ -126,9 +175,7 @@ function ProgressCard({
         />
       </div>
 
-      <p className="mt-2 text-theme-xs text-gray-500 dark:text-gray-400">
-        {caption}
-      </p>
+      <p className="app-label mt-2">{caption}</p>
     </div>
   );
 }
