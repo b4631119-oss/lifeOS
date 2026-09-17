@@ -8,6 +8,7 @@ import {
   updateGoal as updateGoalDoc,
   updateTask as updateTaskDoc,
 } from "@/lib/firestore";
+import { captureDraft } from "@/lib/taskSchedule";
 import type { Goal, GoalStatus, LifeTask } from "@/types/lifeos";
 import { useCallback, useEffect, useState } from "react";
 import { useGoalTasks } from "./useGoalTasks";
@@ -100,11 +101,9 @@ export function useGoalDetail(
 
       return run(async () => {
         await addTaskDoc(uid, {
-          title,
-          startTime: "",
-          endTime: "",
-          status: "todo",
-          priority: "medium",
+          // The same capture defaults as Today — one definition, so a task
+          // written here cannot be a differently-shaped task.
+          ...captureDraft(title),
           // Today, because the goal page is about what moves the goal now; the
           // task can be moved to another day from Today or the Schedule.
           date: today,
