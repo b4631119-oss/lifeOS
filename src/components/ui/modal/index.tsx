@@ -107,18 +107,21 @@ export const Modal: React.FC<ModalProps> = ({
 
   const contentClasses = isFullscreen
     ? "w-full h-full"
-    : "relative w-full max-w-md rounded-3xl bg-white dark:bg-gray-900";
+    : // Dialogs keep the page's card language (2xl radius) and are bounded by
+      // the viewport so a long form scrolls inside itself on a phone instead of
+      // running off the screen.
+      "relative w-full max-w-md max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-2xl bg-white dark:bg-gray-900";
 
   return (
     <div
-      className="fixed inset-0 z-99999 flex items-start justify-center py-4 overflow-y-auto"
+      className="fixed inset-0 z-99999 flex items-start justify-center overflow-y-auto px-4 py-4 sm:px-6 sm:py-6"
       role="dialog"
       aria-modal="true"
       aria-labelledby={labelledBy}
     >
       {!isFullscreen && (
         <div
-          className="fixed inset-0 h-full w-full bg-gray-400/50 backdrop-blur-[32px]"
+          className="fixed inset-0 h-full w-full bg-gray-900/40 backdrop-blur-sm"
           onClick={onClose}
         />
       )}
