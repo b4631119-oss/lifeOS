@@ -1,10 +1,11 @@
 "use client";
 
 import { MAX_RANGE_DAYS } from "@/lib/analytics";
-import { addDays, dateKey } from "@/lib/date";
-import { getTasksSince } from "@/lib/firestore";
+import { recentDayRange } from "@/lib/date";
+import { getTaskRange } from "@/lib/firestore";
 import type { LifeTask } from "@/types/lifeos";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTodayKey } from "./useTodayKey";
 
 type UseAnalyticsResult = {
   /** Tasks from the widest window (30 days), newest data included. */
@@ -22,11 +23,19 @@ type UseAnalyticsResult = {
  * an analytics view is an aggregation over a period rather than a mirror of the
  * current day, so there is no need to keep a 30 day snapshot open. Habit data
  * comes from the existing real-time `useHabits` instead of a second query here.
+ *
+ * The read is a **closed** range ending today: the page aggregates the last
+ * `MAX_RANGE_DAYS` days and nothing else, so there is no reason to pull in the
+ * tasks a user has planned for next month as well. The window follows the
+ * calendar day, so a tab left open past midnight re-reads the right period.
  */
 export function useAnalytics(uid: string | undefined): UseAnalyticsResult {
-  const fromDate = useMemo(
-    () => dateKey(addDays(new Date(), -(MAX_RANGE_DAYS - 1))),
-    [],
+  const today = useTodayKey();
+  // The window is derived from the day, so it changes exactly once a day and
+  // the effect below re-reads then — no refetch on any other render.
+  const range = useMemo(
+    () => recentDayRange(today, MAX_RANGE_DAYS),
+    [today],
   );
 
   const [tasks, setTasks] = useState<LifeTask[]>([]);
@@ -39,7 +48,7 @@ export function useAnalytics(uid: string | undefined): UseAnalyticsResult {
 
     let cancelled = false;
 
-    getTasksSince(uid, fromDate)
+    getTaskRange(uid, range)
       .then((nextTasks) => {
         if (cancelled) return;
         setTasks(nextTasks);
@@ -55,7 +64,7 @@ export function useAnalytics(uid: string | undefined): UseAnalyticsResult {
     return () => {
       cancelled = true;
     };
-  }, [uid, fromDate, attempt]);
+  }, [uid, range, attempt]);
 
   const reload = useCallback(() => {
     setLoaded(false);
