@@ -5,6 +5,7 @@ import type { Habit } from "@/types/lifeos";
 import { useTranslations } from "next-intl";
 import HabitCard from "./HabitCard";
 import HabitEmptyState from "./HabitEmptyState";
+import type { HabitHistoryControls } from "./HabitHistoryStrip";
 
 interface HabitListProps {
   habits: Habit[];
@@ -12,7 +13,8 @@ interface HabitListProps {
   gridDates: string[];
   today: string;
   loading: boolean;
-  onToggle: (habitId: string) => Promise<void>;
+  history: HabitHistoryControls;
+  onToggleDate: (habitId: string, date: string) => Promise<void>;
   onArchive: (habitId: string) => Promise<void>;
   onRename: (habit: Habit) => void;
   onDelete: (habit: Habit) => void;
@@ -24,7 +26,8 @@ export default function HabitList({
   gridDates,
   today,
   loading,
-  onToggle,
+  history,
+  onToggleDate,
   onArchive,
   onRename,
   onDelete,
@@ -33,7 +36,7 @@ export default function HabitList({
 
   if (loading) {
     return (
-      <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
+      <div className="app-card app-card-pad">
         <p className="text-theme-sm text-gray-500 dark:text-gray-400">
           {t("loading")}
         </p>
@@ -54,7 +57,8 @@ export default function HabitList({
           doneDates={doneDatesByHabit.get(habit.id) ?? EMPTY_DATES}
           gridDates={gridDates}
           today={today}
-          onToggle={onToggle}
+          history={history}
+          onToggleDate={onToggleDate}
           onArchive={onArchive}
           onRename={onRename}
           onDelete={onDelete}
