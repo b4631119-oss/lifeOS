@@ -88,14 +88,18 @@ export function moveRange(
   return { startMinutes: start, endMinutes: start + duration };
 }
 
-export function durationOf(task: Pick<LifeTask, "startTime" | "endTime">): number {
+export function durationOf(
+  task: Pick<LifeTask, "startTime" | "endTime">,
+): number {
   const start = toMinutes(task.startTime);
   const end = toMinutes(task.endTime);
   if (start === null || end === null || end <= start) return SNAP_MINUTES;
   return end - start;
 }
 
-export function rangeOf(task: Pick<LifeTask, "startTime" | "endTime">): TimeRange {
+export function rangeOf(
+  task: Pick<LifeTask, "startTime" | "endTime">,
+): TimeRange {
   return { startTime: task.startTime, endTime: task.endTime };
 }
 
