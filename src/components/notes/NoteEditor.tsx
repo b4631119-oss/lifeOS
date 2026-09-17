@@ -1,7 +1,9 @@
 "use client";
 
 import TextArea from "@/components/form/input/TextArea";
+import Button from "@/components/ui/button/Button";
 import type { SaveState } from "@/hooks/useNotes";
+import { TrashBinIcon } from "@/icons";
 import { formatClock } from "@/lib/date";
 import { cn } from "@/utils";
 import { useTranslations } from "next-intl";
@@ -14,6 +16,13 @@ interface NoteEditorProps {
   saveState: SaveState;
   savedAt: number | null;
   locale: string;
+  /**
+   * Deletes this day's note. Omitted when the day has no note on the server, so
+   * the control is only ever offered for something that exists — an empty day
+   * has nothing to remove, and there is no way to "delete" text that was never
+   * saved.
+   */
+  onDeleteRequest?: () => void;
 }
 
 export default function NoteEditor({
@@ -23,6 +32,7 @@ export default function NoteEditor({
   saveState,
   savedAt,
   locale,
+  onDeleteRequest,
 }: NoteEditorProps) {
   const t = useTranslations("notes");
 
@@ -46,17 +56,31 @@ export default function NoteEditor({
         className="resize-y text-gray-700 dark:text-gray-300"
       />
 
-      <p
-        aria-live="polite"
-        className={cn(
-          "text-theme-xs",
-          saveState === "error"
-            ? "text-error-500"
-            : "text-gray-500 dark:text-gray-400",
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 pt-4 dark:border-gray-800">
+        <p
+          aria-live="polite"
+          className={cn(
+            "text-theme-xs",
+            saveState === "error"
+              ? "text-error-500"
+              : "text-gray-500 dark:text-gray-400",
+          )}
+        >
+          {statusLabel}
+        </p>
+
+        {onDeleteRequest && (
+          <Button
+            variant="outline"
+            size="sm"
+            type="button"
+            startIcon={<TrashBinIcon className="h-4 w-4" />}
+            onClick={onDeleteRequest}
+          >
+            {t("deleteCurrent")}
+          </Button>
         )}
-      >
-        {statusLabel}
-      </p>
+      </div>
     </div>
   );
 }
