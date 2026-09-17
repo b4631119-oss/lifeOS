@@ -1,9 +1,15 @@
 "use client";
 
+import { minutesOfDay, useNowMs } from "@/hooks/useNowMs";
+import { taskMarkers, type TaskMarker } from "@/lib/taskSchedule";
 import type { Goal, LifeTask } from "@/types/lifeos";
 import { useTranslations } from "next-intl";
+import { useMemo } from "react";
 import TaskItem from "./TaskItem";
 import TodayEmptyState from "./TodayEmptyState";
+
+/** Stable empty value, so a day without markers keeps a stable identity. */
+const NO_MARKERS: Record<string, TaskMarker> = {};
 
 interface TaskListProps {
   tasks: LifeTask[];
@@ -14,6 +20,8 @@ interface TaskListProps {
   goalsById: Record<string, Goal>;
   /** True once the goals list has answered, so a missing link is not guessed. */
   goalsResolved: boolean;
+  /** The task that was just created, so its row can confirm the write. */
+  highlightedId?: string | null;
   onToggle: (task: LifeTask) => void;
   onEdit: (task: LifeTask) => void;
   onDelete: (task: LifeTask) => void;
@@ -25,15 +33,31 @@ export default function TaskList({
   isToday,
   goalsById,
   goalsResolved,
+  highlightedId,
   onToggle,
   onEdit,
   onDelete,
 }: TaskListProps) {
   const t = useTranslations("today");
+  const nowMs = useNowMs();
+
+  /**
+   * Now/next are only a statement about *today*, and only once the clock has
+   * hydrated — the position cannot match between server and client, so before
+   * that no row is marked. Derived from the same tasks the list draws, so the
+   * two can never disagree.
+   */
+  const markers = useMemo(
+    () =>
+      isToday && nowMs !== null
+        ? taskMarkers(tasks, minutesOfDay(nowMs))
+        : NO_MARKERS,
+    [isToday, nowMs, tasks],
+  );
 
   if (loading) {
     return (
-      <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
+      <div className="app-card app-card-pad">
         <p className="text-theme-sm text-gray-500 dark:text-gray-400">
           {t("loading")}
         </p>
@@ -46,13 +70,15 @@ export default function TaskList({
   }
 
   return (
-    <ul className="space-y-3">
+    <ul className="space-y-2 sm:space-y-3">
       {tasks.map((task) => (
         <TaskItem
           key={task.id}
           task={task}
           goalsById={goalsById}
           goalsResolved={goalsResolved}
+          marker={markers[task.id]}
+          highlighted={task.id === highlightedId}
           onToggle={onToggle}
           onEdit={onEdit}
           onDelete={onDelete}
