@@ -9,6 +9,7 @@ owner-scoped in Firestore.
 
 ## Modules
 
+
 | Module | What it does |
 | --- | --- |
 | **Today** | Capture first: a one-field quick add creates a task from its title alone, and a time can be added later (or never). Day arrows reach any date, `Now`/`Next` read the clock, and unfinished work from the last 14 days is offered for recovery — carry to tomorrow, reschedule, or drop it off the plan. Shows the day's planned time in hours and minutes. |
